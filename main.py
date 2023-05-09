@@ -66,13 +66,23 @@ async def gold(message):
     else: await message.answer(text='сначала зарегестрируйся')
 
 @dis.message_handler(commands=['profile'])
-async def gold(message):
+async def profile(message):
     tg_user_id = message.from_user.id
-    sql_code = f'SELECT money, status FROM players WHERE tg_id = {tg_user_id}'
+    chat_id = message.chat.id
+    sql_code = f'SELECT money, status, user_id FROM players WHERE tg_id = {tg_user_id}'
     print(sql_code)
     cur.execute(sql_code)
     result =  [j for i in list(cur.fetchall()) for j in i]
-    await message.answer(text=f'{result}')
+    print(result)
+    local_user_id = result[2]
+    sql_code = f'SELECT hero_id FROM heroes WHERE user_id = {local_user_id}'
+    print(sql_code)
+    cur.execute(sql_code)
+    heroe_names = [j for i in list(cur.fetchall()) for j in i]
+    print(heroe_names)
+    await maker_menu(local_user_id, chat_id=chat_id)
+
+
 
 
 

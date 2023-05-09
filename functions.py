@@ -1,5 +1,11 @@
 from config import *
 import pymysql
+import aiogram
+from texts import *
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+bot = aiogram.Bot(token)
+dis = aiogram.Dispatcher(bot)
 try:
     connect = pymysql.connect(
         host=host,
@@ -33,3 +39,18 @@ def update_gold(tg_user_id, plus_money):
     cur.execute(sql_code)
     connect.commit()
     return start_money
+
+async def maker_menu(local_user_id, chat_id):
+    i = InlineKeyboardMarkup(row_width=3)
+    #i1 = InlineKeyboardButton(text='фрамить', callback_data='farm')
+    #i2 = InlineKeyboardButton(text='драться', callback_data='fight')
+    #i3 = InlineKeyboardButton(text='экипировка', callback_data='shmot')
+    #i.add(i1).add(i2).add(i3)
+    sql_code = f'SELECT id, hero_id FROM heroes WHERE user_id = {local_user_id}'
+    cur.execute(sql_code)
+    arrey_heroes = [j for i in list(cur.fetchall()) for j in i]
+    print(arrey_heroes)
+    h = InlineKeyboardMarkup(row_width=len(arrey_heroes) // 2)
+    for j in range(0, len(arrey_heroes) - 1, 2):
+        h.add(InlineKeyboardButton(text=heroes[arrey_heroes[j + 1]], callback_data=f'{heroes[arrey_heroes[j + 1]]}#{local_user_id}#{chat_id}'))
+    await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
