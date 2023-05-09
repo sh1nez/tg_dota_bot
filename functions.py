@@ -23,3 +23,13 @@ def create_hero(local_user_id, name_hero_id, hero_lvl):
     hero_id = connect.insert_id()
     connect.commit()
     return hero_id
+def update_gold(tg_user_id, plus_money):
+    sql_code = f'SELECT money FROM players WHERE tg_id = {tg_user_id}'
+    print(sql_code)
+    cur.execute(sql_code)
+    start_money = [j for i in list(cur.fetchall()) for j in i][0]
+    sql_code = f'UPDATE players SET money = {start_money + plus_money} WHERE players.tg_id = {tg_user_id}'
+    print(sql_code)
+    cur.execute(sql_code)
+    connect.commit()
+    return start_money

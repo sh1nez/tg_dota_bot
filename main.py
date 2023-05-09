@@ -49,6 +49,8 @@ async def start(message: aiogram.types):
             await message.answer(text=f'админ пидорас сломал всё')
     else:
         await message.answer(text=f'{reg_text} {commands}')
+
+
 @dis.message_handler(commands=['gold'])#прост отвечает
 async def gold(message):
     tg_user_id = message.from_user.id
@@ -59,17 +61,24 @@ async def gold(message):
     connect.commit()
     print(result)
     if result:
-        sql_code = f'SELECT money FROM players WHERE tg_id = {tg_user_id}'
-        print(sql_code)
-        cur.execute(sql_code)
-        start_money = [j for i in list(cur.fetchall()) for j in i][0]
-        plus_money = 123
-        sql_code = f'UPDATE players SET money = {start_money+plus_money} WHERE players.tg_id = {tg_user_id}'
-        print(sql_code)
-        cur.execute(sql_code)
-        connect.commit()
-        await message.answer(text=f'ты получил {start_money+plus_money}')
+        return_to_user = update_gold(tg_user_id, plus_money=100)
+        await message.answer(text=f'теперь голды {return_to_user}')
     else: await message.answer(text='сначала зарегестрируйся')
+
+@dis.message_handler(commands=['profile'])
+async def gold(message):
+    tg_user_id = message.from_user.id
+    sql_code = f'SELECT money, status FROM players WHERE tg_id = {tg_user_id}'
+    print(sql_code)
+    cur.execute(sql_code)
+    result =  [j for i in list(cur.fetchall()) for j in i]
+    await message.answer(text=f'{result}')
+
+
+
+
+
+
 
 
 
