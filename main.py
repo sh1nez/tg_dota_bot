@@ -18,37 +18,7 @@ try:
         database=db_name,
     )
 except:  print('ConnectionError')
-
 cur = connect.cursor()
-
-# def create_new_hero(tg_user_id):
-#     sql_code = f"INSERT INTO players tg_id VALUES {tg_user_id} "
-#     cur.execute(sql_code)
-#     #insert(table='players', all_coloniums=f'tg_id', all_values=f'{tg_user_id}')
-#     time = datetime.datetime.today().replace(microsecond=0)
-#     sql_code = f'SELECT user_id FROM players WHERE tg_id = {tg_user_id}'
-#     cur.execute(sql_code)
-#     local_user_id = cur.fetchall()[0]
-#     #local_user_id = select(what_return='user_id', where_column='tg_id', table='players', value=f'{tg_user_id}')[0]
-#     hero_id = 0
-#     hero_lvl = 0
-#     all_coloniums='`id`, `last_time`, `user_id`, `hero_id`, `hero_lvl`, `hero_activity`'
-#     all_values=f"NULL, '{time}', '{local_user_id}', '{hero_id}', '{hero_lvl}', '0'"
-#     table='`custom_heroes`'
-#     insert_query = f"INSERT INTO {table} ({all_coloniums}) VALUES ({all_values});"
-#     try:
-#         cur.execute(insert_query)
-#         next_hero_id = connect.insert_id() + 1
-#         print(next_hero_id)
-#
-#         connect.commit()
-#         print('стараюсь')
-#         aa = cur.lastword()
-#         print(aa)
-#         print('всё кул')
-#     except:
-#         print('говно')
-#     connect.commit()
 
 @dis.message_handler(commands=['start'])#прост отвечает
 async def start(message: aiogram.types):
@@ -79,6 +49,29 @@ async def start(message: aiogram.types):
             await message.answer(text=f'админ пидорас сломал всё')
     else:
         await message.answer(text=f'{reg_text} {commands}')
+@dis.message_handler(commands=['gold'])#прост отвечает
+async def gold(message):
+    tg_user_id = message.from_user.id
+    sql_code = f'SELECT tg_id FROM players WHERE tg_id = {tg_user_id}'
+    print(sql_code)
+    cur.execute(sql_code)  #если написать равно, то вернёт количество совпадений как я понял
+    result =  [j for i in list(cur.fetchall()) for j in i]
+    connect.commit()
+    print(result)
+    if result:
+        sql_code = f'SELECT money FROM players WHERE tg_id = {tg_user_id}'
+        print(sql_code)
+        cur.execute(sql_code)
+        start_money = [j for i in list(cur.fetchall()) for j in i][0]
+        plus_money = 123
+        sql_code = f'UPDATE players SET money = {start_money+plus_money} WHERE players.tg_id = {tg_user_id}'
+        print(sql_code)
+        cur.execute(sql_code)
+        connect.commit()
+        await message.answer(text=f'ты получил {start_money+plus_money}')
+    else: await message.answer(text='сначала зарегестрируйся')
+
+
 
 
 if __name__ == '__main__':
