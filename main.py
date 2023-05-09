@@ -49,7 +49,18 @@ cur = connect.cursor()
 #     except:
 #         print('говно')
 #     connect.commit()
-
+def create_slot(hero_id):
+    sql_code = f"INSERT INTO items (`hero_id`, `item_name`) VALUES ('{hero_id}',  NULL);"
+    print(sql_code)
+    cur.execute(sql_code)
+    connect.commit()
+def create_hero(local_user_id, name_hero_id, hero_lvl):
+    sql_code = f"INSERT INTO heroes (`id`, `last_time`, `user_id`, `hero_id`, `hero_lvl`, `hero_activity`) VALUES (NULL, NULL, '{local_user_id}', '{name_hero_id}', '{hero_lvl}', '0');"
+    print(sql_code)
+    cur.execute(sql_code)
+    hero_id = connect.insert_id()
+    connect.commit()
+    return hero_id
 @dis.message_handler(commands=['start'])#прост отвечает
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
@@ -70,11 +81,10 @@ async def start(message: aiogram.types):
             connect.commit()
             hero_id = 0
             hero_lvl = 0
-            #create_hero
-            sql_code = f"INSERT INTO heroes (`id`, `last_time`, `user_id`, `hero_id`, `hero_lvl`, `hero_activity`) VALUES (NULL, NULL, '{local_user_id}', '{hero_id}', '{hero_lvl}', '0');"
-            print(sql_code)
-            cur.execute(sql_code)
-            connect.commit()
+            new_hero_id = create_hero(local_user_id, hero_id, hero_lvl)
+            print(new_hero_id)
+            for i in range(6):
+                create_slot(new_hero_id)
             await message.answer(text=f'теперь ты зареган \n{commands}')
         except:
             await message.answer(text=f'админ пидорас сломал всё')
