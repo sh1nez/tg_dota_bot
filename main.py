@@ -89,7 +89,7 @@ async def all_shop(message):
     ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
     ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.send_message( chat_id=chat_id, text='магаз у наташки', reply_markup=ikm)
+    await bot.send_message( chat_id=chat_id, text='магаз у наташки', reply_markup=ikm, )
 
 @dis.callback_query_handler(lambda c: c.data.startswith('tradeitems'))
 async def trade_items(callback):
@@ -109,7 +109,9 @@ async def trade_items(callback):
             print('hui')
             break
     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{int(mes_id)}'))
-    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=mes_id+1)
+    await bot.edit_message_text(chat_id=chat_id,  reply_markup=ikm1, message_id=mes_id+1, text='магазин тёти хали')
+    #await bot.edit_message_caption(chat_id=chat_id, caption='герои от дяди васи (предосмотр)', reply_markup=ikm1, message_id=mes_id+1)
+    #await bot.edit_photo(text='герои от дяди васи (предосмотр)', chat_id=chat_id, reply_markup=ikm1, message_id=mes_id+1)
     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(lambda c: c.data.startswith('tradeheroes'))
@@ -131,7 +133,7 @@ async def heroes_shop(callback):
             break
     print(mes_id)
     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{mes_id}'))
-    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=int(mes_id)+1)
+    await bot.edit_message_text(text='предметы долбоёбыча', chat_id=chat_id, reply_markup=ikm1, message_id=int(mes_id)+1)
     await bot.answer_callback_query(callback.id)
 @dis.callback_query_handler(lambda mes: mes.data.startswith('back_to_shop'))
 async def back_to_shop(callback):
@@ -144,7 +146,7 @@ async def back_to_shop(callback):
     ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
     ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(mes_id)+1, text="магаз у наташки")
+    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(mes_id)+1, text='магазин тёти хали')
 @dis.callback_query_handler(lambda mes: mes.data.startswith('del'))
 async def deleter(callback):
     come = callback.data.split('#')
