@@ -80,6 +80,11 @@ async def profile(message):
         await maker_menu(local_user_id, message.chat.id, tg_user_id)
     except: await bot.send_message(chat_id=message.chat.id, text='иди в хуй зарегайся сначала')
 
+@dis.message_handler()
+async def text_redactor(message):
+    print(123)
+    if 'shop' in message.text:
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 @dis.message_handler(commands =['shop'])
 async def all_shop(message):
     chat_id = message.chat.id
@@ -99,19 +104,33 @@ async def trade_items(callback):
     chat_id = come[1]
     mes_id = int(come[2])
     her = len(items_names)
-    ikm1 = InlineKeyboardMarkup(row_width=her)
-    for i in range(0, her+1, 2):
-        try:
-            ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'), InlineKeyboardButton(text=items_names[i+1], callback_data=f'predmeti#{i+1}'))
-            print('lj,fdbk')
-        except:
-            ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'))
-            print('hui')
-            break
+    ikm1 = InlineKeyboardMarkup(row_width=3)
+    ikb1 = InlineKeyboardButton(text='фарм', callback_data=f'fr_it#{chat_id}#{int(mes_id)}')
+    ikb2 = InlineKeyboardButton(text='файт', callback_data=f'fg_it#{chat_id}#{int(mes_id)}')
+    ikm1.add(ikb1, ikb2)
+
     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{int(mes_id)}'))
     await bot.edit_message_text(chat_id=chat_id,  reply_markup=ikm1, message_id=mes_id+1, text='магазин тёти хали')
     #await bot.edit_message_caption(chat_id=chat_id, caption='герои от дяди васи (предосмотр)', reply_markup=ikm1, message_id=mes_id+1)
     #await bot.edit_photo(text='герои от дяди васи (предосмотр)', chat_id=chat_id, reply_markup=ikm1, message_id=mes_id+1)
+    await bot.answer_callback_query(callback.id)
+
+@dis.callback_query_handler(lambda c: c.data.startswith('fr_it'))
+async def farm_items(callback):
+    come = callback.data.split('#')
+    print(come)
+    chat_id = come[1]
+    mes_id = come[2]
+    her = len(farm_items_names)
+    ikm = InlineKeyboardMarkup(row_width=her+1)
+    for i in range(0, her, 2):
+        try:
+            ikm.add(InlineKeyboardButton(text=f'{farm_items_names[i]}', callback_data=f'predmeti#{i}'), InlineKeyboardButton(text=farm_items_names[i+1], callback_data=f'predmeti#{i+1}'))
+        except:
+            ikm.add(InlineKeyboardButton(text=f'{farm_items_names[i]}', callback_data=f'predmeti#{i}'))
+            break
+    ikm.add(InlineKeyboardButton(text='в зад', callback_data=f'tradeitems#{chat_id}#{int(mes_id)}'))
+    await bot.edit_message_text(text='на фрифармычах', reply_markup=ikm, message_id=int(mes_id)+1, chat_id=chat_id)
     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(lambda c: c.data.startswith('tradeheroes'))
@@ -146,7 +165,7 @@ async def back_to_shop(callback):
     ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
     ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(mes_id)+1, text='магазин тёти хали')
+    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(mes_id)+1, text='герои дяди васи')
 @dis.callback_query_handler(lambda mes: mes.data.startswith('del'))
 async def deleter(callback):
     come = callback.data.split('#')
@@ -196,28 +215,31 @@ async def fermer(callback):
     print(last_time)
     try:
         aq = (datetime.datetime.today() - last_time).total_seconds()
-        if aq>10:
+        if aq>30:
             raise Exception#поменял
         else:
             await bot.send_message(chat_id=callback.message.chat.id, text=f'бро зачилься {name_of_heroes[heroe_name]} уже фармит')
             await  bot.answer_callback_query(callback.id)
     except:
         date = datetime.datetime.today()
-        print(date)
-        await bot.send_message(chat_id=callback.message.chat.id, text=f'{name_of_heroes[heroe_name]} отправился на 285 мса за крипами')
-        await bot.answer_callback_query(callback.id)
-        await asyncio.sleep(3)
-        rand_num = random.randint(50,150)
-        sql_code = f'SELECT money FROM players WHERE user_id = {local_user_id}'
-        cur.execute(sql_code)
-        asd =cur.fetchone()
-        print(asd[0])
-        await bot.send_message(chat_id=callback.message.chat.id, text=f'твой {name_of_heroes[heroe_name]} вернусля, залутав {rand_num} голды')
-        sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
+        sql_code = f"UPDATE heroes SET last_time = '{date.replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
         print(sql_code)
         cur.execute(sql_code)
         connect.commit()
+        print(date)
+        await bot.send_message(chat_id=callback.message.chat.id, text=f'{name_of_heroes[heroe_name]} отправился на 285 мса за крипами')
         await bot.answer_callback_query(callback.id)
+        rand_num = random.randint(50,150)
+        sql_code = f'SELECT money FROM players WHERE user_id = {local_user_id}'
+        cur.execute(sql_code)
+        users_money = list(cur.fetchone())[0]
+        await asyncio.sleep(30)
+        sql_code = f"UPDATE heroes SET last_time = '{date.replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
+        cur.execute(sql_code)
+        connect.commit()
+        await bot.send_message(chat_id=callback.message.chat.id, text=f'твой {name_of_heroes[heroe_name]} вернусля, залутав {rand_num} голды, теперь у тебя {rand_num+users_money} голды')
+
+
 
 @dis.callback_query_handler(lambda m: m.data.startswith('shmot'))
 async def shmotki(callback):
