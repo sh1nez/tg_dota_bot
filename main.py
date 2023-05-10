@@ -111,7 +111,7 @@ async def hero_show(callback):
     hero_buttons = InlineKeyboardMarkup(row_width=4)
     hero_funk1 = InlineKeyboardButton(text='фармить', callback_data=f'farm#{hero_id}#{user_tg_id}#{local_user_id}')
     hero_funk2 = InlineKeyboardButton(text='драться', callback_data=f'fight#{hero_id}#{user_tg_id}#')
-    hero_funk3 = InlineKeyboardButton(text='шмотки', callback_data=f'shmot#{hero_id}#{user_tg_id}#{chat_id}#{hero_id}')
+    hero_funk3 = InlineKeyboardButton(text='шмотки', callback_data=f'shmot#{hero_id}#{user_tg_id}#{chat_id}#{local_user_id}')
     hero_funk4 = InlineKeyboardButton(text='назад', callback_data=f'back_to_look#{user_tg_id}#{chat_id}#{hero_id}')
     hero_buttons.add(hero_funk1, hero_funk2, hero_funk3).add(hero_funk4)
     await bot.send_photo(caption='123312', photo=photo_links[hero_id], chat_id=chat_id, reply_markup=hero_buttons)
@@ -119,16 +119,9 @@ async def hero_show(callback):
 @dis.callback_query_handler(lambda m: m.data.startswith('farm'))
 async def fermer(callback):
     arr = callback.data.split('#')
-    print(arr)
     heroe_name =  int(arr[1])
     tg_user_id = arr[2]
     local_user_id = arr[3]
-    # sql_code = f"SELECT user_id FROM players WHERE tg_id = {tg_user_id}"
-    # cur.execute(sql_code)
-    # b = [j for i in list(cur.fetchall()) for j in i]
-    # print(b, )
-    #б это локал юзер айди
-    # b = select(what_return='user_id', where_column='tg_id', value=user_id, table='players')[0]
     sql_code = f'SELECT last_time FROM heroes WHERE user_id = {local_user_id} AND hero_id = {heroe_name}'
     cur.execute(sql_code)
     last_time = [j for i in list(cur.fetchall()) for j in i][0]
@@ -162,27 +155,47 @@ async def fermer(callback):
         cur.execute(sql_code)
         connect.commit()
         await bot.answer_callback_query(callback.id)
+@dis.callback_query_handler(lambda m: m.data.startswith('shmot'))
+async def shmotki(callback):
+    come = callback.data.split('#')
+    print(come)
+    hero_name = int(come[1])
+    tg_user_id = come[2]
+    chat_id = come[3]
+    hero_id = chat_id[4]
+    sql_code = f"SELECT item_id, item_name FROM items WHERE hero_id = {hero_id} "
+    print(sql_code)
+    cur.execute(sql_code)
+    index_items = list(cur.fetchall())
+    #index_items = [j for i in list(cur.fetchall()) for j in i]
+    #print(asd,1111)
+    ikm = InlineKeyboardMarkup(row_width=len(index_items))
+    print(index_items)
+    new_items = []
+    for i in index_items:
+        if i[1] is None:
+             pass#
+        else: new_items.append(i)
+    textik = f'вот предметы твоего {heroes[hero_name]}'
+    print(new_items)
+    for i in range(0, len(new_items), 2):
+        if index_items[i+1] is None:
+                print(None)
+        else:
+            a = True
+            print(new_items[i][1])
+            try:
+                ikm.add(KeyboardButton(text=f'{items[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
+            except: ikm.add(KeyboardButton(text=f'{items[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
+    print(len(new_items))
+    if len(new_items) == 0:
+        textik=f'у {heroes[hero_name]}а нет предметов'
+        ikm.add(KeyboardButton(text=f'\nКупить', callback_data=f'buy#{hero_id}'))
+    elif len(new_items)<6:
+        ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=f'buy#{hero_id}'))
+    await bot.send_message(chat_id=chat_id, text=textik, reply_markup=ikm)
+    await bot.answer_callback_query(callback.id)
 
-    # aq = (datetime.datetime.today() - c).total_seconds()
-    # asd = datetime.datetime.fromtimestamp(aq)
-    # if aq <= 10:
-    #     await bot.send_message(callback.message.chat.id,
-    #                            f'{hero_name} устал фармить, ему нужно передохнуть\nпопробуй через {60 - asd.minute - 1} минут')
-    #     await bot.answer_callback_query(callback.id)
-    # else:
-    #     new_time = datetime.datetime.today().replace(microsecond=0)
-    #     update(table='custom_heroes', name_stolbs_change='last_time', change_values=new_time, stolb_name='id',
-    #            value=heroe_id)
-    #     aa = select(table='players', what_return='user_id', where_column='tg_id', value=user_id)
-    #     bb = select(what_return='money', where_column='user_id', value=str(aa[0]), table='players')[0]
-    #     goldishka = 100
-    #     await bot.answer_callback_query(callback.id)
-    #     await bot.send_message(chat_id=callback.message.chat.id, text='ыыыы')
-    #     await asyncio.sleep(10)
-    #     update(table='players', name_stolbs_change='money', change_values=f'{goldishka + +bb}', stolb_name='tg_id',
-    #            value=f'{user_id}')
-    #     await bot.send_message(callback.message.chat.id, text=f'бро твой {hero_name} припёрся с пьянки')
-    # arr[1]
 
 
 
