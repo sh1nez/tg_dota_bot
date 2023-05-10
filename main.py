@@ -70,7 +70,8 @@ async def profile(message):
     sql_code = f'SELECT money, status, user_id FROM players WHERE tg_id = {tg_user_id}'
     print(sql_code)
     cur.execute(sql_code)
-    result =  [j for i in list(cur.fetchall()) for j in i]
+    result = [j for i in list(cur.fetchall()) for j in i]
+    print(result)
     try:
         local_user_id = result[2]
         sql_code = f'SELECT hero_id FROM heroes WHERE user_id = {local_user_id}'
@@ -82,19 +83,42 @@ async def profile(message):
 @dis.message_handler(commands =['shop'])
 async def all_shop(message):
     chat_id = message.chat.id
-    mes_id = message.message_id+1
+    mes_id = message.message_id
     ikm = InlineKeyboardMarkup(row_width=3)
     ikb1 = InlineKeyboardButton(text='герои', callback_data=f'tradeheroes#{chat_id}#{mes_id}')
-    ikb2 = InlineKeyboardButton(text='предметы', callback_data='tradeitems')
+    ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
     ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
     await bot.send_message( chat_id=chat_id, text='магаз у наташки', reply_markup=ikm)
+
+@dis.callback_query_handler(lambda c: c.data.startswith('tradeitems'))
+async def trade_items(callback):
+    print(123123)
+    come = callback.data.split('#')
+    print(come)
+    chat_id = come[1]
+    mes_id = int(come[2])
+    her = len(items_names)
+    ikm1 = InlineKeyboardMarkup(row_width=her)
+    for i in range(0, her+1, 2):
+        try:
+            ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'), InlineKeyboardButton(text=items_names[i+1], callback_data=f'predmeti#{i+1}'))
+            print('lj,fdbk')
+        except:
+            ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'))
+            print('hui')
+            break
+    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{int(mes_id)}'))
+    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=mes_id+1)
+    await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(lambda c: c.data.startswith('tradeheroes'))
 async def heroes_shop(callback):
     come = callback.data.split('#')
     chat_id = come[1]
     mes_id = come[2]
+    print(come)
+    print(mes_id)
     her = len(name_of_heroes)
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her+1, 2):
@@ -105,26 +129,29 @@ async def heroes_shop(callback):
             ikm1.add(InlineKeyboardButton(text=f'{name_of_heroes[i]}', callback_data=f'geroi#{i}'))
             print('hui')
             break
+    print(mes_id)
     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{mes_id}'))
-    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=mes_id)
+    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=int(mes_id)+1)
     await bot.answer_callback_query(callback.id)
 @dis.callback_query_handler(lambda mes: mes.data.startswith('back_to_shop'))
 async def back_to_shop(callback):
     come = callback.data.split('#')
+    print(come)
     chat_id = come[1]
     mes_id = come[2]
     ikm = InlineKeyboardMarkup(row_width=3)
     ikb1 = InlineKeyboardButton(text='герои', callback_data=f'tradeheroes#{chat_id}#{mes_id}')
-    ikb2 = InlineKeyboardButton(text='предметы', callback_data='tradeitems')
+    ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
     ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=mes_id, text="магаз у наташки")
+    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(mes_id)+1, text="магаз у наташки")
 @dis.callback_query_handler(lambda mes: mes.data.startswith('del'))
 async def deleter(callback):
     come = callback.data.split('#')
     mes_id = int(come[1])
     chat_id = come[2]
-    await bot.delete_message(chat_id=chat_id, message_id=mes_id)
+    await bot.delete_message(chat_id=chat_id, message_id=mes_id+1)
+    await bot.delete_message(chat_id=chat_id, message_id=mes_id) #удаляет ещё и сообщение пидоры
 @dis.callback_query_handler(lambda m: m.data.startswith('back'))
 async def back(callback):
     callback_arr = callback.data.split('#')
@@ -189,6 +216,7 @@ async def fermer(callback):
         cur.execute(sql_code)
         connect.commit()
         await bot.answer_callback_query(callback.id)
+
 @dis.callback_query_handler(lambda m: m.data.startswith('shmot'))
 async def shmotki(callback):
     come = callback.data.split('#')
@@ -217,8 +245,8 @@ async def shmotki(callback):
             a = True
             print(new_items[i][1])
             try:
-                ikm.add(KeyboardButton(text=f'{items[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
-            except: ikm.add(KeyboardButton(text=f'{items[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
+                ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items_names[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
+            except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
     print(len(new_items))
     if len(new_items) == 0:
         textik=f'у {name_of_heroes[hero_name]}а нет предметов'
@@ -227,6 +255,9 @@ async def shmotki(callback):
         ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=f'buymore#{hero_id}'))
     await bot.send_message(chat_id=chat_id, text=textik, reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
+
+# @dis.callback_query_handler(lambda c: c.data.startswith('show_hero'))
+# async
 
 @dis.callback_query_handler(lambda c: c.data.startswith('buymore'))
 async def shop(callback):

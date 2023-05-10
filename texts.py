@@ -18,6 +18,7 @@ new_reg_text = f'Также тебе выдан бонусный герой - п
 commands = '''/gold
 /ya_old
 /profile
+/shop
 '''
 
 name_of_heroes = [
@@ -25,7 +26,7 @@ name_of_heroes = [
 'тетчис',
 'снайпер'
 ]
-items = [
+items_names = [
     'топорик',
     'мидас',
     'мом',

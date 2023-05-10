@@ -48,5 +48,7 @@ async def maker_menu(local_user_id, chat_id, tg_user_id):
     print(arrey_heroes, 'asdasd')
     h = InlineKeyboardMarkup(row_width=len(arrey_heroes) // 2)
     for j in range(0, len(arrey_heroes) - 1, 2):
-        h.add(InlineKeyboardButton(text=heroes[arrey_heroes[j + 1]], callback_data=f'hero#{local_user_id}#{tg_user_id}#{j//2}'))
+        h.add(InlineKeyboardButton(text=name_of_heroes[arrey_heroes[j + 1]],
+                                   callback_data=f'hero#{local_user_id}#{tg_user_id}#{j // 2}'))
     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
+
