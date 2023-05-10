@@ -45,8 +45,8 @@ async def maker_menu(local_user_id, chat_id, tg_user_id):
     sql_code = f'SELECT id, hero_id FROM heroes WHERE user_id = {local_user_id}'
     cur.execute(sql_code)
     arrey_heroes = [j for i in list(cur.fetchall()) for j in i]
-    print(arrey_heroes)
+    print(arrey_heroes, 'asdasd')
     h = InlineKeyboardMarkup(row_width=len(arrey_heroes) // 2)
     for j in range(0, len(arrey_heroes) - 1, 2):
-        h.add(InlineKeyboardButton(text=heroes[arrey_heroes[j + 1]], callback_data=f'hero#{local_user_id}#{tg_user_id}'))
+        h.add(InlineKeyboardButton(text=heroes[arrey_heroes[j + 1]], callback_data=f'hero#{local_user_id}#{tg_user_id}#{j//2}'))
     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
