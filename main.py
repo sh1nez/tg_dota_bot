@@ -24,7 +24,6 @@ cur = connect.cursor()
 @dis.message_handler(commands=['start'])#прост отвечает
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
-    #sql_code =f"CREATE TABLE `{db_name}` .`players`  ENGINE = InnoDB;"
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
     cur.execute(sql_code)
     result = list(cur.fetchall())
@@ -73,14 +72,10 @@ async def profile(message):
     cur.execute(sql_code)
     result =  [j for i in list(cur.fetchall()) for j in i]
     try:
-        print(result)
         local_user_id = result[2]
         sql_code = f'SELECT hero_id FROM heroes WHERE user_id = {local_user_id}'
         print(sql_code)
         cur.execute(sql_code)
-        #heroe_names = [j for i in list(cur.fetchall()) for j in i]
-        #print(heroe_names)
-        print(local_user_id)
         await maker_menu(local_user_id, message.chat.id, tg_user_id)
     except: await bot.send_message(chat_id=message.chat.id, text='иди в хуй зарегайся сначала')
 
@@ -100,9 +95,7 @@ async def heroes_shop(callback):
     come = callback.data.split('#')
     chat_id = come[1]
     mes_id = come[2]
-    text_heroes = 'вот все доступные герои'
     her = len(name_of_heroes)
-    print(her)
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her+1, 2):
         try:
@@ -142,20 +135,6 @@ async def back(callback):
     print(sql_code)
     cur.execute(sql_code)  # если написать равно, то вернёт количество совпадений как я понял
     result = [j for i in list(cur.fetchall()) for j in i]
-    print(result, 123132)
-    # async def maker_menu(local_user_id, chat_id, tg_user_id):
-    #     i = InlineKeyboardMarkup(row_width=3)
-    #     sql_code = f'SELECT id, hero_id FROM heroes WHERE user_id = {local_user_id}'
-    #     cur.execute(sql_code)
-    #     arrey_heroes = [j for i in list(cur.fetchall()) for j in i]
-    #     print(arrey_heroes, 'asdasd')
-    #     h = InlineKeyboardMarkup(row_width=len(arrey_heroes) // 2)
-    #     for j in range(0, len(arrey_heroes) - 1, 2):
-    #         h.add(InlineKeyboardButton(text=heroes[arrey_heroes[j + 1]],
-    #                                    callback_data=f'hero#{local_user_id}#{tg_user_id}#{j // 2}'))
-    #     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
-
-    #await bot.edit_message_text()
     if zapros=='back_to_look':
         await bot.answer_callback_query(callback.id)
         print(123)
@@ -163,7 +142,6 @@ async def back(callback):
 @dis.callback_query_handler(lambda m: m.data.startswith('hero'))
 async def hero_show(callback):
     comand = callback.data.split('#')
-    #print(comand, 123123)
     local_user_id =int(comand[1])
     hero_id = int(comand[3])
     user_tg_id = comand[2]
@@ -190,8 +168,7 @@ async def fermer(callback):
     try:
         aq = (datetime.datetime.today() - last_time).total_seconds()
         if aq>10:
-            #print('гыгыгы')
-            raise ZeroDivisionError
+            raise Exception#поменял
         else:
             await bot.send_message(chat_id=callback.message.chat.id, text=f'бро зачилься {name_of_heroes[heroe_name]} уже фармит')
             await  bot.answer_callback_query(callback.id)
@@ -201,15 +178,11 @@ async def fermer(callback):
         await bot.send_message(chat_id=callback.message.chat.id, text=f'{name_of_heroes[heroe_name]} отправился на 285 мса за крипами')
         await bot.answer_callback_query(callback.id)
         await asyncio.sleep(3)
-        #update_money мб потом кд
         rand_num = random.randint(50,150)
         sql_code = f'SELECT money FROM players WHERE user_id = {local_user_id}'
         cur.execute(sql_code)
         asd =cur.fetchone()
         print(asd[0])
-        #last_money = [j for i in list(cur.fetchall()) for j in i]
-        #print(last_money)
-        #sql_code = f"UPDATE players SET money={}"
         await bot.send_message(chat_id=callback.message.chat.id, text=f'твой {name_of_heroes[heroe_name]} вернусля, залутав {rand_num} голды')
         sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
         print(sql_code)
@@ -228,10 +201,8 @@ async def shmotki(callback):
     print(sql_code)
     cur.execute(sql_code)
     index_items = list(cur.fetchall())
-    #index_items = [j for i in list(cur.fetchall()) for j in i]
-    #print(asd,1111)
     ikm = InlineKeyboardMarkup(row_width=len(index_items))
-    print(index_items)
+    #print(index_items)
     new_items = []
     for i in index_items:
         if i[1] is None:
@@ -260,7 +231,5 @@ async def shmotki(callback):
 @dis.callback_query_handler(lambda c: c.data.startswith('buymore'))
 async def shop(callback):
     come = callback.data.split('#')
-
-
 if __name__ == '__main__':
     aiogram.executor.start_polling(dis, )#skip_updates=True
