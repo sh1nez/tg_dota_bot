@@ -20,13 +20,23 @@ commands = '''/gold
 /profile
 '''
 
-heroes = [
+name_of_heroes = [
 'пудж',
-'тетчис'
+'тетчис',
+'снайпер'
 ]
 items = [
     'топорик',
     'мидас',
+    'мом',
+
+]
+
+prices = [
+    100,
+    2250,
+    1800,
+
 ]
 
 photo_links =  [
