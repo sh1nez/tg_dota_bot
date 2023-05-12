@@ -7,7 +7,7 @@
 
 import random
 import aiogram
-from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import pymysql
 import datetime
 import asyncio
@@ -17,7 +17,7 @@ from config import token
 print('я начал')
 bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
-
+#test_shablon = CallbackQuery(conf=, )
 @dis.message_handler(commands=['start'])#создаём пользователя
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
@@ -186,7 +186,7 @@ async def fermer(callback):
     heroe_name =  int(arr[1])
     tg_user_id = arr[2]
     local_user_id = arr[3]
-    sql_code = f'SELECT last_time FROM heroes WHERE user_id = {local_user_id} AND hero_id = {heroe_name}'
+    sql_code = f'SELECT last_time FROM heroes WHERE user_id = {tg_user_id} AND hero_id = {heroe_name}'
     cur.execute(sql_code)
     last_time = [j for i in list(cur.fetchall()) for j in i][0]
     print(last_time)
