@@ -49,33 +49,33 @@ async def start(message: aiogram.types):
 
 @dis.message_handler(commands=['gold'])#функция которая будет выдавать голду пользователю
 async def gold(message):
-
     tg_user_id = message.from_user.id
     sql_code = f'SELECT tg_id FROM players WHERE tg_id = {tg_user_id}'
     print(sql_code)
     cur.execute(sql_code)  #если написать равно, то вернёт количество совпадений как я понял
-    result =  [j for i in list(cur.fetchall()) for j in i]
+    result = [j for i in list(cur.fetchall()) for j in i]
     print(result)
     #вот тут удалёно комит если чёто сломается вставь хуй
     if result:
-        return_to_user = update_gold(tg_user_id, plus_money=100)
+        return_to_user = update_gold(tg_user_id=tg_user_id, plus_money=100)
         await message.answer(text=f'теперь голды {return_to_user}')
     else: await message.answer(text='сначала зарегестрируйся')
 @dis.message_handler(commands=['profile'])
 async def profile(message):
     tg_user_id = message.from_user.id
+    #это нужно было для проверки локал ади, теперь используется тг айди для геров
     #chat_id = message.chat.id
-    sql_code = f'SELECT money, status, user_id FROM players WHERE tg_id = {tg_user_id}'
-    print(sql_code)
-    cur.execute(sql_code)
-    result = [j for i in list(cur.fetchall()) for j in i]
-    print(result)
+    # sql_code = f'SELECT money, status, user_id FROM players WHERE tg_id = {tg_user_id}'
+    # print(sql_code)
+    # cur.execute(sql_code)
+    # result = [j for i in list(cur.fetchall()) for j in i]
+    # print(result)
     try:
-        local_user_id = result[2]
-        sql_code = f'SELECT hero_id FROM heroes WHERE user_id = {local_user_id}'
+        #local_user_id = result[2]
+        sql_code = f'SELECT hero_id FROM heroes WHERE user_id = {tg_user_id}'
         print(sql_code)
         cur.execute(sql_code)
-        await maker_menu(local_user_id, message.chat.id, tg_user_id)
+        await maker_menu(tg_user_id=tg_user_id, chat_id= message.chat.id,)
     except: await bot.send_message(chat_id=message.chat.id, text='иди в хуй зарегайся сначала')
 
 @dis.message_handler(commands =['shop'])
