@@ -1,17 +1,19 @@
 #таблица предметы
-#ALTER TABLE `items` CHANGE `item_id` `item_id` INT(11) NOT NULL AUTO_INCREMENT;
-#CREATE TABLE `test_bot`.`items` ( `item_id` INT NOT NULL , `hero_id` INT NOT NULL , `item_name` INT NULL DEFAULT NULL , PRIMARY KEY (`item_id`)) ENGINE = InnoDB;
+#CREATE TABLE `test_bot`.`heroes` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NOT NULL ,
+#`player_id` MEDIUMINT NOT NULL , `item_name` TINYINT NULL DEFAULT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 #таблица игроки sql код
 #CREATE TABLE `test_bot`.`players` ( `user_id` INT NOT NULL , `tg_id` VARCHAR(15) NOT NULL , `money` INT NOT NULL , `status` INT NULL DEFAULT NULL , PRIMARY KEY (`user_id`)) ENGINE = InnoDB;
 
-#таблица герои
-#CREATE TABLE `test_bot`.`heroes` (
+# таблица герои
+# CREATE TABLE `test_bot`.`heroes` (
 # `hero_id` MEDIUMINT NOT NULL AUTO_INCREMENT ,
-# `user_id` VARCHAR(15) NOT NULL , `hero_name` TINYINT NOT NULL ,
-# `last_time` DATETIME NULL DEFAULT NULL , `hero_lvl` TINYINT NOT NULL DEFAULT '1' ,
+# `tg_user_id` VARCHAR(15) NOT NULL ,
+# `local_user_id` MEDIUMINT NOT NULL,
+# `hero_name` TINYINT NOT NULL ,
+# `last_time` DATETIME NULL DEFAULT NULL ,
+# `hero_lvl` TINYINT NOT NULL DEFAULT '1' ,
 # PRIMARY KEY (`hero_id`)) ENGINE = InnoDB;
-
 #леонардо дайвинчик
 #CREATE TABLE `test_bot`.`leonardo` (
 # `id` INT NOT NULL AUTO_INCREMENT ,
@@ -34,16 +36,7 @@ print('я начал')
 #dis = aiogram.Dispatcher(bot)
 #test_shablon = CallbackQuery(conf=, )
 
-try:
-    connect = pymysql.connect(
-        host=host,
-        port=3306,
-        user=user,
-        password=password,
-        database=db_name,
-    )
-except:  print('ConnectionError')
-cur = connect.cursor()
+
 print(cur)
 def starttttt(tg_user_id):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
@@ -60,20 +53,20 @@ def starttttt(tg_user_id):
             print(sql_code)
             cur.execute(sql_code)
             print(12)
-            #local_user_id = connect.insert_id()
+            local_user_id = connect.insert_id()
             connect.commit()
             hero_id = 0
             hero_lvl = 0
             print(123)
-            new_hero_id = create_hero(tg_user_id, hero_id)
+            new_hero_id = create_hero(tg_user_id=tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
             print(new_hero_id)
             for i in range(6):
-                create_slot(new_hero_id)
+                create_slot(new_hero_id, local_user_id=local_user_id)
 
         except:
             print('ты пидр ёпта')
 ran_num = random.randint(1,999999)
-#starttttt(ran_num)
+starttttt(ran_num)
 
 def make_user_lv(tg_user_id, text, image):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"

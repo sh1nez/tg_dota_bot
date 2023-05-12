@@ -19,6 +19,10 @@ try:
 except:  print('ConnectionError')
 
 cur = connect.cursor()
+def buyer_items(price, item_id, hero_id):
+
+    sql_update = 'UPDATE '
+
 
 def create_lepnardo_user(tg_user_id, txt, image):
     sql_code = f"INSERT INTO leonardo (tg_id, text, image) VALUES ('{tg_user_id}', '{txt}', '{image}')"
@@ -28,13 +32,14 @@ def create_lepnardo_user(tg_user_id, txt, image):
     print('1111')
 
 
-def create_slot(hero_id):
-    sql_code = f"INSERT INTO items (`hero_id`, `item_name`) VALUES ('{hero_id}',  NULL);"
+def create_slot(hero_id, local_user_id):
+    sql_code = f"INSERT INTO items (`hero_id`, `player_id`, `item_name`) VALUES ('{hero_id}', {local_user_id} , NULL);"
     print(sql_code)
     cur.execute(sql_code)
     connect.commit()
-def create_hero(tg_user_id, name_hero_id):
-    sql_code = f"INSERT INTO heroes ( `user_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_user_id}', '{name_hero_id}', '1');"
+def create_hero(local_user_id, tg_user_id, name_hero_id):
+    sql_code = f"INSERT INTO heroes ( `tg_user_id`, `local_user_id`,  `hero_name`, `hero_lvl`) VALUES ('{tg_user_id}'," \
+               f" '{local_user_id}', '{name_hero_id}', '1');"
     print(sql_code)
     cur.execute(sql_code)
     hero_id = connect.insert_id()
