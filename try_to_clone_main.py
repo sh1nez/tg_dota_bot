@@ -1,3 +1,10 @@
+#таблица предметы
+#CREATE TABLE `test_bot`.`items` ( `item_id` INT NOT NULL , `hero_id` INT NOT NULL , `item_name` INT NULL DEFAULT NULL , PRIMARY KEY (`item_id`)) ENGINE = InnoDB;
+#таблица игроки sql код
+#CREATE TABLE `test_bot`.`players` ( `user_id` INT NOT NULL , `tg_id` VARCHAR(15) NOT NULL , `money` INT NOT NULL , `status` INT NULL DEFAULT NULL , PRIMARY KEY (`user_id`)) ENGINE = InnoDB;
+#таблица герои
+#CREATE TABLE `test_bot`.`heroes` ( `hero_id` INT NOT NULL , `user_id` VARCHAR(15) NOT NULL , `last_time` DATETIME NULL DEFAULT NULL , `hero_lvl` INT NOT NULL DEFAULT '1' , PRIMARY KEY (`hero_id`)) ENGINE = InnoDB;
+
 import random
 import aiogram
 from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
@@ -6,12 +13,12 @@ import datetime
 import asyncio
 from texts import *
 from database import *
-from config import token, host, user, password, db_name
+from config import token
 print('я начал')
 bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 
-@dis.message_handler(commands=['start'])#прост отвечает
+@dis.message_handler(commands=['start'])#создаём пользователя
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
@@ -40,8 +47,9 @@ async def start(message: aiogram.types):
     else:
         await message.answer(text=f'{reg_text} {commands}')
 
-@dis.message_handler(commands=['gold'])#прост отвечает
+@dis.message_handler(commands=['gold'])#функция которая будет выдавать голду пользователю
 async def gold(message):
+
     tg_user_id = message.from_user.id
     sql_code = f'SELECT tg_id FROM players WHERE tg_id = {tg_user_id}'
     print(sql_code)
