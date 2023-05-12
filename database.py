@@ -24,8 +24,8 @@ def create_slot(hero_id):
     print(sql_code)
     cur.execute(sql_code)
     connect.commit()
-def create_hero(local_user_id, name_hero_id, hero_lvl):
-    sql_code = f"INSERT INTO heroes (`id`, `last_time`, `user_id`, `hero_id`, `hero_lvl`, `hero_activity`) VALUES (NULL, NULL, '{local_user_id}', '{name_hero_id}', '{hero_lvl}', '0');"
+def create_hero(tg_user_id, name_hero_id):
+    sql_code = f"INSERT INTO heroes ( `user_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_user_id}', '{name_hero_id}', '1');"
     print(sql_code)
     cur.execute(sql_code)
     hero_id = connect.insert_id()

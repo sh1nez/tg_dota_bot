@@ -1,3 +1,28 @@
+class Test_hero:
+    def __init__(self, hp, damage, lvl_up):
+        self.hp = hp
+        self.damage = damage
+        self.up = lvl_up
+    def send_nudes(self):
+        return [self.hp, self.damage]
+    def lvl_up(self, lvl):
+        lvl = float(lvl)
+        return [self.hp+self.hp*self.up[0]*lvl,
+                self.damage+self.damage+self.up[1]*lvl
+                ]
+
+
+#пусть универсал - 0, сила - 1, ловкость -2, интеллект 3
+pudge_lvl_up = [1,2]
+pudge = Test_hero(10, 10, pudge_lvl_up)
+
+test_heroes = [
+    pudge
+]
+
+
+
+############################
 class Hero:
     def __init__(self, index, main_stat, esc, fiz_damage, magic_gamage, farm, fiz_hp, mag_hp, lvl_up):
         self.index = index
@@ -21,29 +46,6 @@ class Hero:
                 int(float(self.farm) + (float(self.up[3]) * lvl)),
                 int(float(self.farm) + (float(self.up[3]) * lvl)),
                 ]
-
-class Test_hero:
-    def __init__(self, hp, damage, lvl_up):
-        self.hp = hp
-        self.damage = damage
-        self.up = lvl_up
-    def send_nudes(self):
-        return [self.hp, self.damage]
-    def lvl_up(self, lvl):
-        lvl = float(lvl)
-        return [self.hp+self.hp*self.up[0]*lvl,
-                self.damage+self.damage+self.up[1]*lvl
-                ]
-
-
-#пусть универсал - 0, сила - 1, ловкость -2, интеллект 3
-pudge_lvl_up = [1,2]
-pudge = Test_hero(10, 10, pudge_lvl_up)
-
-test_heroes = [
-    pudge
-]
-
 #слишком сложно для школяра, сначала проще сделаю
 # pudge_lvl = 5
 # pudge_lvl_up = [0, 1, 2, 2, 1, 1]
