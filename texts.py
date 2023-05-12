@@ -17,7 +17,6 @@ reg_text = 'ты уже зареган\n'
 new_reg_text = f'Также тебе выдан бонусный герой - пудж, не забудь заглянуть в профиль'
 
 commands = '''/gold
-/ya_old
 /profile
 /shop
 '''
@@ -25,7 +24,8 @@ commands = '''/gold
 name_of_heroes = [
 'пудж',
 'тетчис',
-'снайпер'
+'снайпер',
+
 ]
 prices_of_heroes = [
     8000,
@@ -41,6 +41,17 @@ items_names = [
 netral_tems_names = [
     'веточка',
     ''
+]
+farm_items_names = [
+    'топорик',
+    'мидас',
+    'жопа',
+    'попа',
+    'сися'
+]
+fight_items_names = [
+    'дезолятор',
+    'лотар'
 ]
 
 prices_of_items = [
