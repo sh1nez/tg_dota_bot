@@ -66,7 +66,7 @@ def starttttt(tg_user_id):
         except:
             print('ты пидр ёпта')
 ran_num = random.randint(1,999999)
-starttttt(ran_num)
+#starttttt(ran_num)
 
 def make_user_lv(tg_user_id, text, image):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
@@ -80,12 +80,42 @@ def make_user_lv(tg_user_id, text, image):
         create_lepnardo_user(tg_user_id=tg_user_id, txt=f'{text}', image=f'{image}')
         print('cool')
     else: print('rdy')
-print(f'{"ahsdhkasd"}')
-make_user_lv(ran_num, 'asdasdasdasdasd', 'url')
-
+#print(f'{"ahsdhkasd"}')
+#make_user_lv(ran_num, 'asdasdasdasdasd', 'url')
 #INSERT INTO `leonardo` (`
 # id`, `tg_id`, `text`, `image`)
 # VALUES (NULL, '113123', 'adasd sdgfoisdoi u234gsd hjgsdfkg kjsdgf', 'sdsbhdfhkdkfksdf')
+
+
+def give_item(hero_id, item_id):
+    sql_code = f'SELECT id, item_name FROM items WHERE hero_id = {hero_id} AND item_name IS NULL'
+    a = cur.execute(sql_code)
+    print(a)
+    if cur.execute(sql_code) == 0:
+        print('все слоты заняты')
+        return
+    items_id_name = cur.fetchall()
+    print(items_id_name)
+    replace_item = items_id_name[0][0]
+    sql_code = f"UPDATE items SET item_name = {item_id} WHERE id = {replace_item}"
+    print(sql_code)
+    cur.execute(sql_code)
+    connect.commit()
+    #item_names = [i[1] for i in items_id_name]
+    #for i in range(len(item_names)):
+    #    item_names[i] = 123
+    # pustie_sloti = item_names.count(None)
+    # if pustie_sloti==0:
+    #     return False
+    # else:
+    #     #сейчас мне нужно сделать название первого попавшегося итема с хиро нейм не равно 0
+    #     print(item_names)
+    #print(not item_names)
+
+    #for i in items_id_name:
+    #    print(i)
+
+give_item(2, 1)
 
 
 
