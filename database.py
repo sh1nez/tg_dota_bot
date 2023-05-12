@@ -19,6 +19,15 @@ try:
 except:  print('ConnectionError')
 
 cur = connect.cursor()
+
+def create_lepnardo_user(tg_user_id, txt, image):
+    sql_code = f"INSERT INTO leonardo (tg_id, text, image) VALUES ('{tg_user_id}', '{txt}', '{image}')"
+    print(sql_code)
+    cur.execute(sql_code)
+    connect.commit()
+    print('1111')
+
+
 def create_slot(hero_id):
     sql_code = f"INSERT INTO items (`hero_id`, `item_name`) VALUES ('{hero_id}',  NULL);"
     print(sql_code)

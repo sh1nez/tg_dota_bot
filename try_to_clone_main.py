@@ -12,19 +12,26 @@
 # `last_time` DATETIME NULL DEFAULT NULL , `hero_lvl` TINYINT NOT NULL DEFAULT '1' ,
 # PRIMARY KEY (`hero_id`)) ENGINE = InnoDB;
 
+#леонардо дайвинчик
+#CREATE TABLE `test_bot`.`leonardo` (
+# `id` INT NOT NULL AUTO_INCREMENT ,
+# `tg_id` VARCHAR(15) NOT NULL ,
+# `text` TEXT NOT NULL ,
+# `image` TINYTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 import random
-import aiogram
-from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-import pymysql
-import datetime
-import asyncio
-from texts import *
+# import aiogram
+# from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+# import pymysql
+# import datetime
+# import asyncio
+#from texts import *
 from database import *
 from config import token
+
 print('я начал')
-bot = aiogram.Bot(token)
-dis = aiogram.Dispatcher(bot)
+#bot = aiogram.Bot(token)
+#dis = aiogram.Dispatcher(bot)
 #test_shablon = CallbackQuery(conf=, )
 
 try:
@@ -66,7 +73,30 @@ def starttttt(tg_user_id):
         except:
             print('ты пидр ёпта')
 ran_num = random.randint(1,999999)
-starttttt(ran_num)
+#starttttt(ran_num)
+
+def make_user_lv(tg_user_id, text, image):
+    sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
+    cur.execute(sql_code)
+    result = cur.fetchone()
+    #bb = [j for i in result for j in i]
+    print(result)
+    # connect.commit()
+    # проверил есть ли пользователь. Если есть
+    if not result:
+        create_lepnardo_user(tg_user_id=tg_user_id, txt=f'{text}', image=f'{image}')
+        print('cool')
+    else: print('rdy')
+print(f'{"ahsdhkasd"}')
+make_user_lv(ran_num, 'asdasdasdasdasd', 'url')
+
+#INSERT INTO `leonardo` (`
+# id`, `tg_id`, `text`, `image`)
+# VALUES (NULL, '113123', 'adasd sdgfoisdoi u234gsd hjgsdfkg kjsdgf', 'sdsbhdfhkdkfksdf')
+
+
+
+
 #
 # @dis.message_handler(commands=['start'])#создаём пользователя
 # async def start(message: aiogram.types):
