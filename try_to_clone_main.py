@@ -38,7 +38,7 @@ print('я начал')
 #dis = aiogram.Dispatcher(bot)
 #test_shablon = CallbackQuery(conf=, )
 
-kal = CallbackData('ikb', 'huihui', 'action')
+#kal = CallbackData('ikb', 'huihui', 'action')
 @dis.message_handler(commands=['start'])#создаём пользователя
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
@@ -69,17 +69,17 @@ async def start(message: aiogram.types):
             await message.answer(text=f'админ пидорас сломал всё')
     else:
 
-        i1 = InlineKeyboardMarkup(row_width=1)
-        l11 = InlineKeyboardButton(text='asdads', callback_data=kal.new('something', 'asdads', ))
-        i1.add(l11)
-        await message.answer(text=f'{reg_text} {commands}', reply_markup=i1)
+        # i1 = InlineKeyboardMarkup(row_width=1)
+        # l11 = InlineKeyboardButton(text='asdads', callback_data=kal.new('something', 'asdads', ))
+        # i1.add(l11)
+        await message.answer(text=f'{reg_text} {commands}')
 
-@dis.callback_query_handler(kal.filter())
-async def dhasla(callback: types.CallbackQuery, callback_data: dict):
-    print(f'{callback_data}, {callback.data}')
-    #print(f'{callback_data[]}')
-    await callback.answer(f'{callback_data}, {callback.data}')
-    await callback.message.answer(f'{callback_data}, {callback.data}')
+# @dis.callback_query_handler(kal.filter())
+# async def dhasla(callback: types.CallbackQuery, callback_data: dict):
+#     print(f'{callback_data}, {callback.data}')
+#     #print(f'{callback_data[]}')
+#     await callback.answer(f'{callback_data}, {callback.data}')
+#     await callback.message.answer(f'{callback_data}, {callback.data}')
 
 @dis.message_handler(commands=['gold'])#функция которая будет выдавать голду пользователю
 async def gold(message):
@@ -116,24 +116,31 @@ async def profile(message):
             raise Exception
     except: await bot.send_message(chat_id=message.chat.id, text='иди в хуй зарегайся сначала')
 
+tradeheroes = CallbackData('tradeheroes',)
+tradeitems =CallbackData('tradeitems', ) #{chat_id}#{mes_id}
+del_callback = CallbackData('dell',)
+go_to_shop_menu = CallbackData('go_to_shop')
 @dis.message_handler(commands =['shop'])
 async def all_shop(message):
     chat_id = message.chat.id
     mes_id = message.message_id
     ikm = InlineKeyboardMarkup(row_width=3)
-    ikb1 = InlineKeyboardButton(text='герои', callback_data=f'tradeheroes#{chat_id}#{mes_id}')
-    ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
-    ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
+    ikb1 = InlineKeyboardButton(text='герои', callback_data=tradeheroes.new() )#f'tradeheroes#{chat_id}#{mes_id}')
+    ikb2 = InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())  #f'tradeitems#{chat_id}#{mes_id}')
+    ikb3 = InlineKeyboardButton(text='в зад', callback_data= del_callback.new()) # f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
     await bot.send_message( chat_id=chat_id, text='магаз у наташки', reply_markup=ikm)
 
-@dis.callback_query_handler(lambda c: c.data.startswith('tradeitems'))
+
+@dis.callback_query_handler(tradeitems.filter())
 async def trade_items(callback):
-    print(123123)
-    come = callback.data.split('#')
-    print(come)
-    chat_id = come[1]
-    mes_id = int(come[2])
+    print('я предмет')
+    tg_user_id =  callback.from_user.id
+    fl = callback.from_user.is_bot
+    message_id = callback.message.message_id
+    #print(message_id)
+    chat_id = callback.message.chat.id
+    #print(chat_id)
     her = len(items_names)
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her+1, 2):
@@ -144,17 +151,20 @@ async def trade_items(callback):
             ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'))
             print('hui')
             break
-    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{int(mes_id)}'))
-    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=mes_id+1)
+    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=go_to_shop_menu.new()))# f'#{chat_id}#{int(message_id)}'))
+    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=message_id)
     await bot.answer_callback_query(callback.id)
 
-@dis.callback_query_handler(lambda c: c.data.startswith('tradeheroes'))
+@dis.callback_query_handler(tradeheroes.filter())
 async def heroes_shop(callback):
-    come = callback.data.split('#')
-    chat_id = come[1]
-    mes_id = come[2]
-    print(come)
-    print(mes_id)
+    #for i in callback:
+    #    print(i)
+    tg_user_id = callback.from_user.id
+    fl = callback.from_user.is_bot
+    message_id = callback.message.message_id
+    print(message_id)
+    chat_id = callback.message.chat.id
+    print(chat_id)
     her = len(name_of_heroes)
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her+1, 2):
@@ -165,29 +175,41 @@ async def heroes_shop(callback):
             ikm1.add(InlineKeyboardButton(text=f'{name_of_heroes[i]}', callback_data=f'geroi#{i}'))
             print('hui')
             break
-    print(mes_id)
-    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=f'back_to_shop#{chat_id}#{mes_id}'))
-    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=int(mes_id)+1)
+    print(message_id)
+    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data= go_to_shop_menu.new())) # f'back_to_shop#{chat_id}#{message_id}'))
+    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=int(message_id))
     await bot.answer_callback_query(callback.id)
-@dis.callback_query_handler(lambda mes: mes.data.startswith('back_to_shop'))
+@dis.callback_query_handler(go_to_shop_menu.filter())
 async def back_to_shop(callback):
-    come = callback.data.split('#')
-    print(come)
-    chat_id = come[1]
-    mes_id = come[2]
+    #come = callback.data.split('#')
+    #print(come)
+    #chat_id = come[1]
+    #mes_id = come[2]
+    tg_user_id = callback.from_user.id
+    fl = callback.from_user.is_bot
+    message_id = callback.message.message_id
+    print(message_id)
+    chat_id = callback.message.chat.id
+    print(chat_id)
     ikm = InlineKeyboardMarkup(row_width=3)
-    ikb1 = InlineKeyboardButton(text='герои', callback_data=f'tradeheroes#{chat_id}#{mes_id}')
-    ikb2 = InlineKeyboardButton(text='предметы', callback_data=f'tradeitems#{chat_id}#{mes_id}')
-    ikb3 = InlineKeyboardButton(text='в зад', callback_data=f'del#{mes_id}#{chat_id}')
+    ikb1 = InlineKeyboardButton(text='герои', callback_data= tradeheroes.new())#f'tradeheroes#{chat_id}#{mes_id}')
+    ikb2 = InlineKeyboardButton(text='предметы', callback_data= tradeitems.new() )#f'tradeitems#{chat_id}#{mes_id}')
+    ikb3 = InlineKeyboardButton(text='в зад', callback_data= del_callback.new() )#f'del#{mes_id}#{chat_id}')
     ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(mes_id)+1, text="магаз у наташки")
+    await bot.edit_message_text(chat_id=chat_id, reply_markup=ikm, message_id=int(message_id), text="магаз у наташки")
 @dis.callback_query_handler(lambda mes: mes.data.startswith('del'))
 async def deleter(callback):
-    come = callback.data.split('#')
-    mes_id = int(come[1])
-    chat_id = come[2]
-    await bot.delete_message(chat_id=chat_id, message_id=mes_id+1)
-    await bot.delete_message(chat_id=chat_id, message_id=mes_id) #удаляет ещё и сообщение пидоры
+    #come = callback.data.split('#')
+    #mes_id = int(come[1])
+    #chat_id = come[2]
+    tg_user_id = callback.from_user.id
+    fl = callback.from_user.is_bot
+    message_id = callback.message.message_id
+    print(message_id)
+    chat_id = callback.message.chat.id
+    print(chat_id)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    await bot.delete_message(chat_id=chat_id, message_id=message_id-1) #удаляет ещё и сообщение пидоры
 @dis.callback_query_handler(lambda m: m.data.startswith('back'))
 async def back(callback):
     callback_arr = callback.data.split('#')
