@@ -131,29 +131,73 @@ async def all_shop(message):
     ikm.add(ikb1, ikb2).add(ikb3)
     await bot.send_message( chat_id=chat_id, text='магаз у наташки', reply_markup=ikm)
 
-
-@dis.callback_query_handler(tradeitems.filter())
-async def trade_items(callback):
-    print('я предмет')
-    tg_user_id =  callback.from_user.id
+callback_farm = CallbackData('farm_items_show_shop')
+callback_fight = CallbackData('fight_items_show_shop')
+@dis.callback_query_handler(callback_fight.filter())
+async def show_fight(callback):
+    tg_user_id = callback.from_user.id
     fl = callback.from_user.is_bot
     message_id = callback.message.message_id
-    #print(message_id)
+    # print(message_id)
     chat_id = callback.message.chat.id
-    #print(chat_id)
-    her = len(items_names)
-    ikm1 = InlineKeyboardMarkup(row_width=her)
-    for i in range(0, her+1, 2):
-        try:
-            ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'), InlineKeyboardButton(text=items_names[i+1], callback_data=f'predmeti#{i+1}'))
-            print('lj,fdbk')
-        except:
-            ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'))
-            print('hui')
-            break
-    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=go_to_shop_menu.new()))# f'#{chat_id}#{int(message_id)}'))
-    await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=message_id)
+    await bot.edit_message_text(text='ща')
+@dis.callback_query_handler(callback_farm.filter())
+async def show_farm(callback):
+    tg_user_id = callback.from_user.id
+    fl = callback.from_user.is_bot
+    message_id = callback.message.message_id
+    # print(message_id)
+    chat_id = callback.message.chat.id
+@dis.callback_query_handler(tradeitems.filter())
+async def farm_items(callback):
+    tg_user_id = callback.from_user.id
+    fl = callback.from_user.is_bot
+    message_id = callback.message.message_id
+    # print(message_id)
+    chat_id = callback.message.chat.id
+    # print(chat_id)
+    # come = callback.data.split('#')
+    # print(come)
+    # chat_id = come[1]
+    # mes_id = come[2]
+    her = len(farm_items_names)
+    #ikm = InlineKeyboardMarkup(row_width=3)
+    ikm = InlineKeyboardMarkup(row_width=3)
+    #ikb1 = InlineKeyboardButton(text='фарми', callback_data=callback_farm)
+    #ikb2 = InlineKeyboardButton(text='дерись', callback_data=callback_fight)
+    # for i in range(0, her, 2):
+    #     try:
+    #         ikm.add(InlineKeyboardButton(text=f'{farm_items_names[i]}', callback_data=f'predmeti#{i}'), InlineKeyboardButton(text=farm_items_names[i+1], callback_data=f'predmeti#{i+1}'))
+    #     except:
+    #         ikm.add(InlineKeyboardButton(text=f'{farm_items_names[i]}', callback_data=f'predmeti#{i}'))
+    #         break
+    ikm.add(InlineKeyboardButton(text='фарми', callback_data=callback_farm.new()),InlineKeyboardButton(text='дерсись', callback_data=callback_farm.new()))
+    ikm.add(InlineKeyboardButton(text='в зад', callback_data=go_to_shop_menu.new()))
+    #await bot.edit_message_text(text='на фрифармычах', reply_markup=ikm, message_id=int(message_id), chat_id=chat_id)
+    await bot.edit_message_text(text='предметы от дяди пети', chat_id=chat_id, reply_markup=ikm, message_id=message_id)
     await bot.answer_callback_query(callback.id)
+# @dis.callback_query_handler(tradeitems.filter())
+# async def trade_items(callback):
+#     print('я предмет')
+#     tg_user_id =  callback.from_user.id
+#     fl = callback.from_user.is_bot
+#     message_id = callback.message.message_id
+#     #print(message_id)
+#     chat_id = callback.message.chat.id
+#     #print(chat_id)
+#     her = len(items_names)
+#     ikm1 = InlineKeyboardMarkup(row_width=her)
+#     for i in range(0, her+1, 2):
+#         try:
+#             ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'), InlineKeyboardButton(text=items_names[i+1], callback_data=f'predmeti#{i+1}'))
+#             print('lj,fdbk')
+#         except:
+#             ikm1.add(InlineKeyboardButton(text=f'{items_names[i]}', callback_data=f'predmeti#{i}'))
+#             print('hui')
+#             break
+#     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=go_to_shop_menu.new()))# f'#{chat_id}#{int(message_id)}'))
+#     await bot.edit_message_text(text='герои от дяди васи', chat_id=chat_id, reply_markup=ikm1, message_id=message_id)
+#     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(tradeheroes.filter())
 async def heroes_shop(callback):
