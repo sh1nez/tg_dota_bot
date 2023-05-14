@@ -137,21 +137,20 @@ async def show_fight(callback):
     message_id = callback.message.message_id
     # print(message_id)
     chat_id = callback.message.chat.id
-    her = len(farm_items_names)
-    ikm1 = InlineKeyboardMarkup(row_width=her)
-    her = len(fight_items_names)
+    her = len(item_dick['farm'])
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her + 1, 2):
         try:
-            ikm1.add(InlineKeyboardButton(text=f'{fight_items_names[i]}', callback_data=callback_item_name.new(i)),
-                     InlineKeyboardButton(text=f'{fight_items_names[i + 1]}',
+            #{fight_items_names[i]}
+            ikm1.add(InlineKeyboardButton(text=f"{item_dick['fight'][i]['name']}", callback_data=callback_item_name.new(i)),
+                     InlineKeyboardButton(text=f"{item_dick['fight'][i+1]['name']}",
                                           callback_data=callback_item_name.new(i + 1))
                      )
             # print('lj,fdbk')
         except:
             try:
                 ikm1.add(
-                    InlineKeyboardButton(text=f'{fight_items_names[i]}', callback_data=callback_item_name.new(i)))  # '))
+                    InlineKeyboardButton(text=f"{item_dick['fight'][i]['name']}", callback_data=callback_item_name.new(i)))  # '))
                 # print('hui')
             except: break
     ikm1.add(
@@ -166,15 +165,16 @@ async def show_farm(callback):
     message_id = callback.message.message_id
     # print(message_id)
     chat_id = callback.message.chat.id
-    her = len(farm_items_names)
+    her = len(item_dick['farm'])
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her+1, 2):
         try:
-            ikm1.add(InlineKeyboardButton(text=f'{farm_items_names[i]}', callback_data=callback_item_name.new(i)),
-                    InlineKeyboardButton(text=f'{farm_items_names[i+1]}', callback_data=callback_item_name.new(i+1))
+            #{farm_items_names[i]}
+            ikm1.add(InlineKeyboardButton(text=f"{item_dick['farm'][i]['name']}", callback_data=callback_item_name.new(i)),
+                    InlineKeyboardButton(text=f"{item_dick['farm'][i+1]['name']}", callback_data=callback_item_name.new(i+1))
                      )
         except:
-            ikm1.add(InlineKeyboardButton(text=f'{farm_items_names[i]}', callback_data=callback_item_name.new(i)))
+            ikm1.add(InlineKeyboardButton(text=f"{item_dick['farm'][i]['name']}", callback_data=callback_item_name.new(i)))
             break
     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=tradeitems.new()))# f'#{chat_id}#{int(message_id)}'))
     await bot.edit_message_text(text='ща', chat_id=chat_id, message_id=message_id, reply_markup=ikm1)
@@ -194,7 +194,7 @@ async def open_item(callback):
 async def all_items(callback):
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
-    her = len(farm_items_names)
+    #her = len(farm_items_names)
     ikm = InlineKeyboardMarkup(row_width=3)
     ikm.add(InlineKeyboardButton(text='фарми', callback_data=callback_farm_item.new()),InlineKeyboardButton(text='дерсись', callback_data=callback_fight_item.new()))
     ikm.add(InlineKeyboardButton(text='в зад', callback_data=go_to_shop_menu.new()))
@@ -288,6 +288,7 @@ send_to_farm_hero = CallbackData('send_to_farm', 'hero_name_id', 'main_user_id',
 buy_more = CallbackData('buy_more_items', 'hero_id')
 buy_item = CallbackData('buy_for_hero')
 show_local_hero = CallbackData('shmot_of_hero', 'hero_name_id')
+show_item = CallbackData('show', 'item_id', 'hero_id')
 
 @dis.callback_query_handler(send_to_farm_hero)
 async def fermer(callback):
@@ -343,7 +344,7 @@ async def hero_show(callback):
     hero_funk3 = InlineKeyboardButton(text='шмотки', callback_data=f'shmot#{hero_id}#{user_tg_id}#{chat_id}#{local_user_id}')
     hero_funk4 = InlineKeyboardButton(text='назад', callback_data=f'back_to_look#{user_tg_id}#{chat_id}#{hero_id}')
     hero_buttons.add(hero_funk1, hero_funk2, hero_funk3).add(hero_funk4)
-    await bot.send_photo(caption='123312', photo=photo_links[hero_id], chat_id=chat_id, reply_markup=hero_buttons)
+    await bot.send_photo(caption='123312', photo=hero_dick[hero_id]['img'], chat_id=chat_id, reply_markup=hero_buttons)
     await bot.answer_callback_query(callback.id)
 
 
@@ -371,10 +372,12 @@ async def shmotki_of_hero(callback):
                 print(None)
         else:
             a = True
-            print(new_items[i][1])
+            print(new_items[i])
             try:
-                ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items_names[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
-            except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
+                #{items_names[new_items[i][1]]}
+                #f'item#{new_items[i][1]}#{hero_id}#'
+                ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_id)), KeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_id)))
+            except: ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_id)))
     print(len(new_items))
     #тут я напихал предметы чела к уторого есть
     if len(new_items) == 0:
@@ -413,9 +416,9 @@ async def shmotki(callback):
         else:
             a = True
             print(new_items[i][1])
-            try:
-                ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items_names[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
-            except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
+            #try:
+            #    ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items_names[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
+            #except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
     print(len(new_items))
     if len(new_items) == 0:
         #textik=f'у {name_of_heroes[hero_name]}а нет предметов'
