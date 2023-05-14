@@ -32,7 +32,8 @@ import asyncio
 from texts import *
 from database import *
 from config import token
-
+bot = aiogram.Bot(token)
+dis = aiogram.Dispatcher(bot)
 print('я начал')
 
 tradeheroes = CallbackData('tradeheroes',)
@@ -48,6 +49,7 @@ callback_item_name = CallbackData('predmet_id', 'item_index')
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
+    print(sql_code)
     cur.execute(sql_code)
     #print(cur.fetchall())
     result = list(cur.fetchall())
@@ -120,6 +122,13 @@ async def show_main_menu(chat_id, message_id, *args):
     img = types.InputMediaPhoto(caption='магаз у наташки', media=photo_links_for_shop[0], type='photo')
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=message_id, chat_id=chat_id)
     await bot.answer_callback_query(args[0])
+
+@dis.callback_query_handler(del_callback.filter())
+async def del_all_menu(callback):
+    mes_id =  callback.message['message_id']
+    await bot.delete_message(chat_id=callback.message.chat.id ,message_id=mes_id)
+    try: await bot.delete_message(chat_id=callback.message.chat.id ,message_id=mes_id-1)
+    except: await bot.send_message(chat_id=callback.message.chat.id, text='пидоры дайте админку')
 
 @dis.message_handler(commands =['shop'])
 async def all_shop(message):
@@ -285,33 +294,6 @@ async def try_to_buy_hero(callback):
     await bot.edit_message_media(media=img, text='ураура')
     await bot.answer_callback_query(callback.id)
 
-# @dis.callback_query_handler(go_to_all_heroes.filter())
-# async def show_heroes(callback):
-#     tg_user_id = callback.from_user.id
-#     message_id = callback.message.message_id
-#     chat_id = callback.message.chat.id
-#     print(callback)
-#     her = len(hero_dick)
-#     ikm1 = InlineKeyboardMarkup(row_width=her)
-#     for i in range(0, her + 1, 2):
-#         try:
-#             ikm1.add(InlineKeyboardButton(text=f"{hero_dick[i]['name']}", callback_data=show_hero_n.new(i)), # name_of_heroes[i]
-#                      InlineKeyboardButton(text=f"{hero_dick[i]['name']}", callback_data=show_hero_n.new(i+1))) # name_of_heroes[i + 1]
-#             print('писяпопа')
-#         except:
-#             try:
-#                 ikm1.add(InlineKeyboardButton(text=f"{hero_dick[i]['name']}", callback_data=show_hero_n.new(i)))#f'geroi#{i}'))
-#                 print('hui')
-#             except:
-#                 break
-#     print(message_id)
-#     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=tradeheroes.new()))# f'back_to_shop#{chat_id}#{message_id}'))
-#     img = types.InputMediaPhoto(media=photo_links_for_shop[0], caption='asd')
-#
-#     await bot.edit_message_media(media=img, chat_id=chat_id, message_id=message_id, reply_markup=ikm1, )
-#     #await bot.edit_message_text(text='предметы долбоёбыча', chat_id=chat_id, reply_markup=ikm1,
-#     #                            message_id=message_id)
-#     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(show_hero_n.filter())
 async def show_hero_nniy(callback):

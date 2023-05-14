@@ -4,8 +4,9 @@ import aiogram
 from texts import *
 import random
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-bot = aiogram.Bot(token)
-dis = aiogram.Dispatcher(bot)
+from try_to_clone_main import del_callback, dis, bot
+
+
 try:
     connect = pymysql.connect(
         host=host,
@@ -146,8 +147,8 @@ async def maker_menu(chat_id, tg_user_id):
     for j in range(0, len(arrey_heroes)//2, ):
         print(j)
         try:
-            h.add(InlineKeyboardButton(text=f'{name_of_heroes[j]}', callback_data=f'hero'))
+            h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=f'hero'))
         except: print(111)
-
+    h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new()))
     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
 
