@@ -104,16 +104,28 @@ async def gold(message):
         await message.answer(text=f'теперь голды {return_to_user}')
     else: await message.answer(text='сначала зарегестрируйся')
 
+async def show_main_menu(chat_id, message_id, *args):
+    ikm = InlineKeyboardMarkup(row_width=3)
+    ikb1 = InlineKeyboardButton(text='герои', callback_data=tradeheroes.new())
+    ikb2 = InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())
+    ikb3 = InlineKeyboardButton(text='в зад', callback_data=del_callback.new())
+    ikm.add(ikb1, ikb2).add(ikb3)
+    if not args:
+        await bot.send_photo(chat_id=chat_id, caption='магаз у наташки', reply_markup=ikm, photo=photo_links_for_shop[0])
+        return
+    await bot.edit_message_media(reply_markup=ikm, media=photo_links_for_shop[0], message_id=message_id)
+
 @dis.message_handler(commands =['shop'])
 async def all_shop(message):
     chat_id = message.chat.id
     mes_id = message.message_id
-    ikm = InlineKeyboardMarkup(row_width=3)
-    ikb1 = InlineKeyboardButton(text='герои', callback_data=tradeheroes.new())
-    ikb2 = InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())
-    ikb3 = InlineKeyboardButton(text='в зад', callback_data= del_callback.new())
-    ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.send_message(chat_id=chat_id, text='магаз у наташки', reply_markup=ikm)
+    await show_main_menu(chat_id=chat_id, message_id=mes_id)
+    # ikm = InlineKeyboardMarkup(row_width=3)
+    # ikb1 = InlineKeyboardButton(text='герои', callback_data=tradeheroes.new())
+    # ikb2 = InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())
+    # ikb3 = InlineKeyboardButton(text='в зад', callback_data= del_callback.new())
+    # ikm.add(ikb1, ikb2).add(ikb3)
+    # await bot.send_message(chat_id=chat_id, text='магаз у наташки', reply_markup=ikm)
 
 #########################################################################################
 #МАГАЗИН
@@ -121,13 +133,14 @@ async def all_shop(message):
 async def go_to_items_menu(callback):
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
-    ikm = InlineKeyboardMarkup(row_width=3)
-    ikb1 = InlineKeyboardButton(text='герои', callback_data=tradeheroes.new())
-    ikb2 = InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())
-    ikb3 = InlineKeyboardButton(text='в зад', callback_data=del_callback.new())
-    ikm.add(ikb1, ikb2).add(ikb3)
-    await bot.edit_message_text(chat_id=chat_id, text='магаз у наташки', message_id=message_id, reply_markup=ikm)
-    await bot.answer_callback_query(callback.id)
+    await show_main_menu(chat_id, message_id, callback.id)
+    # ikm = InlineKeyboardMarkup(row_width=3)
+    # ikb1 = InlineKeyboardButton(text='герои', callback_data=tradeheroes.new())
+    # ikb2 = InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())
+    # ikb3 = InlineKeyboardButton(text='в зад', callback_data=del_callback.new())
+    # ikm.add(ikb1, ikb2).add(ikb3)
+    # await bot.edit_message_text(chat_id=chat_id, text='магаз у наташки', message_id=message_id, reply_markup=ikm)
+    # await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(callback_fight_item.filter())
 async def show_fight(callback):
@@ -155,7 +168,8 @@ async def show_fight(callback):
             except: break
     ikm1.add(
         InlineKeyboardButton(text=f'в зад', callback_data=tradeitems.new()))
-    await bot.edit_message_text(chat_id=chat_id, message_id=message_id, text='нихуя ты дрочун', reply_markup=ikm1)
+    img = types.InputMediaPhoto(caption='нихуя ты дрочун', media=r'https://cq.ru/storage/uploads/posts/94692/cri/dota___media_library_original_1656_982.png', type='photo')
+    await bot.edit_message_media(chat_id=chat_id, message_id=message_id, media=img, reply_markup=ikm1)
     await bot.answer_callback_query(callback.id)
 @dis.callback_query_handler(callback_farm_item.filter())
 async def show_farm(callback):
@@ -177,7 +191,8 @@ async def show_farm(callback):
             ikm1.add(InlineKeyboardButton(text=f"{item_dick['farm'][i]['name']}", callback_data=callback_item_name.new(i)))
             break
     ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=tradeitems.new()))# f'#{chat_id}#{int(message_id)}'))
-    await bot.edit_message_text(text='ща', chat_id=chat_id, message_id=message_id, reply_markup=ikm1)
+    img = types.InputMediaPhoto(caption='фармила', type='photo', media=r'https://cq.ru/storage/uploads/posts/94692/cri/dota___media_library_original_1656_982.png')
+    await bot.edit_message_media(media=img, chat_id=chat_id, message_id=message_id, reply_markup=ikm1)
     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(callback_item_name.filter())
@@ -194,12 +209,14 @@ async def open_item(callback):
 async def all_items(callback):
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
+    print(message_id, chat_id)
     #her = len(farm_items_names)
     ikm = InlineKeyboardMarkup(row_width=3)
     ikm.add(InlineKeyboardButton(text='фарми', callback_data=callback_farm_item.new()),InlineKeyboardButton(text='дерсись', callback_data=callback_fight_item.new()))
     ikm.add(InlineKeyboardButton(text='в зад', callback_data=go_to_shop_menu.new()))
     #await bot.edit_message_text(text='на фрифармычах', reply_markup=ikm, message_id=int(message_id), chat_id=chat_id)
-    await bot.edit_message_text(text='предметы от дяди пети', chat_id=chat_id, reply_markup=ikm, message_id=message_id)
+    img = types.InputMediaPhoto(media=r'https://cq.ru/storage/uploads/posts/94692/cri/dota___media_library_original_1656_982.png', type='photo', caption='предметы дяди васи')
+    await bot.edit_message_media(chat_id=chat_id, reply_markup=ikm, message_id=message_id,media=img)
     await bot.answer_callback_query(callback.id)
 
 
@@ -246,7 +263,7 @@ go_to_all_heroes = CallbackData('predprosmotr',)
 show_hero_n = CallbackData('hero', 'hero_id')
 buy_hero = CallbackData('buy', 'hero_id',)
 
-@dis.callback_query_handler(buy_hero)
+@dis.callback_query_handler(buy_hero.filter())
 async def try_to_buy_hero(callback):
     hero_id = callback.data['hero_id']
     tg_user_id = callback.from_user.id
@@ -264,7 +281,7 @@ async def try_to_buy_hero(callback):
     #await bot.edit_message_caption()
     await bot.answer_callback_query(callback.id)
 
-@dis.callback_query_handler(go_to_all_heroes)
+@dis.callback_query_handler(go_to_all_heroes.filter())
 async def show_heroes(callback):
     tg_user_id = callback.from_user.id
     message_id = callback.message.message_id
@@ -287,7 +304,7 @@ async def show_heroes(callback):
                                 message_id=int(message_id))
     await bot.answer_callback_query(callback.id)
 
-@dis.callback_query_handler(show_hero_n)
+@dis.callback_query_handler(show_hero_n.filter())
 async def show_hero_n(callback):
     hero_id = callback.data['hero_id']
     tg_user_id = callback.from_user.id
@@ -312,7 +329,7 @@ buy_item = CallbackData('buy_for_hero')
 show_local_hero = CallbackData('shmot_of_hero', 'hero_name_id')
 show_item = CallbackData('show', 'item_id', 'hero_id')
 
-@dis.callback_query_handler(send_to_farm_hero)
+@dis.callback_query_handler(send_to_farm_hero.filter())
 async def fermer(callback):
     heroe_name = callback.data['hero_name_id']
     tg_main_user_id = int(callback.data['main_user_id'])
@@ -370,7 +387,7 @@ async def hero_show(callback):
     await bot.answer_callback_query(callback.id)
 
 
-@dis.callback_query_handler(show_local_hero)
+@dis.callback_query_handler(show_local_hero.filter())
 async def shmotki_of_hero(callback):
     hero_id = callback.data[1]
     print(hero_id)
