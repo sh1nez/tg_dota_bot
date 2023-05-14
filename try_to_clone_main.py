@@ -36,6 +36,28 @@ bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 print('я начал')
 
+show_local_hero = CallbackData('hero', 'hero_id')
+send_hero_to_farm = CallbackData('farm', 'hero_id')
+send_hero_to_fight = CallbackData('farm', 'hero_id')
+
+# @dis.callback_query_handler(show_local_hero.filter())
+# async def shower_local_hero(callback):
+#     hero_id =  callback.data.split(':')[1]
+#     #comand = callback.data.split('#')
+#     #local_user_id = int(comand[1])
+#     #user_tg_id = comand[2]
+#     print(hero_id,)
+#     chat_id = callback.message.chat.id
+#     hero_buttons = InlineKeyboardMarkup(row_width=4)
+#     hero_funk1 = InlineKeyboardButton(text='фармить', callback_data=f' # farm#{hero_id}#{user_tg_id}#{local_user_id}')
+#     hero_funk2 = InlineKeyboardButton(text='драться', callback_data=f'fight#{hero_id}#{user_tg_id}#')
+#     hero_funk3 = InlineKeyboardButton(text='шмотки',
+#                                       callback_data=f'shmot#{hero_id}#{user_tg_id}#{chat_id}#{local_user_id}')
+#     hero_funk4 = InlineKeyboardButton(text='назад', callback_data=  )#f'back_to_look#{user_tg_id}#{chat_id}#{hero_id}')
+#     hero_buttons.add(hero_funk1, hero_funk2, hero_funk3).add(hero_funk4)
+#     await bot.send_photo(caption='123312', photo=hero_dick[hero_id]['img'], chat_id=chat_id, reply_markup=hero_buttons)
+#     await bot.answer_callback_query(callback.id)
+
 tradeheroes = CallbackData('tradeheroes',)
 tradeitems =CallbackData('tradeitems', )
 del_callback = CallbackData('del',)
