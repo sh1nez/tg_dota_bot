@@ -21,17 +21,34 @@ commands = '''/gold
 /shop
 '''
 
-name_of_heroes = [
-'пудж',
-'тетчис',
-'снайпер',
+# name_of_heroes = [
+# 'пудж',
+# 'тетчис',
+# 'снайпер',
+# ]
+# stats_of_heroes = [
+#
+# ]
+#
+# prices_of_heroes = [
+#     8000,
+#     5000,
+#     3000,
+# ]
+# description_of_heroes = [
+#     'это рудгерс он фармить круто драться круто',
+#     'это тетчис он хуй',
+#     'это снайпер (как пудж)',
+# ]
+# 'description '
+#{'name': '', 'description': '', 'price':1, 'stats':'' }
+hero_dick = {
+    1: {'name': 'pudge', 'description': 'самый секс перс доты имба покупай', 'price': 8800, 'stats': 'asasd'},
+    2: {'name': 'tetchis', 'description': 'говно ', 'price':5000, 'stats':'инвалид' },
+    3: {'name': 'sf', 'description': 'негр', 'price':10000, 'stats':'НЕГР' },
 
-]
-prices_of_heroes = [
-    8000,
-    5000,
-    3000,
-]
+}
+
 
 items_names = [
     'топорик',

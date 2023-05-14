@@ -251,15 +251,15 @@ async def show_heroes(callback):
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
     print(callback)
-    her = len(name_of_heroes)
+    her = len(hero_dick)
     ikm1 = InlineKeyboardMarkup(row_width=her)
     for i in range(0, her + 1, 2):
         try:
-            ikm1.add(InlineKeyboardButton(text=f'{name_of_heroes[i]}', callback_data=show_hero_n.new(i)), #f'geroi#{i}'),
-                     InlineKeyboardButton(text=name_of_heroes[i + 1], callback_data=show_hero_n.new(i+1))) #f'geroi{i + 1}'))
+            ikm1.add(InlineKeyboardButton(text=f"{hero_dick[i]['name']}", callback_data=show_hero_n.new(i)), # name_of_heroes[i]
+                     InlineKeyboardButton(text=f"{hero_dick[i]['name']}", callback_data=show_hero_n.new(i+1))) # name_of_heroes[i + 1]
             print('lj,fdbk')
         except:
-            ikm1.add(InlineKeyboardButton(text=f'{name_of_heroes[i]}', callback_data=show_hero_n.new(i)))#f'geroi#{i}'))
+            ikm1.add(InlineKeyboardButton(text=f"{hero_dick[i]['name']}", callback_data=show_hero_n.new(i)))#f'geroi#{i}'))
             print('hui')
             break
     print(message_id)
@@ -275,7 +275,9 @@ async def show_hero_n(callback):
     fl = callback.from_user.is_bot
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
-    await bot.edit_message_text()
+
+    await bot.edit_message_text(text=f"это {hero_dick[hero_id]['name']}\nЕго статы: мб потом добавлю \n"#    name_of_heroes[hero_id]
+                                     f"Описание\n{hero_id[hero_id]['description']}") #discription_of_heroes[hero_id]
 
 
 ########################################################################################################
@@ -305,12 +307,12 @@ async def fermer(callback):
         if aq>10:
             raise Exception#поменял
         else:
-            await bot.send_message(chat_id=callback.message.chat.id, text=f'бро зачилься {name_of_heroes[heroe_name]} уже фармит')
+            await bot.send_message(chat_id=callback.message.chat.id, text=f"бро зачилься {hero_dick[heroe_name]['name']} уже фармит")#name_of_heroes[heroe_name]
             await  bot.answer_callback_query(callback.id)
     except:
         date = datetime.datetime.today()
         print(date)
-        await bot.send_message(chat_id=callback.message.chat.id, text=f'{name_of_heroes[heroe_name]} отправился на 285 мса за крипами')
+        await bot.send_message(chat_id=callback.message.chat.id, text=f" {hero_dick[heroe_name]['name']} отправился на 285 мса за крипами")#name_of_heroes[heroe_name]
         await bot.answer_callback_query(callback.id)
         await asyncio.sleep(3)
         rand_num = random.randint(50,150)
@@ -318,7 +320,7 @@ async def fermer(callback):
         cur.execute(sql_code)
         asd =cur.fetchone()
         print(asd[0])
-        await bot.send_message(chat_id=callback.message.chat.id, text=f'твой {name_of_heroes[heroe_name]} вернусля, залутав {rand_num} голды')
+        await bot.send_message(chat_id=callback.message.chat.id, text=f"твой {{hero_dick[heroe_name]['name']}} вернусля, залутав {rand_num} голды")
         sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
         print(sql_code)
         cur.execute(sql_code)
@@ -362,7 +364,7 @@ async def shmotki_of_hero(callback):
         if i[1] is None:
              pass#
         else: new_items.append(i)
-    textik = f'вот предметы твоего {name_of_heroes[hero_id]}'
+    textik = f"вот предметы твоего {hero_dick[hero_id]['name']}"# {name_of_heroes[hero_id]}
     print(new_items)
     for i in range(0, len(new_items), 2):
         if index_items[i+1] is None:
@@ -376,7 +378,7 @@ async def shmotki_of_hero(callback):
     print(len(new_items))
     #тут я напихал предметы чела к уторого есть
     if len(new_items) == 0:
-        textik=f'у {name_of_heroes[hero_id]}а нет предметов'
+        textik=f"у {hero_dick[hero_id]['name']}а нет предметов"
         ikm.add(KeyboardButton(text=f'\nОдеть пердметы', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
     # elif len(new_items)<6:
     #     ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more(hero_id)))   #f'buymore#{hero_id}'))
@@ -403,7 +405,7 @@ async def shmotki(callback):
         if i[1] is None:
              pass#
         else: new_items.append(i)
-    textik = f'вот предметы твоего {name_of_heroes[hero_name]}'
+    #textik = f"вот предметы твоего  {name_of_heroes[hero_id]}"#{name_of_heroes[hero_name]}'
     print(new_items)
     for i in range(0, len(new_items), 2):
         if index_items[i+1] is None:
@@ -416,11 +418,11 @@ async def shmotki(callback):
             except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
     print(len(new_items))
     if len(new_items) == 0:
-        textik=f'у {name_of_heroes[hero_name]}а нет предметов'
+        #textik=f'у {name_of_heroes[hero_name]}а нет предметов'
         ikm.add(KeyboardButton(text=f'\nКупить', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
     elif len(new_items)<6:
         ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more(hero_id)))   #f'buymore#{hero_id}'))
-    await bot.send_message(chat_id=chat_id, text=textik, reply_markup=ikm)
+    await bot.send_message(chat_id=chat_id, text='aaa', reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(buy_more.filter())
