@@ -244,10 +244,29 @@ async def all_items(callback):
 #магазин героев
 go_to_all_heroes = CallbackData('predprosmotr',)
 show_hero_n = CallbackData('hero', 'hero_id')
+buy_hero = CallbackData('buy', 'hero_id',)
+
+@dis.callback_query_handler(buy_hero)
+async def try_to_buy_hero(callback):
+    hero_id = callback.data['hero_id']
+    tg_user_id = callback.from_user.id
+    message_id = callback.message.message_id
+    chat_id = callback.message.chat.id
+    sql_code = f"SELECT money FROM players WHERE tg_id = {tg_user_id}"
+    #with connect.cursor() as cur: ЗАТЕСТИТЬ ЭТУ ХУЙНЮ
+    money = cur.execute(sql_code).fetchone()
+    price_hero = hero_dick[hero_id]['price']
+    if money<price_hero:
+        await bot.answer_callback_query(callback.id, text='бро подкопи денег ты нищеброд')
+        return
+    update_gold(tg_user_id=tg_user_id, plus_money=-price_hero)
+    await bot.edit_message_media(media=f"{hero_dick[hero_id]['event_img']}", text='ураура')
+    #await bot.edit_message_caption()
+    await bot.answer_callback_query(callback.id)
+
 @dis.callback_query_handler(go_to_all_heroes)
 async def show_heroes(callback):
     tg_user_id = callback.from_user.id
-    fl = callback.from_user.is_bot
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
     print(callback)
@@ -275,9 +294,12 @@ async def show_hero_n(callback):
     fl = callback.from_user.is_bot
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
-
-    await bot.edit_message_text(text=f"это {hero_dick[hero_id]['name']}\nЕго статы: мб потом добавлю \n"#    name_of_heroes[hero_id]
-                                     f"Описание\n{hero_id[hero_id]['description']}") #discription_of_heroes[hero_id]
+    ikm = InlineKeyboardMarkup(row_width=2)
+    ikb1 = InlineKeyboardButton(text='купить', callback_data=buy_hero)
+    ikb2 = InlineKeyboardButton(text='в зад', callback_data=go_to_all_heroes.new())
+    ikm.add(ikb1)
+    await bot.edit_message_media(media=f"{hero_dick[hero_id]['img']}",  text=f"это {hero_dick[hero_id]['name']}\nЕго статы: мб потом добавлю \n"#    name_of_heroes[hero_id]
+                                     f"Описание\n{hero_id[hero_id]['description']}", reply_markup=ikm) #discription_of_heroes[hero_id]
 
 
 ########################################################################################################
@@ -321,7 +343,7 @@ async def fermer(callback):
         cur.execute(sql_code)
         asd =cur.fetchone()
         print(asd[0])
-        await bot.send_message(chat_id=callback.message.chat.id, text=f"твой {{hero_dick[heroe_name]['name']}} вернусля, залутав {rand_num} голды")
+        await bot.send_message(chat_id=callback.message.chat.id, text=f"твой {hero_dick[heroe_name]['name']} вернусля, залутав {rand_num} голды")
         sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
         print(sql_code)
         cur.execute(sql_code)
@@ -389,6 +411,7 @@ async def shmotki_of_hero(callback):
     await bot.send_message(chat_id=chat_id, text=textik, reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
 
+###########################################################################################################
 @dis.callback_query_handler(lambda m: m.data.startswith('shmot'))
 async def shmotki(callback):
     come = callback.data.split('#')
