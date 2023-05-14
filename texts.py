@@ -43,14 +43,14 @@ commands = '''/gold
 # 'description '
 #{'name': '', 'description': '', 'price':1, 'stats':'', img:'',  }
 hero_dick = {
-    1: {'name': 'pudge', 'description': 'самый секс перс доты имба покупай', 'price': 8800,
-        'stats': 'asasd', 'img':r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
-        'event_img': r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp', },
-    2: {'name': 'tetchis', 'description': 'говно ', 'price':5000,
+    0: {'name': 'pudge', 'description': 'самый секс перс доты имба покупай', 'price': 8800,
+        'stats': 'asasd', 'img':r'https://cq.ru/storage/uploads/images/1530144/1.jpg',
+        'event_img': r'https://hsto.org/getpro/habr/post_images/6fc/750/e38/6fc750e38c21f9dc6a777c15cbf4be43.jpg', },
+    1: {'name': 'tetchis', 'description': 'говно ', 'price':5000,
         'stats':'инвалид', 'img':r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
         'event_img': r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp', },
 
-    3: {'name': 'sf', 'description': 'негр', 'price':10000,
+    2: {'name': 'sf', 'description': 'негр', 'price':10000,
         'stats':'НЕГР', 'img':r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
         'event_img': r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',},
 }
