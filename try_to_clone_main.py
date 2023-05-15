@@ -22,9 +22,7 @@
 # `image` TINYTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 import random
-import aiogram
 from aiogram import types
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 import pymysql
 import datetime
@@ -70,34 +68,37 @@ callback_item_name = CallbackData('predmet_id', 'item_index')
 @dis.message_handler(commands=['start'])#создаём пользователя
 async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
-    sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
-    print(sql_code)
-    cur.execute(sql_code)
-    #print(cur.fetchall())
-    result = list(cur.fetchall())
-    bb = [j for i in result for j in i]
-    print(bb)
-    #проверил есть ли пользователь. Если есть
-    if not bb:
-        await message.answer(text=new_reg_text)
-        try:
-            #create_player
-            sql_code = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_user_id}', '0')"
-            print(sql_code)
-            cur.execute(sql_code)
-            local_user_id = connect.insert_id()
-            connect.commit()
-            hero_id = 0
-            #hero_lvl = 0
-            new_hero_id = create_hero(tg_user_id= tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
-            print(new_hero_id)
-            for i in range(6):
-                create_slot(new_hero_id, local_user_id=local_user_id)
-            print(123)
-            await message.answer(text=f'теперь ты зареган \n{commands}')
-        except:
-            await message.answer(text=f'админ пидорас сломал всё')
-    else:        await message.answer(text=f'{reg_text} {commands}')
+    chat_id = message.chat.id
+    await starttttt(tg_user_id=tg_user_id, chat_id=chat_id)
+    # tg_user_id = message.from_user.id
+    # sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
+    # print(sql_code)
+    # cur.execute(sql_code)
+    # #print(cur.fetchall())
+    # result = list(cur.fetchall())
+    # bb = [j for i in result for j in i]
+    # print(bb)
+    # #проверил есть ли пользователь. Если есть
+    # if not bb:
+    #     await message.answer(text=new_reg_text)
+    #     try:
+    #         #create_player
+    #         sql_code = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_user_id}', '0')"
+    #         print(sql_code)
+    #         cur.execute(sql_code)
+    #         local_user_id = connect.insert_id()
+    #         connect.commit()
+    #         hero_id = 0
+    #         #hero_lvl = 0
+    #         new_hero_id = create_hero(tg_user_id= tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
+    #         print(new_hero_id)
+    #         for i in range(6):
+    #             create_slot(new_hero_id, local_user_id=local_user_id)
+    #         print(123)
+    #         await message.answer(text=f'теперь ты зареган \n{commands}')
+    #     except:
+    #         await message.answer(text=f'админ пидорас сломал всё')
+    # else:   await message.answer(text=f'{reg_text} {commands}')
 
 @dis.message_handler(commands=['profile'])
 async def profile(message):
@@ -112,8 +113,8 @@ async def profile(message):
             print(cur.fetchall(), 1231231)
             await maker_menu(chat_id=message.chat.id, tg_user_id=tg_user_id,)
         else:
-            #print(11)
-            raise Exception
+            print('ERORRR')
+            raise Exception('всё ')
     except: await bot.send_message(chat_id=message.chat.id, text='иди в хуй зарегайся сначала')
 
 
@@ -390,7 +391,7 @@ async def swho_local_item_of_local_hero(callback):
     hero_id_name = come[2]
     local_hero_id = come[3]
     ikm = InlineKeyboardMarkup(row_width=2)
-    ikb1 = InlineKeyboardButton(text="положить в инвентарь", callback_data=)
+    ikb1 = InlineKeyboardButton(text="положить в инвентарь", callback_data=polojit_item_v_inventory.new())
     ikn2 = InlineKeyboardButton(text="бек", callback_data=show_local_hero.new(local_hero_id, hero_id_name))
 
 
@@ -482,15 +483,15 @@ async def shmotki_of_hero(callback):
                 #тут я хочу чтобы под картинкой героя были предметы. П
                 #при нажатии на него можно будет посмотреть статы (?) переместить в инвентарь
                 #наверное хорошо бы передать айди героя чтобы узнать сочетаемость предметов
-                ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
-                        KeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
+                ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
+                        InlineKeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
 
-            except: ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
+            except: ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
     print(len(new_items))
     #тут я напихал предметы чела к уторого есть
     if len(new_items) == 0:
         textik=f"у {hero_dick[hero_name_id]['name']}а нет предметов"
-        ikm.add(KeyboardButton(text=f'\nОдеть пердметы', callback_data=buy_more.new(local_hero_id))) #  f'buymore#{hero_id}'))
+        ikm.add(InlineKeyboardButton(text=f'\nОдеть пердметы', callback_data=buy_more.new(local_hero_id))) #  f'buymore#{hero_id}'))
     # elif len(new_items)<6:
     #     ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more(hero_id)))   #f'buymore#{hero_id}'))
 
@@ -531,9 +532,9 @@ async def shmotki(callback):
     print(len(new_items))
     if len(new_items) == 0:
         #textik=f'у {name_of_heroes[hero_name]}а нет предметов'
-        ikm.add(KeyboardButton(text=f'\nКупить', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
+        ikm.add(InlineKeyboardButton(text=f'\nКупить', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
     elif len(new_items) < 6:
-        ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more.new(hero_id)))   #f'buymore#{hero_id}'))
+        ikm.add(InlineKeyboardButton(text=f'\nКупить ещё', callback_data=buy_more.new(hero_id)))   #f'buymore#{hero_id}'))
     await bot.send_message(chat_id=chat_id, text='aaa', reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
 

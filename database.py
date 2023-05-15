@@ -52,7 +52,7 @@ def give_item(hero_id, item_id):
 #give_item(2, 1)
 
 #print(cur)
-def starttttt(tg_user_id):
+async def starttttt(tg_user_id,chat_id ):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
     cur.execute(sql_code)
     result = list(cur.fetchall())
@@ -76,9 +76,11 @@ def starttttt(tg_user_id):
             print(new_hero_id)
             for i in range(6):
                 create_slot(new_hero_id, local_user_id=local_user_id)
-
+            await bot.send_message(text=new_reg_text, chat_id=chat_id)
+            await bot.send_message(text='теперь ты зареган', chat_id=chat_id)
         except:
-            print('ты пидр ёпта')
+            await bot.send_message(text='админ пидор сломал всё', chat_id=chat_id)
+    else: await bot.send_message(text=f'ты уже зареган, команды\n{commands}', chat_id=chat_id)
 #ran_num = random.randint(1,999999)
 #starttttt(ran_num)
 
