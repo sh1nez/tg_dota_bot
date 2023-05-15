@@ -36,7 +36,7 @@ bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 print('я начал')
 
-show_local_hero = CallbackData('hero', 'hero_id')
+#show_local_hero = CallbackData('hero', 'hero_id')
 send_hero_to_farm = CallbackData('farm', 'hero_id')
 send_hero_to_fight = CallbackData('farm', 'hero_id')
 
@@ -88,7 +88,7 @@ async def start(message: aiogram.types):
             local_user_id = connect.insert_id()
             connect.commit()
             hero_id = 0
-            hero_lvl = 0
+            #hero_lvl = 0
             new_hero_id = create_hero(tg_user_id= tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
             print(new_hero_id)
             for i in range(6):
@@ -107,8 +107,9 @@ async def profile(message):
     try:
         sql_code = f'SELECT user_id FROM players WHERE tg_id = {tg_user_id}'
         print(sql_code)
-        if  cur.execute(sql_code) >0:
-            #print(123)
+
+        if cur.execute(sql_code) > 0:
+            print(cur.fetchall(), 1231231)
             await maker_menu(chat_id=message.chat.id, tg_user_id=tg_user_id,)
         else:
             #print(11)
@@ -313,7 +314,7 @@ async def try_to_buy_hero(callback):
         return
     update_gold(tg_user_id=tg_user_id, plus_money=-price_hero)
     img = types.InputMediaPhoto(caption='ураура', type='photo', media=hero_dick[hero_id]['event_img'])
-    await bot.edit_message_media(media=img, text='ураура')
+    await bot.edit_message_media(media=img, chat_id=chat_id, message_id=message_id)
     await bot.answer_callback_query(callback.id)
 
 
@@ -366,7 +367,7 @@ async def tradeheroes_ne_funk(callback):
     #img = types.InputMediaPhoto(caption='asd', media=photo_links_for_shop[0], type='photo')
     img = types.InputMediaPhoto(caption='ураура', type='photo', media=hero_dick[1]['event_img'])
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=message_id, chat_id=chat_id)
-    await bot.answer_callback_query(callback.id, text='aa')
+    await bot.answer_callback_query(callback.id)
 
 ########################################################################################################
 #профиль действия с героем
@@ -375,8 +376,23 @@ menu_hero = CallbackData('hero', 'hero_name_id', 'local_user_id')
 send_to_farm_hero = CallbackData('send_to_farm', 'hero_name_id', 'main_user_id','local_user_id')
 buy_more = CallbackData('buy_more_items', 'hero_id')
 buy_item = CallbackData('buy_for_hero')
-show_local_hero = CallbackData('shmot_of_hero', 'hero_name_id')
-show_item = CallbackData('show', 'item_id', 'hero_id')
+show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id',)
+show_item = CallbackData('show', 'item_id', 'hero_id_name', 'local_hero_id')
+polojit_item_v_inventory = CallbackData('put',)
+
+#@dis.callback_query_handler()
+@dis.callback_query_handler(show_item.filter())
+async def swho_local_item_of_local_hero(callback):
+    #тут я должен показать предмет, его статы описание и должны быть кнопки
+    #положить в инвентарь, назад, пока так потом ещё мб
+    come = callback.data.split(':')
+    item_id = come[1]
+    hero_id_name = come[2]
+    local_hero_id = come[3]
+    ikm = InlineKeyboardMarkup(row_width=2)
+    ikb1 = InlineKeyboardButton(text="положить в инвентарь", callback_data=)
+    ikn2 = InlineKeyboardButton(text="бек", callback_data=show_local_hero.new(local_hero_id, hero_id_name))
+
 
 @dis.callback_query_handler(send_to_farm_hero.filter())
 async def fermer(callback):
@@ -437,14 +453,17 @@ async def hero_show(callback):
 
 @dis.callback_query_handler(show_local_hero.filter())
 async def shmotki_of_hero(callback):
-    hero_id = callback.data[1]
-    print(hero_id)
+    print(callback.data)
+    come = callback.data.split(':')
+    local_hero_id = come[1]
+    hero_name_id = come[2]
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
-    sql_code = f"SELECT item_id, item_name FROM items WHERE hero_id = {hero_id} "
+    sql_code = f"SELECT id, item_name FROM items WHERE hero_id = {local_hero_id} "
     print(sql_code)
     cur.execute(sql_code)
     index_items = list(cur.fetchall())
+    print(index_items)
     ikm = InlineKeyboardMarkup(row_width=len(index_items))
     #print(index_items)
     new_items = []
@@ -452,24 +471,26 @@ async def shmotki_of_hero(callback):
         if i[1] is None:
              pass#
         else: new_items.append(i)
-    textik = f"вот предметы твоего {hero_dick[hero_id]['name']}"# {name_of_heroes[hero_id]}
+    textik = f"вот предметы твоего {hero_dick[hero_name_id]['name']}"# {name_of_heroes[hero_id]}
     print(new_items)
     for i in range(0, len(new_items), 2):
         if index_items[i+1] is None:
                 print(None)
         else:
-            a = True
             print(new_items[i])
             try:
-                #{items_names[new_items[i][1]]}
-                #f'item#{new_items[i][1]}#{hero_id}#'
-                ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_id)), KeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_id)))
-            except: ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_id)))
+                #тут я хочу чтобы под картинкой героя были предметы. П
+                #при нажатии на него можно будет посмотреть статы (?) переместить в инвентарь
+                #наверное хорошо бы передать айди героя чтобы узнать сочетаемость предметов
+                ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
+                        KeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
+
+            except: ikm.add(KeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
     print(len(new_items))
     #тут я напихал предметы чела к уторого есть
     if len(new_items) == 0:
-        textik=f"у {hero_dick[hero_id]['name']}а нет предметов"
-        ikm.add(KeyboardButton(text=f'\nОдеть пердметы', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
+        textik=f"у {hero_dick[hero_name_id]['name']}а нет предметов"
+        ikm.add(KeyboardButton(text=f'\nОдеть пердметы', callback_data=buy_more.new(local_hero_id))) #  f'buymore#{hero_id}'))
     # elif len(new_items)<6:
     #     ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more(hero_id)))   #f'buymore#{hero_id}'))
 
@@ -511,8 +532,8 @@ async def shmotki(callback):
     if len(new_items) == 0:
         #textik=f'у {name_of_heroes[hero_name]}а нет предметов'
         ikm.add(KeyboardButton(text=f'\nКупить', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
-    elif len(new_items)<6:
-        ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more(hero_id)))   #f'buymore#{hero_id}'))
+    elif len(new_items) < 6:
+        ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more.new(hero_id)))   #f'buymore#{hero_id}'))
     await bot.send_message(chat_id=chat_id, text='aaa', reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
 

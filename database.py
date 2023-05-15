@@ -4,7 +4,7 @@ import aiogram
 from texts import *
 import random
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from try_to_clone_main import del_callback, dis, bot
+from try_to_clone_main import del_callback, dis, bot, show_local_hero
 
 
 try:
@@ -138,16 +138,22 @@ def update_gold(tg_user_id, plus_money):
     return start_money
 
 async def maker_menu(chat_id, tg_user_id):
-    sql_code = f'SELECT local_user_id, hero_name FROM heroes WHERE tg_user_id = {tg_user_id}'
+    sql_code = f'SELECT hero_id, hero_name FROM heroes WHERE tg_user_id = {tg_user_id}'
     print(sql_code)
     cur.execute(sql_code)
-    arrey_heroes = [j for i in list(cur.fetchall()) for j in i]
+    #print(cur.fetchall())
+    arrey_heroes = cur.fetchall()##[j for i in list(cur.fetchall()) for j in i]
     print(arrey_heroes, 'asdasd')
-    h = InlineKeyboardMarkup(row_width=len(arrey_heroes) // 2)
-    for j in range(0, len(arrey_heroes)//2, ):
-        print(j)
+    print(len(arrey_heroes))
+    h = InlineKeyboardMarkup(row_width=len(arrey_heroes))
+    #print(len(arrey_heroes))
+    #arrey_heroes[0]
+    for j in range(len(arrey_heroes),):
+        print(arrey_heroes[j][0])
+        print(arrey_heroes[j][1])
+        print(type(arrey_heroes[j][0]))
         try:
-            h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=f'hero'))
+            h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=show_local_hero.new(arrey_heroes[j][0], arrey_heroes[j][1])))
         except: print(111)
     h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new()))
     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)

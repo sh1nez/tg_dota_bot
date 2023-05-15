@@ -1,4 +1,4 @@
-class Test_hero:
+class Test_hero:#ещё нужно добавить кэф маг и физ урона. Чтобы на дизрапторе не собирались в физ а на антимаге в маг
     def __init__(self, hp, damage, lvl_up):
         self.hp = hp
         self.damage = damage
