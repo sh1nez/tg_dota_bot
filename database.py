@@ -23,7 +23,7 @@ from config import token
 bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 
-show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id',)
+show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id', 'tg_user_id')
 del_callback = CallbackData('del',)
 
 # def replace_items(new_item_name, tg_user_id):
@@ -263,7 +263,7 @@ async def maker_menu(chat_id, tg_user_id):
         print(arrey_heroes[j][1])
         print(type(arrey_heroes[j][0]))
         try:
-            h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=show_local_hero.new(arrey_heroes[j][0], arrey_heroes[j][1])))
+            h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=show_local_hero.new(arrey_heroes[j][0], arrey_heroes[j][1], tg_user_id)))
         except: print(111)
         h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new()))
     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)

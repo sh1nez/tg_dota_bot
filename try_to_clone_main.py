@@ -47,7 +47,7 @@ from texts import hero_dick, item_dick, commands, new_reg_text
 print('я начал')
 
 #show_local_hero = CallbackData('hero', 'hero_id')
-send_hero_to_farm = CallbackData('farm', 'hero_id')
+send_hero_to_farm = CallbackData('farm', 'hero_id', 'tg_user_id')
 send_hero_to_fight = CallbackData('farm', 'hero_id')
 
 # @dis.callback_query_handler(show_local_hero.filter())
@@ -69,7 +69,7 @@ send_hero_to_fight = CallbackData('farm', 'hero_id')
 #     await bot.answer_callback_query(callback.id)
 
 tradeheroes = CallbackData('tradeheroes',)
-tradeitems =CallbackData('tradeitems', )
+tradeitems =CallbackData('tradeitems',)
 go_to_shop_menu = CallbackData('go_to_shop')
 go_to_items_menu = CallbackData('go_to_items')
 callback_farm_item = CallbackData('farm_items_show_shop')
@@ -305,7 +305,7 @@ async def all_items(callback):
 
 ########################################################################################################
 #магазин героев
-show_hero_n = CallbackData('hero', 'hero_id')
+show_hero_n = CallbackData('hero', 'hero_id', )
 buy_hero = CallbackData('buy', 'hero_id',)
 show_all_heroes = CallbackData('show',)
 @dis.callback_query_handler(show_all_heroes.filter())
@@ -384,12 +384,12 @@ async def tradeheroes_ne_funk(callback):
 ########################################################################################################
 #профиль действия с героем
 
-menu_hero = CallbackData('hero', 'hero_name_id', 'local_user_id')
-send_to_farm_hero = CallbackData('send_to_farm', 'hero_name_id', 'main_user_id','local_user_id')
-buy_more = CallbackData('buy_more_items', 'hero_id')
-buy_item = CallbackData('buy_for_hero')
-show_item = CallbackData('show', 'item_id', 'hero_id_name', 'local_hero_id')
-polojit_item_v_inventory = CallbackData('put',)
+menu_hero = CallbackData('hero', 'hero_name_id', 'local_user_id', 'tg_user_id')
+send_to_farm_hero = CallbackData('send', 'hero_name_id', 'tg_user_id')
+buy_more = CallbackData('buy_more_items', 'hero_id', 'tg_user_id')
+buy_item = CallbackData('buy_for_hero', 'tg_user_id')
+show_item = CallbackData('show', 'item_id', 'hero_id_name', 'local_hero_id', 'tg_user_id')
+polojit_item_v_inventory = CallbackData('put', 'tg_user_id')
 
 #@dis.callback_query_handler()
 @dis.callback_query_handler(show_item.filter())
@@ -402,16 +402,16 @@ async def swho_local_item_of_local_hero(callback):
     local_hero_id = come[3]
     ikm = InlineKeyboardMarkup(row_width=2)
     ikb1 = InlineKeyboardButton(text="положить в инвентарь", callback_data=polojit_item_v_inventory.new())
-    ikn2 = InlineKeyboardButton(text="бек", callback_data=show_local_hero.new(local_hero_id, hero_id_name))
+    ikn2 = InlineKeyboardButton(text="бек", callback_data=show_local_hero.new(local_hero_id, hero_id_name, ))
 
 
 @dis.callback_query_handler(send_to_farm_hero.filter())
 async def fermer(callback):
-    heroe_name = callback.data['hero_name_id']
-    tg_main_user_id = int(callback.data['main_user_id'])
+    come = callback.data.split(':')
+    heroe_name = come[1]
+    tg_user_id = come[2]
     tg_click_user_id = int(callback.from_user.id)
-    local_user_id = callback.data['local_user_id']
-    if tg_main_user_id != tg_click_user_id:
+    if tg_user_id != tg_click_user_id:
         await bot.answer_callback_query('пидор по своим ссылкам кликай чужое не трож')
         return
     sql_code = f'SELECT last_time FROM heroes WHERE user_id = {tg_click_user_id} AND hero_id = {heroe_name}'
@@ -432,12 +432,12 @@ async def fermer(callback):
         await bot.answer_callback_query(callback.id)
         await asyncio.sleep(3)
         rand_num = random.randint(50,150)
-        sql_code = f'SELECT money FROM players WHERE user_id = {local_user_id}'
+        sql_code = f'SELECT money FROM players WHERE tg_id = {tg_user_id}'
         cur.execute(sql_code)
         asd =cur.fetchone()
         print(asd[0])
         await bot.send_message(chat_id=callback.message.chat.id, text=f"твой {hero_dick[heroe_name]['name']} вернусля, залутав {rand_num} голды")
-        sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND user_id = {local_user_id}"
+        sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {heroe_name} AND tg_user_id = {tg_user_id}"
         print(sql_code)
         cur.execute(sql_code)
         connect.commit()
@@ -463,12 +463,14 @@ async def hero_show(callback):
 
 
 @dis.callback_query_handler(show_local_hero.filter())
+#эта хрень должна показать локального героя со своими предметами, возможностью одеть/снять ещё.
 async def shmotki_of_hero(callback):
     print(callback.data)
     come = callback.data.split(':')
     local_hero_id = come[1]
-    hero_name_id = come[2]
+    hero_name_id = come[2]#это просто для удобства чтобы было имя пользователя
     message_id = callback.message.message_id
+    #tg_user_id =
     chat_id = callback.message.chat.id
     sql_code = f"SELECT id, item_name FROM items WHERE hero_id = {local_hero_id}"
     print(sql_code)
@@ -476,33 +478,42 @@ async def shmotki_of_hero(callback):
     index_items = list(cur.fetchall())
     print(index_items)
     ikm = InlineKeyboardMarkup(row_width=len(index_items))
-    #print(index_items)
     new_items = []
-    #это круто это нужно, но  когда герой показывается должны быть кнопки шмотки, фармить,
-    # for i in index_items:
-    #     if i[1] is None:
-    #          pass#
-    #     else: new_items.append(i)
-    # textik = f"вот предметы твоего {hero_dick[hero_name_id]['name']}"# {name_of_heroes[hero_id]}
-    # print(new_items)
-
-    # for i in range(0, len(new_items), 2):
-    #     if index_items[i+1] is None:
-    #             print(None)
-    #     else:
-    #         print(new_items[i])
-    #         try:
-    #             #тут я хочу чтобы под картинкой героя были предметы. П
-    #             #при нажатии на него можно будет посмотреть статы (?) переместить в инвентарь
-    #             #наверное хорошо бы передать айди героя чтобы узнать сочетаемость предметов
-    #             ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
-    #                     InlineKeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
-    #         except: ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
+    #при нажатии на шмотку она должна перемещаться в инвентарь
+    for i in index_items:
+        new_items.append(i)
+        #        if i[1] is None:
+        #     pass
+        #else:
+    #то что сверху теперь не нужно т.к. у меня в бд нет пустых слотов
+    textik = f"вот предметы твоего {hero_dick[hero_name_id]['name']} Нажми на предмет чтобы снять его" \
+             f" в инвентарьили 'одеть', чтобы выбрать предметы из своего инвентаря ", # {name_of_heroes[hero_id]}
+    print(new_items)
+    for i in range(0, len(new_items), 2):
+        if index_items[i+1] is None:
+                print(None)
+        else:
+            print(new_items[i])
+            try:
+                #тут я хочу чтобы под картинкой героя были предметы.
+                #а сверху что ты делал пидор тупоголовый
+                #при нажатии на него можно будет посмотреть статы (?) переместить в инвентарь
+                #наверное хорошо бы передать айди героя чтобы узнать сочетаемость предметов
+                #БЛЯТЬ ПРИДЕЛАЙ В КОЛБЕК приедлывание
+                #ДА СУКЕА СВЕРХУ ТОЛЬКО ЁБАНЫЙ МАССИВ ГДЕ ЕГО ДЕГЕНАРТ СМОТРЯЩИЙ ТИПО ТЕБЯ БУДЕТ СМОТРЕТЬ
+                ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
+                        InlineKeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
+            except:
+                try: ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
+                except:pass
+                #окей тут есть предметы с сылками на их подробный осмотр
     print(len(new_items))
     #тут я напихал предметы чела к уторого есть
+    #а нахуя сверху уже всё есть
     if len(new_items) == 0:
         textik=f"у {hero_dick[hero_name_id]['name']}а нет предметов"
-        ikm.add(InlineKeyboardButton(text=f'\nОдеть пердметы', callback_data=buy_more.new(local_hero_id))) #  f'buymore#{hero_id}'))
+        ikm.add(InlineKeyboardButton(text=f'\nОдеть ещё пердметы', callback_data=buy_more.new(local_hero_id, )))
+        #тут пользователь должен перенаправляться в хуинку где он одевает предметы из своего inventory
     # elif len(new_items)<6:
     #     ikm.add(KeyboardButton(text=f'\nКупить ещё', callback_data=buy_more(hero_id)))   #f'buymore#{hero_id}'))
 
@@ -550,8 +561,11 @@ async def shmotki_of_hero(callback):
 #     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(buy_more.filter())
-async def shop_to_by_items(callback):
-    print(callback)
+async def shop_to_wear_items(callback):
+    #вот и тут мы должны показать пользоваетелю его предметы
+    hero_id = callback.data.split(':')[1]
+    #теперь ищем все неодетые предметы
+    sql_code = f"SELECT id FROM items WHERE "
 #@dis.callback_query_handler()
 
 if __name__ == '__main__':
