@@ -1,12 +1,12 @@
-from config import *
 import pymysql
+from config import host, user, password, db_name
+# from try_to_clone_main import bot, show_local_hero, del_callback, InlineKeyboardButton, InlineKeyboardMarkup
+# from config import host, password,db_name,user
+# from texts import hero_dick, item_dick, commands, new_reg_text
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.callback_data import CallbackData
 import aiogram
 from texts import *
-import random
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from try_to_clone_main import del_callback, dis, bot, show_local_hero
-
-
 try:
     connect = pymysql.connect(
         host=host,
@@ -15,23 +15,47 @@ try:
         password=password,
         database=db_name,
     )
+    print(123)
 except: print('ConnectionError')
-
 cur = connect.cursor()
 
+from config import token
+bot = aiogram.Bot(token)
+dis = aiogram.Dispatcher(bot)
 
+show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id',)
+del_callback = CallbackData('del',)
 
-def give_item(hero_id, item_id):
-    sql_code = f'SELECT id, item_name FROM items WHERE hero_id = {hero_id} AND item_name IS NULL'
+def replace_items(new_item_name, tg_user_id):
+    sql_code =f"SELECT items FROM players WHERE tg_id = {tg_user_id}"
+    a = cur.execute(sql_code)
+    items = cur.fetchone()[0].split()
+    new_items = []
+    for i in items:
+        a = i.split('x')
+        print(a)
+        new_items.append([a[0], a[1]])
+
+    new_str = ''
+    for i in new_items:
+        new_str+=f"{i[0]}x{i[1]} "
+    print(new_str)
+    return new_items
+
+print(replace_items(1, 1664371560))
+
+def give_item(tg_user_id, item_id_name):
+    sql_code = f'SELECT id, item_name FROM items WHERE hero_id = {tg_user_id} AND item_name IS NULL'
+    #это старая функция где я хотел заменять итем. Сейчас я хочу этой функцией просто выдать итем в инветарь
     a = cur.execute(sql_code)
     print(a)
-    if cur.execute(sql_code) == 0:
-        print('все слоты заняты')
-        return
+    #if cur.execute(sql_code) == 0:#проверили все ли слоты пустые
+    #    print('все слоты заняты')
+    #    return
     items_id_name = cur.fetchall()
     print(items_id_name)
     replace_item = items_id_name[0][0]
-    sql_code = f"UPDATE items SET item_name = {item_id} WHERE id = {replace_item}"
+    sql_code = f"UPDATE items SET item_name = {item_id_name} WHERE id = {replace_item}"
     print(sql_code)
     cur.execute(sql_code)
     connect.commit()
@@ -49,7 +73,6 @@ def give_item(hero_id, item_id):
     #for i in items_id_name:
     #    print(i)
 
-#give_item(2, 1)
 
 #print(cur)
 async def starttttt(tg_user_id,chat_id ):
@@ -103,7 +126,6 @@ def make_user_lv(tg_user_id, text, image):
 # VALUES (NULL, '113123', 'adasd sdgfoisdoi u234gsd hjgsdfkg kjsdgf', 'sdsbhdfhkdkfksdf')
 
 def buyer_items(price, item_id, hero_id):
-
     sql_update = 'UPDATE '
 
 
@@ -157,6 +179,5 @@ async def maker_menu(chat_id, tg_user_id):
         try:
             h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=show_local_hero.new(arrey_heroes[j][0], arrey_heroes[j][1])))
         except: print(111)
-    h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new()))
+        h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new()))
     await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
-

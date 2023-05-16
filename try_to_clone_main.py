@@ -4,6 +4,7 @@
 
 #таблица игроки sql код
 #CREATE TABLE `test_bot`.`players` ( `user_id` INT NOT NULL , `tg_id` VARCHAR(15) NOT NULL , `money` INT NOT NULL , `status` INT NULL DEFAULT NULL , PRIMARY KEY (`user_id`)) ENGINE = InnoDB;
+#ALTER TABLE `players` ADD `items` VARCHAR(100) NOT NULL AFTER `money`;
 
 # таблица герои
 # CREATE TABLE `test_bot`.`heroes` (
@@ -20,18 +21,23 @@
 # `tg_id` VARCHAR(15) NOT NULL ,
 # `text` TEXT NOT NULL ,
 # `image` TINYTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
-
+from texts import hero_dick, item_dick, photo_links_for_shop
 import random
 from aiogram import types
+import aiogram
 from aiogram.utils.callback_data import CallbackData
-import pymysql
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import datetime
 import asyncio
-from texts import *
-from database import *
-from config import token
-bot = aiogram.Bot(token)
-dis = aiogram.Dispatcher(bot)
+from database import connect, cur, maker_menu, update_gold, starttttt, dis, bot, show_local_hero, del_callback
+from texts import hero_dick, item_dick, commands, new_reg_text
+
+
+
+#print(cur)
+#starttttt(ran_num)
+
+
 print('я начал')
 
 #show_local_hero = CallbackData('hero', 'hero_id')
@@ -58,7 +64,6 @@ send_hero_to_fight = CallbackData('farm', 'hero_id')
 
 tradeheroes = CallbackData('tradeheroes',)
 tradeitems =CallbackData('tradeitems', )
-del_callback = CallbackData('del',)
 go_to_shop_menu = CallbackData('go_to_shop')
 go_to_items_menu = CallbackData('go_to_items')
 callback_farm_item = CallbackData('farm_items_show_shop')
@@ -377,7 +382,6 @@ menu_hero = CallbackData('hero', 'hero_name_id', 'local_user_id')
 send_to_farm_hero = CallbackData('send_to_farm', 'hero_name_id', 'main_user_id','local_user_id')
 buy_more = CallbackData('buy_more_items', 'hero_id')
 buy_item = CallbackData('buy_for_hero')
-show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id',)
 show_item = CallbackData('show', 'item_id', 'hero_id_name', 'local_hero_id')
 polojit_item_v_inventory = CallbackData('put',)
 
