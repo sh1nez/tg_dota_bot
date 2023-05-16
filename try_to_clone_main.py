@@ -1,6 +1,11 @@
 #таблица предметы
-#CREATE TABLE `test_bot`.`heroes` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NOT NULL ,
-#`player_id` MEDIUMINT NOT NULL , `item_name` TINYINT NULL DEFAULT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+#CREATE TABLE `test_bot`.`items` (
+# `id` MEDIUMINT NOT NULL AUTO_INCREMENT ,
+# `hero_id` MEDIUMINT NULL DEFAULT NULL ,
+# `tg_user_id` VARCHAR(15) NOT NULL ,
+# `item_name` TINYINT NOT NULL ,
+# `count` TINYINT NOT NULL ,
+# PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 #таблица игроки sql код
 #CREATE TABLE `test_bot`.`players` ( `user_id` INT NOT NULL , `tg_id` VARCHAR(15) NOT NULL , `money` INT NOT NULL , `status` INT NULL DEFAULT NULL , PRIMARY KEY (`user_id`)) ENGINE = InnoDB;

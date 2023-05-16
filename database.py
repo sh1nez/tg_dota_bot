@@ -15,7 +15,7 @@ try:
         password=password,
         database=db_name,
     )
-    print(123)
+    #print(123)
 except: print('ConnectionError')
 cur = connect.cursor()
 
@@ -42,11 +42,71 @@ def replace_items(new_item_name, tg_user_id):
     print(new_str)
     return new_items
 
-print(replace_items(1, 1664371560))
+#print(replace_items(1, 1664371560))
 
-def give_item(tg_user_id, item_id_name):
-    sql_code = f'SELECT id, item_name FROM items WHERE hero_id = {tg_user_id} AND item_name IS NULL'
+def give_change(tg_user_id, item_id_name, give=True):#эта функция даёт/увеличивает/уменьшаеь/удаляет итем из инветаря
+    sql_code = f"SELECT count, id FROM items WHERE tg_user_id = {tg_user_id} and item_name = {item_id_name}"
+    a = cur.execute(sql_code)
+    b = cur.fetchone()  # тут должны лежать данные в формате (count, id) итема
+    print(b)
+    #if not b:
+    if not b:
+        if give:
+        #создаём новый
+            sql_code = f"INSERT INTO items (tg_user_id, item_name, count) VALUES ('{tg_user_id}', '{item_id_name}', '1')"
+            cur.execute(sql_code)
+            connect.commit()#мы создали новую ячейку в таблице итемс с нужным итемом для нужного пользователя.
+            return True
+        print('нечего удалять')
+        return False
+    #сначала мы ищем есть ли итем который мы хотим дать, если да то увеличиваем количество.
+    #если гив = фалсе, то смотрим не равно ли значение еденицы, чтобы удалить хуйню из таблицы.
+    count = b[0]
+    aidi = b[1]
+    if give:#если мы увеличиваем итем
+        sql_code = f"UPDATE items SET count = {count+1} WHERE tg_user_id = {tg_user_id} and item_name = {item_id_name}"
+        print(sql_code)
+        cur.execute(sql_code)
+        connect.commit()
+        return True
+    if not give:#если мы забираем итем
+        if count ==1:
+            #DELETE FROM `items` WHERE `items`.`id` = 1;
+            sql_code = f'DELETE FROM items WHERE items . tg_user_id = {tg_user_id} AND items . item_name = {item_id_name}'
+            cur.execute(sql_code)
+            connect.commit()
+            print('удалил')
+            return True
+        else:
+            sql_code = f"UPDATE items SET count = {count - 1} WHERE tg_user_id = {tg_user_id} and item_name = {item_id_name}"
+            print(sql_code)
+            cur.execute(sql_code)
+            connect.commit()
+        return True
+
+#give_change(1, 2, False)
+
+
+def put_in_hero(hero_id, tg_user_id, item_name, to_hero):#фукнция перемещает предмет из инвентаря в героя/из героя в инветарь
+    # to_hero. Если True то из инветаря в героя, если False, то из героя в инвентарь
+    if to_hero:
+        #тут мне нужно добавить к нужной строке хиро айди айди герои
+        sql_code = f"UPDATE items SET hero_id = {hero_id} WHERE tg_user_id = {tg_user_id} AND item_name = {item_name}"
+        print(sql_code)
+        cur.execute(sql_code)
+        connect.commit()
+    else:
+        sql_code = f"UPDATE items SET hero_id = NULL WHERE tg_user_id = {tg_user_id} AND item_name = {item_name}"
+        print(sql_code)
+        cur.execute(sql_code)
+        connect.commit()
+#print(put_in_hero(5, 1, 1, False))
+
+
+def give_item(tg_user_id, item_id_name):#эта функция должна давать или забирать итем
+    #sql_code = f'SELECT id, item_name FROM items WHERE hero_id = {tg_user_id} AND item_name IS NULL'
     #это старая функция где я хотел заменять итем. Сейчас я хочу этой функцией просто выдать итем в инветарь
+    sql_code =f"SELECT "
     a = cur.execute(sql_code)
     print(a)
     #if cur.execute(sql_code) == 0:#проверили все ли слоты пустые
