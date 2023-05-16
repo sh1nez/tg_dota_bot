@@ -26,24 +26,23 @@ dis = aiogram.Dispatcher(bot)
 show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id',)
 del_callback = CallbackData('del',)
 
-def replace_items(new_item_name, tg_user_id):
-    sql_code =f"SELECT items FROM players WHERE tg_id = {tg_user_id}"
-    a = cur.execute(sql_code)
-    items = cur.fetchone()[0].split()
-    new_items = []
-    for i in items:
-        a = i.split('x')
-        print(a)
-        new_items.append([a[0], a[1]])
-
-    new_str = ''
-    for i in new_items:
-        new_str+=f"{i[0]}x{i[1]} "
-    print(new_str)
-    return new_items
+# def replace_items(new_item_name, tg_user_id):
+#     sql_code =f"SELECT items FROM players WHERE tg_id = {tg_user_id}"
+#     a = cur.execute(sql_code)
+#     items = cur.fetchone()[0].split()
+#     new_items = []
+#     for i in items:
+#         a = i.split('x')
+#         print(a)
+#         new_items.append([a[0], a[1]])
+#
+#     new_str = ''
+#     for i in new_items:
+#         new_str+=f"{i[0]}x{i[1]} "
+#     print(new_str)
+#     return new_items
 
 #print(replace_items(1, 1664371560))
-
 def give_change(tg_user_id, item_id_name, give=True):#эта функция даёт/увеличивает/уменьшаеь/удаляет итем из инветаря
     sql_code = f"SELECT count, id FROM items WHERE tg_user_id = {tg_user_id} and item_name = {item_id_name}"
     a = cur.execute(sql_code)
@@ -157,8 +156,10 @@ async def starttttt(tg_user_id,chat_id ):
             print(123)
             new_hero_id = create_hero(tg_user_id=tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
             print(new_hero_id)
-            for i in range(6):
-                create_slot(new_hero_id, local_user_id=local_user_id)
+            #for i in range(6):
+            #    create_slot(new_hero_id, local_user_id=local_user_id)
+            #сейчас это не испоьзуется т.к. у каждого героя будет не заданные 6 слотов, а добавляемые по мере
+            #покупки слоты.
             await bot.send_message(text=new_reg_text, chat_id=chat_id)
             await bot.send_message(text='теперь ты зареган', chat_id=chat_id)
         except:
@@ -197,11 +198,36 @@ def create_lepnardo_user(tg_user_id, txt, image):
     print('1111')
 
 
-def create_slot(hero_id, local_user_id):
-    sql_code = f"INSERT INTO items (`hero_id`, `player_id`, `item_name`) VALUES ('{hero_id}', {local_user_id} , NULL);"
-    print(sql_code)
-    cur.execute(sql_code)
-    connect.commit()
+def create_del_slot_for_hero(hero_id, tg_user_id, fl, item_id_name):#создаёт/удаляет/изменяет слот для героя
+    #rint(args)
+    #fl==True = создаём слот для героя
+    #*args это название для предмета в слоте
+    kusok1 = ''
+    kusok2 = ''
+    #if args:
+    #    kusok1 = f", `item_name`"
+    #    kusok2 = f", '{args[0]}'"
+    #    print('y')
+    if fl:
+        sql_code = f"INSERT INTO items (`id`, `hero_id`, `tg_user_id`, `item_name`) VALUES (NULL, '{hero_id}', '{tg_user_id}', '{item_id_name}');"
+        print(sql_code)
+        cur.execute(sql_code)
+        connect.commit()
+        return
+    if not fl: #тут нужно просто удалить слот
+        #DELETE FROM `items` WHERE `items`.`id` = 6;
+        sql_code = f"SELECT id FROM items WHERE hero_id = {hero_id} AND tg_user_id = {tg_user_id} AND item_name = {item_id_name}"
+        if cur.execute(sql_code):
+            aidi = cur.fetchone()[0]
+            sql_code = f"DELETE FROM `items` WHERE id = {aidi}"
+            print(sql_code)
+            cur.execute(sql_code)
+            connect.commit()
+        else:
+            print('нет такого')
+            return False
+
+print(create_del_slot_for_hero(19, 1664371560, 1, 1))
 def create_hero(local_user_id, tg_user_id, name_hero_id):
     sql_code = f"INSERT INTO heroes ( `tg_user_id`, `local_user_id`,  `hero_name`, `hero_lvl`) VALUES ('{tg_user_id}'," \
                f" '{local_user_id}', '{name_hero_id}', '1');"

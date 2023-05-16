@@ -6,6 +6,7 @@
 # `item_name` TINYINT NOT NULL ,
 # `count` TINYINT NOT NULL ,
 # PRIMARY KEY (`id`)) ENGINE = InnoDB;
+#ALTER TABLE `items` CHANGE `count` `count` TINYINT(4) NULL DEFAULT NULL;
 
 #таблица игроки sql код
 #CREATE TABLE `test_bot`.`players` ( `user_id` INT NOT NULL , `tg_id` VARCHAR(15) NOT NULL , `money` INT NOT NULL , `status` INT NULL DEFAULT NULL , PRIMARY KEY (`user_id`)) ENGINE = InnoDB;
@@ -508,49 +509,48 @@ async def shmotki_of_hero(callback):
     await bot.answer_callback_query(callback.id)
 
 ###########################################################################################################
-@dis.callback_query_handler(lambda m: m.data.startswith('shmot'))
-async def shmotki(callback):
-    come = callback.data.split('#')
-    print(come)
-    hero_name = int(come[1])
-    tg_user_id = come[2]
-    chat_id = come[3]
-    hero_id = chat_id[4]
-    sql_code = f"SELECT item_id, item_name FROM items WHERE hero_id = {hero_id} "
-    print(sql_code)
-    cur.execute(sql_code)
-    index_items = list(cur.fetchall())
-    ikm = InlineKeyboardMarkup(row_width=len(index_items))
-    #print(index_items)
-    new_items = []
-    for i in index_items:
-        if i[1] is None:
-             pass#
-        else: new_items.append(i)
-    #textik = f"вот предметы твоего  {name_of_heroes[hero_id]}"#{name_of_heroes[hero_name]}'
-    print(new_items)
-    for i in range(0, len(new_items), 2):
-        if index_items[i+1] is None:
-                print(None)
-        else:
-            a = True
-            print(new_items[i][1])
-            #try:
-            #    ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items_names[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
-            #except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
-    print(len(new_items))
-    if len(new_items) == 0:
-        #textik=f'у {name_of_heroes[hero_name]}а нет предметов'
-        ikm.add(InlineKeyboardButton(text=f'\nКупить', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
-    elif len(new_items) < 6:
-        ikm.add(InlineKeyboardButton(text=f'\nКупить ещё', callback_data=buy_more.new(hero_id)))   #f'buymore#{hero_id}'))
-    await bot.send_message(chat_id=chat_id, text='aaa', reply_markup=ikm)
-    await bot.answer_callback_query(callback.id)
+# @dis.callback_query_handler(lambda m: m.data.startswith('shmot'))
+# async def shmotki(callback):
+#     come = callback.data.split('#')
+#     print(come)
+#     hero_name = int(come[1])
+#     tg_user_id = come[2]
+#     chat_id = come[3]
+#     hero_id = chat_id[4]
+#     sql_code = f"SELECT id, item_name FROM items WHERE hero_id = {hero_id} "
+#     print(sql_code)
+#     cur.execute(sql_code)
+#     index_items = list(cur.fetchall())
+#     ikm = InlineKeyboardMarkup(row_width=len(index_items))
+#     #print(index_items)
+#     new_items = []
+#     for i in index_items:
+#         if i[1] is None:
+#              pass#
+#         else: new_items.append(i)
+#     #textik = f"вот предметы твоего  {name_of_heroes[hero_id]}"#{name_of_heroes[hero_name]}'
+#     print(new_items)
+#     for i in range(0, len(new_items), 2):
+#         if index_items[i+1] is None:
+#                 print(None)
+#         else:
+#             a = True
+#             print(new_items[i][1])
+#             #try:
+#             #    ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'), KeyboardButton(text=f'{items_names[new_items[i+1][1]]}', callback_data=f'item##{hero_id}#'))
+#             #except: ikm.add(KeyboardButton(text=f'{items_names[new_items[i][1]]}', callback_data=f'item#{new_items[i][1]}#{hero_id}#'))
+#     print(len(new_items))
+#     if len(new_items) == 0:
+#         #textik=f'у {name_of_heroes[hero_name]}а нет предметов'
+#         ikm.add(InlineKeyboardButton(text=f'\nКупить', callback_data=buy_more.new(hero_id))) #  f'buymore#{hero_id}'))
+#     elif len(new_items) < 6:
+#         ikm.add(InlineKeyboardButton(text=f'\nКупить ещё', callback_data=buy_more.new(hero_id)))   #f'buymore#{hero_id}'))
+#     await bot.send_message(chat_id=chat_id, text='aaa', reply_markup=ikm)
+#     await bot.answer_callback_query(callback.id)
 
 @dis.callback_query_handler(buy_more.filter())
 async def shop_to_by_items(callback):
     print(callback)
-
 #@dis.callback_query_handler()
 
 if __name__ == '__main__':
