@@ -470,7 +470,7 @@ async def shmotki_of_hero(callback):
     hero_name_id = come[2]
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
-    sql_code = f"SELECT id, item_name FROM items WHERE hero_id = {local_hero_id} "
+    sql_code = f"SELECT id, item_name FROM items WHERE hero_id = {local_hero_id}"
     print(sql_code)
     cur.execute(sql_code)
     index_items = list(cur.fetchall())
@@ -478,25 +478,26 @@ async def shmotki_of_hero(callback):
     ikm = InlineKeyboardMarkup(row_width=len(index_items))
     #print(index_items)
     new_items = []
-    for i in index_items:
-        if i[1] is None:
-             pass#
-        else: new_items.append(i)
-    textik = f"вот предметы твоего {hero_dick[hero_name_id]['name']}"# {name_of_heroes[hero_id]}
-    print(new_items)
-    for i in range(0, len(new_items), 2):
-        if index_items[i+1] is None:
-                print(None)
-        else:
-            print(new_items[i])
-            try:
-                #тут я хочу чтобы под картинкой героя были предметы. П
-                #при нажатии на него можно будет посмотреть статы (?) переместить в инвентарь
-                #наверное хорошо бы передать айди героя чтобы узнать сочетаемость предметов
-                ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
-                        InlineKeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
+    #это круто это нужно, но  когда герой показывается должны быть кнопки шмотки, фармить,
+    # for i in index_items:
+    #     if i[1] is None:
+    #          pass#
+    #     else: new_items.append(i)
+    # textik = f"вот предметы твоего {hero_dick[hero_name_id]['name']}"# {name_of_heroes[hero_id]}
+    # print(new_items)
 
-            except: ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
+    # for i in range(0, len(new_items), 2):
+    #     if index_items[i+1] is None:
+    #             print(None)
+    #     else:
+    #         print(new_items[i])
+    #         try:
+    #             #тут я хочу чтобы под картинкой героя были предметы. П
+    #             #при нажатии на него можно будет посмотреть статы (?) переместить в инвентарь
+    #             #наверное хорошо бы передать айди героя чтобы узнать сочетаемость предметов
+    #             ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)),
+    #                     InlineKeyboardButton(text=f'{all_items[new_items[i+1][1]]}', callback_data=show_item.new(new_items[i+1][1], hero_name_id)))
+    #         except: ikm.add(InlineKeyboardButton(text=f"{all_items[new_items[i][1]]}", callback_data=show_item.new(new_items[i][1], hero_name_id)))
     print(len(new_items))
     #тут я напихал предметы чела к уторого есть
     if len(new_items) == 0:
