@@ -23,7 +23,7 @@ from config import token
 bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 
-show_local_hero = CallbackData('shmot_of_hero', 'local_hero_id', 'tg_user_id')
+show_local_hero = CallbackData('shmot_of_hero','local_hero_id', 'hero_name', 'tg_user_id')
 del_callback = CallbackData('del',)
 
 # def replace_items(new_item_name, tg_user_id):
@@ -134,7 +134,7 @@ def give_item(tg_user_id, item_id_name):#эта функция должна да
 
 
 #print(cur)
-async def starttttt(tg_user_id,chat_id ):
+async def starttttt(tg_user_id, chat_id,):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
     cur.execute(sql_code)
     result = list(cur.fetchall())
@@ -227,7 +227,7 @@ def create_del_slot_for_hero(hero_id, tg_user_id, fl, item_id_name):#созда�
             print('нет такого')
             return False
 
-print(create_del_slot_for_hero(19, 1664371560, 1, 1))
+#print(create_del_slot_for_hero(19, 1664371560, 1, 1))
 def create_hero(local_user_id, tg_user_id, name_hero_id):
     sql_code = f"INSERT INTO heroes ( `tg_user_id`, `local_user_id`,  `hero_name`, `hero_lvl`) VALUES ('{tg_user_id}'," \
                f" '{local_user_id}', '{name_hero_id}', '1');"
@@ -247,7 +247,7 @@ def update_gold(tg_user_id, plus_money):
     connect.commit()
     return start_money
 
-async def maker_menu(chat_id, tg_user_id):
+async def maker_menu(chat_id, tg_user_id, *args):
     sql_code = f'SELECT hero_id, hero_name FROM heroes WHERE tg_user_id = {tg_user_id}'
     print(sql_code)
     cur.execute(sql_code)
@@ -255,15 +255,27 @@ async def maker_menu(chat_id, tg_user_id):
     arrey_heroes = cur.fetchall()##[j for i in list(cur.fetchall()) for j in i]
     print(arrey_heroes, 'asdasd')
     print(len(arrey_heroes))
-    h = InlineKeyboardMarkup(row_width=len(arrey_heroes))
+    h = InlineKeyboardMarkup(row_width=len(arrey_heroes)+1)
     #print(len(arrey_heroes))
     #arrey_heroes[0]
-    for j in range(len(arrey_heroes),):
-        print(arrey_heroes[j][0])
-        print(arrey_heroes[j][1])
+    for j in range(len(arrey_heroes)):
+        print(arrey_heroes[j][0] ,arrey_heroes[j][1], hero_dick[j]['name'])
         print(type(arrey_heroes[j][0]))
+        print(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id)
         try:
-            h.add(InlineKeyboardButton(text=hero_dick[j]['name'], callback_data=show_local_hero.new(arrey_heroes[j][0], arrey_heroes[j][1], tg_user_id)))
+            h.add(InlineKeyboardButton(text=f"{hero_dick[j]['name']}", callback_data=show_local_hero.new(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id)))#show_local_hero.new()))
+
         except: print(111)
-        h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new()))
-    await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)
+    h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new())) #del_callback.new()))
+    print(photo_links_for_shop[0])
+    #img = aiogram.types.InputMediaPhoto(media=photo_links_for_shop[1], caption='вот твои герои')
+    #await bot.send_photo(chat_id=chat_id, caption='магаз у наташки', reply_markup=h, photo=photo_links_for_shop[0])
+    if args:
+        print(args)
+        img = aiogram.types.InputMediaPhoto(media=photo_links_for_shop[0], caption='вот твои герои')
+        await bot.edit_message_media(chat_id=chat_id, message_id=args[0], media=img)
+        await bot.answer_callback_query(args[1])
+        return
+    else:
+        await bot.send_photo(caption='вот твои герои', reply_markup=h, chat_id=chat_id, photo=photo_links_for_shop[0])#bot.se
+    #await bot.send_message(text='вот твои герои', reply_markup=h, chat_id=chat_id)

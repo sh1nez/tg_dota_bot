@@ -29,6 +29,7 @@ hero_dick = {
 }
 #шаблон
     #{'name': '', 'global_id': 0, 'price': 0, 'description': '', 'dis_stats': '', 'farm': 1 },
+#всё это нужно для описания, другие классы в другом файле для работы
 item_dick = {
     'farm': {
         0: {'name': 'топорик', 'global_id': 0, 'price': 100, 'description': 'шшаа', 'dis_stats':'немного фарма', 'farm': 5},
@@ -54,3 +55,5 @@ photo_links_for_shop = [
     'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
     'https://mmo13.ru/download/content/202004/15/11/image_5e96c4956372a8.29507748.jpg?1586944173',
 ]
+
+#class Description_items: хз нужно или нет
