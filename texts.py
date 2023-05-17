@@ -15,6 +15,7 @@ commands = '''/gold
 '''
 
 #{'name': '', 'description': '', 'price':1, 'stats':'', img:'',  }
+
 hero_dick = {
     0: {'name': 'pudge', 'description': 'самый секс перс доты имба покупай', 'price': 8800,
         'stats': 'asasd', 'img':r'https://cq.ru/storage/uploads/images/1530144/1.jpg',

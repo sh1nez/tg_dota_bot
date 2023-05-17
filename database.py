@@ -7,6 +7,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
 import aiogram
 from texts import *
+
 try:
     connect = pymysql.connect(
         host=host,
@@ -15,9 +16,24 @@ try:
         password=password,
         database=db_name,
     )
-    #print(123)
-except: print('ConnectionError')
+    # print(123)
+except:
+    print('ConnectionError')
 cur = connect.cursor()
+def connection():
+    global connect, cur
+    del connect, cur
+    try:
+        connect = pymysql.connect(
+            host=host,
+            port=3306,
+            user=user,
+            password=password,
+            database=db_name,
+        )
+        #print(123)
+    except: print('ConnectionError')
+    cur = connect.cursor()
 
 from config import token
 bot = aiogram.Bot(token)
@@ -160,8 +176,9 @@ async def starttttt(tg_user_id, chat_id,):
             #    create_slot(new_hero_id, local_user_id=local_user_id)
             #сейчас это не испоьзуется т.к. у каждого героя будет не заданные 6 слотов, а добавляемые по мере
             #покупки слоты.
-            await bot.send_message(text=new_reg_text, chat_id=chat_id)
             await bot.send_message(text='теперь ты зареган', chat_id=chat_id)
+            await bot.send_message(text=new_reg_text, chat_id=chat_id)
+
         except:
             await bot.send_message(text='админ пидор сломал всё', chat_id=chat_id)
     else: await bot.send_message(text=f'ты уже зареган, команды\n{commands}', chat_id=chat_id)
@@ -248,6 +265,7 @@ def update_gold(tg_user_id, plus_money):
     return start_money
 
 async def maker_menu(chat_id, tg_user_id, *args):
+    print('start' ,chat_id, tg_user_id, args)
     sql_code = f'SELECT hero_id, hero_name FROM heroes WHERE tg_user_id = {tg_user_id}'
     print(sql_code)
     cur.execute(sql_code)
@@ -263,18 +281,21 @@ async def maker_menu(chat_id, tg_user_id, *args):
         print(type(arrey_heroes[j][0]))
         print(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id)
         try:
-            h.add(InlineKeyboardButton(text=f"{hero_dick[j]['name']}", callback_data=show_local_hero.new(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id)))#show_local_hero.new()))
+            h.add(InlineKeyboardButton(text=f"{hero_dick[j]['name']}", callback_data=show_local_hero.new(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id,)))#show_local_hero.new()))
 
         except: print(111)
     h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new())) #del_callback.new()))
-    print(photo_links_for_shop[0])
+    #print(photo_links_for_shop[0])
     #img = aiogram.types.InputMediaPhoto(media=photo_links_for_shop[1], caption='вот твои герои')
     #await bot.send_photo(chat_id=chat_id, caption='магаз у наташки', reply_markup=h, photo=photo_links_for_shop[0])
     if args:
         print(args)
         img = aiogram.types.InputMediaPhoto(media=photo_links_for_shop[0], caption='вот твои герои')
-        await bot.edit_message_media(chat_id=chat_id, message_id=args[0], media=img)
+        #await bot.edit_message_media(chat_id=chat_id, message_id=args[0], media=img)
+        img = aiogram.types.InputMediaPhoto(media=photo_links_for_shop[1], caption='ssss', type='photo')
+        await bot.edit_message_media(reply_markup=h, chat_id=chat_id, media=img, message_id=args[0])
         await bot.answer_callback_query(args[1])
+        print('all cool')
         return
     else:
         await bot.send_photo(caption='вот твои герои', reply_markup=h, chat_id=chat_id, photo=photo_links_for_shop[0])#bot.se
