@@ -253,12 +253,12 @@ async def maker_menu(chat_id, tg_user_id, *args):
     h = InlineKeyboardMarkup(row_width=len(arrey_heroes)+1)
     #print(len(arrey_heroes))
     #arrey_heroes[0]
-    for j in range(len(arrey_heroes)):#hero_dick[j]['name']
-        print(arrey_heroes[j][0] ,arrey_heroes[j][1], )
-        print(type(arrey_heroes[j][0]))
+    for j in range(len(arrey_heroes)):
+        print(arrey_heroes[j][0] ,arrey_heroes[j][1], #hero_dick[j]['name'])
+        print(type(arrey_heroes[j][0])))
         print(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id)
-        try:#{hero_dick[j]['name']}
-            h.add(InlineKeyboardButton(text=f"", callback_data=show_local_hero.new(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id,)))#show_local_hero.new()))
+        try:#
+            h.add(InlineKeyboardButton(text=f"{hero_dick[j]['name']}", callback_data=show_local_hero.new(arrey_heroes[j][0],arrey_heroes[j][1],tg_user_id,)))#show_local_hero.new()))
 
         except: print(111)
     h.add(InlineKeyboardButton(text='удалить', callback_data=del_callback.new())) #del_callback.new()))

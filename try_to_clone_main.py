@@ -36,7 +36,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import datetime
 import asyncio
 from database import connection, maker_menu, update_gold, starttttt, dis, bot, show_local_hero, del_callback#connect, cur,
-from texts import item_dick, commands, new_reg_text#hero_dick,
+from texts import item_dick, commands, new_reg_text, hero_dick
 
 
 
@@ -79,43 +79,13 @@ async def start(message: aiogram.types):
     tg_user_id = message.from_user.id
     chat_id = message.chat.id
     await starttttt(tg_user_id=tg_user_id, chat_id=chat_id)
-    # tg_user_id = message.from_user.id
-    # sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
-    # print(sql_code)
-    # cur.execute(sql_code)
-    # #print(cur.fetchall())
-    # result = list(cur.fetchall())
-    # bb = [j for i in result for j in i]
-    # print(bb)
-    # #проверил есть ли пользователь. Если есть
-    # if not bb:
-    #     await message.answer(text=new_reg_text)
-    #     try:
-    #         #create_player
-    #         sql_code = f"O `players` (`tg_id`, `money`) VALUES ('{tg_user_id}', '0')"
-    #         print(sql_code)
-    #         cur.execute(sql_code)
-    #         local_user_id = connect.insert_id()
-    #         connect.commit()
-    #         hero_id = 0
-    #         #hero_lvl = 0
-    #         new_hero_id = create_hero(tg_user_id= tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
-    #         print(new_hero_id)
-    #         for i in range(6):
-    #             create_slot(new_hero_id, local_user_id=local_user_id)
-    #         print(123)
-    #         await message.answer(text=f'теперь ты зареган \n{commands}')
-    #     except:
-    #         await message.answer(text=f'админ пидорас сломал всё')
-    # else:   await message.answer(text=f'{reg_text} {commands}')
-
 @dis.message_handler(commands=['profile'])
 async def profile(message):
     tg_user_id = message.from_user.id
     chat_id = message.chat.id
     sql_code = f"SELECT money FROM players WHERE tg_id = {tg_user_id}"
     #cur.execute(sql_code) money = cur.fetchone()[0]
-    money = connection.select_one(sql_code)
+    money = connection.select_one(sql_code)[0]
     text = ''
     await bot.send_message(chat_id=chat_id, text=f"денег - {money}\n предметы\n")
 
@@ -126,10 +96,8 @@ async def my_heroes(message):
     # sql_code = f'SELECT money, status, user_id FROM players WHERE tg_id = {tg_user_id}'
     try:
         sql_code = f"SELECT user_id FROM `players` WHERE tg_id = {tg_user_id}"
-            #f'SELECT user_id FROM players WHERE tg_id = {tg_user_id}'
         print(sql_code, 'пиздец')
         if connection.select_one(sql_code):
-            #print(cur.fetchall(), 1231231, 555)
             await maker_menu(chat_id=message.chat.id, tg_user_id=tg_user_id,)
             print(123)
         else:
@@ -144,7 +112,7 @@ async def gold(message):
     sql_code = f'SELECT tg_id FROM players WHERE tg_id = {tg_user_id}'
     print(sql_code)
     #cur.execute(sql_code)  #если написать равно, то вернёт количество совпадений как я понял
-    result = connection.select_one(sql_code)# [j for i in list(cur.fetchall()) for j in i]
+    result = connection.select_one(sql_code)
     print(result)
     if result:
         return_to_user = update_gold(tg_user_id=tg_user_id, plus_money=100)
@@ -340,7 +308,7 @@ async def try_to_buy_hero(callback):
     chat_id = callback.message.chat.id
     sql_code = f"SELECT money FROM players WHERE tg_id = {tg_user_id}"
     #with connect.cursor() as cur: ЗАТЕСТИТЬ ЭТУ ХУЙНЮ
-    money = cur.execute(sql_code).fetchone()
+    money = connection.select_one(sql_code)[0]
     price_hero = hero_dick[hero_id]['price']
     if money<price_hero:
         await bot.answer_callback_query(callback.id, text='бро подкопи денег ты нищеброд')
@@ -444,37 +412,30 @@ async def fermer(callback):
         await bot.answer_callback_query(callback_query_id=callback.id, text='пидор по своим ссылкам кликай чужое не трож')
         return
     sql_code = f'SELECT last_time FROM heroes WHERE hero_id = {hero_id}'
-    print(sql_code)
-    cur.execute(sql_code)
-    last_time = [j for i in list(cur.fetchall()) for j in i][0]
+    #print(sql_code)
+    #cur.execute(sql_code)
+    last_time = connection.select_one(sql_code)[0]#[j for i in list(cur.fetchall()) for j in i][0]
     print(last_time)
-    try:
-        aq = (datetime.datetime.today() - last_time).total_seconds()
-        if aq>10:
-            raise Exception#поменял
-        else:
-            await bot.send_message(chat_id=callback.message.chat.id, text=f"бро зачилься {hero_dick[hero_name]['name']} уже фармит")#name_of_heroes[heroe_name]
-            await  bot.answer_callback_query(callback.id)
-    except:
+    aq = (datetime.datetime.today() - last_time).total_seconds()
+    if aq>10:
         date = datetime.datetime.today()
         print(date)
-        await bot.send_message(chat_id=callback.message.chat.id, text=f" {hero_dick[hero_name]['name']} отправился на 285 мса за крипами")#name_of_heroes[heroe_name]
+        await bot.send_message(chat_id=callback.message.chat.id,
+                               text=f" {hero_dick[hero_name]['name']} отправился на 285 мса за крипами")  # name_of_heroes[heroe_name]
         await bot.answer_callback_query(callback.id)
         await asyncio.sleep(3)
-        rand_num = random.randint(50,150)
+        rand_num = random.randint(50, 150)
         sql_code = f"SELECT money FROM players WHERE tg_id = {tg_user_id}"
-        print(sql_code)
-        cur.execute(sql_code)
-        money = cur.fetchone()[0]
-        #print(money)
-        await bot.send_message(chat_id=callback.message.chat.id, text=f"твой {hero_dick[hero_name]['name']} вернусля, залутав {rand_num} голды")
+        money = connection.select_one(sql_code)[0]
+        await bot.send_message(chat_id=callback.message.chat.id,
+                               text=f"твой {hero_dick[hero_name]['name']} вернусля, залутав {rand_num} голды")
         sql_code = f"UPDATE heroes SET last_time = '{datetime.datetime.today().replace(microsecond=0)}' WHERE hero_id = {hero_id}"
-        print(sql_code)
-        cur.execute(sql_code)
+        connection.update_insert_del(sql_code)
         sql_code = f"UPDATE players SET money = {money + rand_num} WHERE tg_id = {tg_user_id}"
-        print(sql_code)
-        cur.execute(sql_code)
-        connect.commit()
+        connection.update_insert_del(sql_code)
+        await bot.answer_callback_query(callback.id)
+    else:
+        await bot.send_message(chat_id=callback.message.chat.id, text=f"бро зачилься {hero_dick[hero_name]['name']} уже фармит")#name_of_heroes[heroe_name]
         await bot.answer_callback_query(callback.id)
 
 shmotki_local_hero = CallbackData('s', 'hero_id', 'hero_name', 'tg_user_id', )
@@ -488,9 +449,7 @@ async def shdhsdf(callback):
     message_id=callback.message.message_id
     print('ssssssssssssssss')
     sql_code = f"SELECT item_name, count FROM items WHERE hero_id = {hero_id}"
-    a = cur.execute(sql_code)
-    print(a)
-    arr = cur.fetchall()
+    arr = connection.select_all(sql_code)
     print(arr)
     her = len(arr)
     ikm1 = InlineKeyboardMarkup(row_width=her)
@@ -622,11 +581,8 @@ async def come_to_heroe(callback):
     # sql_code = f'SELECT money, status, user_id FROM players WHERE tg_id = {tg_user_id}'
     try:
         sql_code = f'SELECT user_id FROM players WHERE tg_id = {tg_user_id}'
-        print(sql_code)
-        a = cur.execute(sql_code)
-        print(a)
-        if a > 0:
-            print(cur.fetchall(), 1231231)
+        if connection.select_one(sql_code):
+            print(1231231)
             print(callback.id, callback.message.message_id)
             await maker_menu(chat_id, tg_user_id,callback.message.message_id, int(callback.id))
             print(123)
