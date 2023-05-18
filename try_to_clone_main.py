@@ -27,7 +27,7 @@
 # `tg_id` VARCHAR(15) NOT NULL ,
 # `text` TEXT NOT NULL ,
 # `image` TINYTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
-from texts import hero_dick, item_dick, photo_links_for_shop, all_items
+from texts import  item_dick, photo_links_for_shop, all_items#hero_dick,
 import random
 from aiogram import types
 import aiogram
@@ -35,8 +35,8 @@ from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import datetime
 import asyncio
-from database import connect, cur, maker_menu, update_gold, starttttt, dis, bot, show_local_hero, del_callback
-from texts import hero_dick, item_dick, commands, new_reg_text
+from database import connection, maker_menu, update_gold, starttttt, dis, bot, show_local_hero, del_callback#connect, cur,
+from texts import item_dick, commands, new_reg_text#hero_dick,
 
 
 
@@ -44,7 +44,6 @@ from texts import hero_dick, item_dick, commands, new_reg_text
 #starttttt(ran_num)
 
 
-print('я начал')
 
 #show_local_hero = CallbackData('hero', 'hero_id')
 #send_hero_to_farm = CallbackData('farm', 'hero_id', 'tg_user_id')
@@ -115,8 +114,8 @@ async def profile(message):
     tg_user_id = message.from_user.id
     chat_id = message.chat.id
     sql_code = f"SELECT money FROM players WHERE tg_id = {tg_user_id}"
-    cur.execute(sql_code)
-    money = cur.fetchone()[0]
+    #cur.execute(sql_code) money = cur.fetchone()[0]
+    money = connection.select_one(sql_code)
     text = ''
     await bot.send_message(chat_id=chat_id, text=f"денег - {money}\n предметы\n")
 
@@ -129,8 +128,8 @@ async def my_heroes(message):
         sql_code = f"SELECT user_id FROM `players` WHERE tg_id = {tg_user_id}"
             #f'SELECT user_id FROM players WHERE tg_id = {tg_user_id}'
         print(sql_code, 'пиздец')
-        if cur.execute(sql_code):
-            print(cur.fetchall(), 1231231, 555)
+        if connection.select_one(sql_code):
+            #print(cur.fetchall(), 1231231, 555)
             await maker_menu(chat_id=message.chat.id, tg_user_id=tg_user_id,)
             print(123)
         else:
@@ -144,8 +143,8 @@ async def gold(message):
     tg_user_id = message.from_user.id
     sql_code = f'SELECT tg_id FROM players WHERE tg_id = {tg_user_id}'
     print(sql_code)
-    cur.execute(sql_code)  #если написать равно, то вернёт количество совпадений как я понял
-    result = [j for i in list(cur.fetchall()) for j in i]
+    #cur.execute(sql_code)  #если написать равно, то вернёт количество совпадений как я понял
+    result = connection.select_one(sql_code)# [j for i in list(cur.fetchall()) for j in i]
     print(result)
     if result:
         return_to_user = update_gold(tg_user_id=tg_user_id, plus_money=100)
