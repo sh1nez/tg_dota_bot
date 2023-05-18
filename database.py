@@ -22,13 +22,13 @@ class Connect:
                 return cur.fetchone()
             return False
     def select_all(self, sql_code):
-        #print(sql_code)
+        print(sql_code)
         with self.conn.cursor() as cur:
             if cur.execute(sql_code):
                 return cur.fetchall()
             return False
-try: connection = Connect()
-except: print('я начал')
+try: connection = Connect();print('я начал')
+except: print('нет конекта')
 
 from config import token
 bot = aiogram.Bot(token)
