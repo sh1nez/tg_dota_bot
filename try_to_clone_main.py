@@ -101,7 +101,58 @@ async def herrroo_hendler(callback):
     except:
         img = types.InputMediaPhoto(media=photo_links_for_shop[1], caption='aaaa')
         await bot.edit_message_media(chat_id=chat_id, media=img, message_id=callback.message.message_id)
-async def for_profile(tg_user_id,chat_id):
+
+show_items_user = CallbackData('asd', 'tg_id')
+@dis.callback_query_handler(show_items_user.filter())
+async def really_show_all_items(callback):
+    come = callback.data.split(':')
+    #user_id = come[1]
+    tg_user_id = come[1]
+    chat_id = callback.message.chat.id
+    message_id = callback.message.message_id
+    ikm = InlineKeyboardMarkup(row_width=111)
+    sql_code = f'SELECT item_name, count, id FROM items WHERE hero_id is NULL AND tg_user_id = {tg_user_id}'
+    turp = connection.select_all(sql_code) ##в формате (название, количество, название предмета)
+    print(turp)
+    ikb_arr = []
+    text = ''
+    if not turp:
+        text+='у тебя пока не итемов'
+        ikm.add(InlineKeyboardButton(text='купить ещё', callback_data=tradeitems.new()))
+    else:
+        for i in range(len(turp)):
+            text+= f"{i+1}. {all_items[turp[i][0]]['name']} - {turp[i][1]} штуки\n"
+            ikb_arr.append(InlineKeyboardButton(text=str(i+1), callback_data=show_local_item.new(tg_user_id, turp[i][2])))
+        for i in range(0, len(ikb_arr), 3):
+            if len(ikb_arr)-i>=3:
+                ikm.add(ikb_arr[i],ikb_arr[i+1], ikb_arr[i+2])
+            elif len(ikb_arr)-i==2:
+                print(2)
+                ikm.add(ikb_arr[i], ikb_arr[i + 1],)
+            elif len(ikb_arr)-i == 1:
+                ikm.add(ikb_arr[i])
+            else:break
+    ikm.add(InlineKeyboardButton(text='бек ту профиль', callback_data=f'бек ту профиль'))
+    img = types.InputMediaPhoto(media=photo_links_for_shop[1], caption=text)
+    await bot.edit_message_media(media=img, chat_id=chat_id, message_id=message_id, reply_markup=ikm)
+
+show_local_item = CallbackData('ashda', 'tg_user_id', 'item_id')
+@dis.callback_query_handler(show_local_item.filter())
+async def really_show_local_item(callback):
+    come = callback.data.split(':')
+    tg_user_id = come[1]
+    item_id = come[2]
+    clcik_user_id = callback.from_user.id
+    message_id = callback.message.message_id
+    chat_id = callback.message.chat.id
+    print(tg_user_id, item_id, clcik_user_id, chat_id)
+    ikm = InlineKeyboardMarkup(row_width=11)
+    img =types.InputMediaPhoto(media=photo_links_for_shop[3], caption='урруа')
+    await bot.edit_message_media(message_id=message_id, chat_id=chat_id, media=img, reply_markup=ikm)
+    await bot.answer_callback_query(callback.id)
+
+
+async def for_profile(tg_user_id,chat_id, *args):
     #tg_user_id = message.from_user.id
     # = message.chat.id
     sql_code = f"SELECT money, status FROM players WHERE tg_id = {tg_user_id}"
@@ -117,11 +168,12 @@ async def for_profile(tg_user_id,chat_id):
         text = 'у тебя нет предметов'
     else:
         for i in arr:
-            text = f"{i}"
+            text += f"{i}"
         ikm.add(InlineKeyboardButton(text='одеть предметы', callback_data=f's'))
     print(arr)
-    await bot.send_message(chat_id=chat_id, text=f"денег - {money_status[0]}\nбатлпас {money_status[1]}\n"
+    await bot.send_message(chat_id=chat_id, text=f"денег - З{money_status}\nбатлпас {money_status[1]}\n"
                                                  f"предметы\n{text}", reply_markup=ikm)
+
 @dis.message_handler(commands=['profile'])
 async def profile(message):
     tg_user_id = message.from_user.id
@@ -133,19 +185,19 @@ async def profile(message):
     arr = connection.select_all(sql_code)
     text = ''
     ikm = InlineKeyboardMarkup(row_width=2)
-    ikm.add(InlineKeyboardButton(text='герои', callback_data=heroes_habdler.new(tg_user_id)),InlineKeyboardButton(text='купить ещё', callback_data=f'ц'))
-    #ikm
+    ikm.add(InlineKeyboardButton(text='герои', callback_data=heroes_habdler.new(tg_user_id)), InlineKeyboardButton(text='инвентарь', callback_data=show_items_user.new(tg_user_id))) #go_to_shop_menu.new()))
+    #ikm.add()
     if not arr:
         text= 'у тебя нет предметов'
     else:
         for i in arr:
             text = f"{i}"
-        ikm.add(InlineKeyboardButton(text='одеть предметы', callback_data=f's'))
+        #ikm.add(InlineKeyboardButton(text='одеть предметы', callback_data=f's'))
     print(arr)
-
+    print(ikm)
     img = types.InputMediaPhoto(media=photo_links_for_shop[1], caption=f"as")#
     #img = types.InputMediaPhoto(caption='магаз у наташки', media=photo_links_for_shop[0], type='photo')
-    await bot.send_photo(chat_id=chat_id, reply_markup=ikm, photo=photo_links_for_shop[2], caption='денег - {money_status[0]}\nбатлпас {money_status[1]}\nпредметы\n')
+    await bot.send_photo(chat_id=chat_id, reply_markup=ikm, photo=photo_links_for_shop[2], caption=f'денег - {money_status[0]}\nбатлпас {money_status[1]}\n{text}\n')
 
 @dis.message_handler(commands=['heroes'])
 async def my_heroes(message):
@@ -529,27 +581,31 @@ async def shdhsdf(callback):
     print('ssssssssssssssss')
     sql_code = f"SELECT item_name, count FROM items WHERE hero_id = {hero_id}"
     arr = connection.select_all(sql_code)
-    print(arr)
-    her = len(arr)
-    ikm1 = InlineKeyboardMarkup(row_width=her)
-    for i in range(0,len(arr), 2):
-        try:
-            print(all_items[arr[i][0]])
-            # {fight_items_names[i]}
-            ikm1.add(
-                InlineKeyboardButton(text=f"{all_items[arr[i][0]]['name']}", callback_data=callback_item_name.new(arr[i][0], tg_user_id, hero_name, hero_id,)),
-                InlineKeyboardButton(text=f"{all_items[arr[i+1][0]]['name']}",
-                                     callback_data=callback_item_name.new(arr[i][0], tg_user_id, hero_name, hero_id, ))
-                )
-        except:
+
+    if not arr:
+        print('у тебя нет шмоток')
+        ikm1 = InlineKeyboardMarkup(row_width=2)
+    else:
+        ikm1 = InlineKeyboardMarkup(row_width=len(arr)+2)
+        for i in range(0,len(arr), 2):
             try:
+                print(all_items[arr[i][0]])
+                # {fight_items_names[i]}
                 ikm1.add(
-                    InlineKeyboardButton(text=f"{all_items[arr[i][0]]['name']}", callback_data=callback_item_name.new(arr[i][0], tg_user_id, hero_name, hero_id,)))
-                                           # '))
-                # print('hui')
+                    InlineKeyboardButton(text=f"{all_items[arr[i][0]]['name']}", callback_data=callback_item_name.new(arr[i][0], tg_user_id, hero_name, hero_id,)),
+                    InlineKeyboardButton(text=f"{all_items[arr[i+1][0]]['name']}",
+                                         callback_data=callback_item_name.new(arr[i][0], tg_user_id, hero_name, hero_id, ))
+                    )
             except:
-                break
-    ikm1.add(InlineKeyboardButton(text=f'в зад', callback_data=show_local_hero.new(hero_id, hero_name, tg_user_id)))
+                try:
+                    ikm1.add(
+                        InlineKeyboardButton(text=f"{all_items[arr[i][0]]['name']}", callback_data=callback_item_name.new(arr[i][0], tg_user_id, hero_name, hero_id,)))
+                                               # '))
+                    # print('hui')
+                except:
+                    break
+    #ikm1.
+    ikm1.add(InlineKeyboardButton(text=f'в зад ыы', callback_data=show_local_hero.new(hero_id, hero_name, tg_user_id)), InlineKeyboardButton(text='одеть еще', callback_data=f's'))
     img = types.InputMediaPhoto(media=photo_links_for_shop[1], caption='урурара')
     await bot.edit_message_media(media=img, message_id=message_id, chat_id=chat_id, reply_markup=ikm1)
 
@@ -621,27 +677,6 @@ async def shdhsdf(callback):
 
 
     await bot.answer_callback_query(callback.id)
-# @dis.callback_query_handler(menu_hero.filter())
-# async def hero_show(callback):
-#     print('PISAPOPA')
-#     come = callback.data.split(':')
-#     #main_user_tg = []
-#     hero_id = come[1] #int(callback.data['hero_name_id'])
-#     #local_user_id = int(callback.data['local_user_id'])
-#     tg_user_id = come[2]
-#     click_user_tg_id = callback.from_user.id
-#     chat_id = callback.message.chat.id
-#     print(tg_user_id, hero_id)
-#     hero_buttons = InlineKeyboardMarkup(row_width=4)
-#     hero_funk1 = InlineKeyboardButton(text='фармить', callback_data=send_hero_to_farm.new(hero_id,  tg_user_id))# f'farm#{hero_id}#{user_tg_id}#{local_user_id}')
-#     hero_funk2 = InlineKeyboardButton(text='драться', callback_data= send_hero_to_fight.new(hero_id, tg_user_id)) #f'fight#{hero_id}#{user_tg_id}#')
-#     hero_funk3 = InlineKeyboardButton(text='шмотки', callback_data=shmotki_local_hero.new(hero_id, tg_user_id, ))#пока тоже хз но шмотки должны показываться
-#     #shmot#{hero_id}#{user_tg_id}#{chat_id}#{local_user_id}')
-#     hero_funk4 = InlineKeyboardButton(text='назад', callback_data= f'')#пока так, потом возвращение туда откуда он пришёл
-#     #f'back_to_look#{user_tg_id}#{chat_id}#{hero_id}')
-#     hero_buttons.add(hero_funk1, hero_funk2).add(hero_funk4)
-#     await bot.send_photo(caption='123312', photo=hero_dick[hero_id]['img'], chat_id=chat_id, reply_markup=hero_buttons)
-#     await bot.answer_callback_query(callback.id)
 
 
 go_to_all_heroes = CallbackData('all', 'tg_user_id',)

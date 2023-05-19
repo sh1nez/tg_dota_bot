@@ -17,14 +17,14 @@ class Connect:
             cur.execute(sql_code)
             self.conn.commit()
     def select_one(self, sql_code):
-        print(sql_code)
+        #print(sql_code)
         self.conn.ping()
         with self.conn.cursor() as cur:
             if cur.execute(sql_code):
                 return cur.fetchone()
             return False
     def select_all(self, sql_code):
-        print(sql_code)
+        #print(sql_code)
         self.conn.ping()
         with self.conn.cursor() as cur:
             if cur.execute(sql_code):
