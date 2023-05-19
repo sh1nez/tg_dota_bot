@@ -11,18 +11,21 @@ class Connect:
     def __init__(self):
         self.conn = pymysql.connect(host=host, port=3306, user=user, password=password,database=db_name,)
     def update_insert_del(self, sql_code,):
+        self.conn.ping()
         with self.conn.cursor() as cur:
             # print(sql_code)
             cur.execute(sql_code)
             self.conn.commit()
     def select_one(self, sql_code):
         print(sql_code)
+        self.conn.ping()
         with self.conn.cursor() as cur:
             if cur.execute(sql_code):
                 return cur.fetchone()
             return False
     def select_all(self, sql_code):
         print(sql_code)
+        self.conn.ping()
         with self.conn.cursor() as cur:
             if cur.execute(sql_code):
                 return cur.fetchall()

@@ -493,8 +493,10 @@ async def fermer(callback):
     #cur.execute(sql_code)
     last_time = connection.select_one(sql_code)[0]#[j for i in list(cur.fetchall()) for j in i][0]
     print(last_time)
-    aq = (datetime.datetime.today() - last_time).total_seconds()
-    if aq>10:
+    aq = 1
+    if last_time is not None:
+        aq = (datetime.datetime.today() - last_time).total_seconds()
+    if last_time is None or aq>10:
         date = datetime.datetime.today()
         print(date)
         await bot.send_message(chat_id=callback.message.chat.id,
