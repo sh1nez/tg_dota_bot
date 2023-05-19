@@ -36,8 +36,11 @@ class Connect:
             self.conn.commit()
         return r_id
 
-try: connection = Connect();print('я начал')
+import timeit
+
+try: connection = Connect(); print('я начал');
 except: print('нет конекта')
+
 
 bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
@@ -74,10 +77,11 @@ def create_hero(local_user_id, tg_user_id, name_hero_id):
 
 
 ###############################################---SHOP---###############################################
-async def show_main_menu(chat_id, message_id, *args):
-    ikm = InlineKeyboardMarkup(row_width=3).add(InlineKeyboardButton(text='герои', callback_data=tradeheroes.new()),
-            InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())).add(
-            InlineKeyboardButton(text='в зад', callback_data=del_callback.new()))
+async def show_main_menu(chat_id, message_id, tg_id, *args):
+    ikm = make_inline_keyboard(2,(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)), ('в зад', del_callback, (tg_id,))))
+    # InlineKeyboardMarkup(row_width=3).add(InlineKeyboardButton(text='герои', callback_data=tradeheroes.new()),
+    #     InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())).add(
+    #     InlineKeyboardButton(text='в зад', callback_data=del_callback.new()))
     if not args:await bot.send_photo(chat_id=chat_id, caption='магаз у наташки', reply_markup=ikm, photo=photo_links_for_shop[0]); return
     img = InputMediaPhoto(caption='магаз у наташки', media=photo_links_for_shop[0], type='photo')
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=message_id, chat_id=chat_id)
@@ -91,11 +95,11 @@ del_callback = CallbackData('del', 'tg_user_id')
 
 
 ###############################################---menu's---###############################################
-def make_inline_keyboard(l, *args):#передать инфу в формате n, (text, CallbackData, *args)
+def make_inline_keyboard(row, *args):#передать инфу в формате n, (text, CallbackData, *args)
     buttons = []
     for i in args:
         buttons.append(InlineKeyboardButton(text=i[0],callback_data=i[1].new(*i[2])))
-    return InlineKeyboardMarkup(row_width=l).add(*buttons)
+    return InlineKeyboardMarkup(row_width=row).add(*buttons)
 #использование
 # tup = tuple((item_dick['farm'][i]['name'],look_at_item, (1,2)) for i in item_dick['farm'])
 # ikm = make_all(2, *tup)

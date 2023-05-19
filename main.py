@@ -1,18 +1,13 @@
 from texts import photo_links_for_shop, all_items, item_dick, hero_dick
 import random
-#import aiogram
-#from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 import datetime
 import asyncio
-#from database import connection, maker_menu, update_gold, starttttt, dis, bot, show_local_hero, del_callback
 from database import *#connection, dis, bot, InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup, aiogram
 
 ##############################################----START-----#############################################
 @dis.message_handler(commands=['start'])#создаём пользователя
 async def start(message: aiogram.types):
-    tg_user_id = message.from_user.id
-    chat_id = message.chat.id
-    await starter(tg_user_id=tg_user_id, chat_id=chat_id)
+    await starter(tg_user_id=message.from_user.id, chat_id=message.chat.id)
 
 ##############################################----PROFILE-----#############################################
 @dis.message_handler(commands=['profile'])
@@ -36,55 +31,48 @@ async def profile(message):
 ##############################################----SHOP-----#############################################
 @dis.message_handler(commands =['shop'])
 async def all_shop(message):
-    await show_main_menu(chat_id=message.chat.id, message_id=message.message_id)
+    await show_main_menu(chat_id=message.chat.id, message_id=message.message_id, tg_id=message.from_user.id)
 
-
+go_back_all_shop = CallbackData('gbtms', 'tg_user_id')
+@dis.callback_query_handler(go_back_all_shop.filter())
+async def rlygbtmm(callback):
+    tg_id = int(callback.data.split(':')[1])
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, text=enemy_click)
+    await show_main_menu(callback.message.chat.id, callback.message.message_id, callback.id, tg_id, callback.from_user.id)
 
 #tradeheroes = CallbackData('trher', 'tg_user_id')
-def make_menu(ikm:InlineKeyboardMarkup, text, call_data:CallbackData, *args):
-    print(args)
-    print(*args)
-    return ikm.add(InlineKeyboardButton(text=text, callback_data=call_data.new(*args)))
-
-show_hero_n = CallbackData('hero', 'hero_id', 'tg_user_id')
 @dis.callback_query_handler(tradeheroes.filter())
 async def tradeheroes_ne_funk(callback):
-    tg_user_id = callback[1]
-    ikm = InlineKeyboardMarkup(row_width=len(hero_dick)+1)
-    buttons = tuple()
-    print(tup)
-    make_inline_keyboard(3, )
-
-    for i in range(0, len(hero_dick), 2):
-        if len(hero_dick)-i>=2:
-            ikm = make_menu(make_menu(ikm, hero_dick[i]['name'], show_n_hero, i),hero_dick[i+1]['name'], show_hero_n, i)
-        elif len(hero_dick)-i==1:
-            ikm = make_menu(ikm, hero_dick[i]['name'], show_hero_n, i)
-        else: break
-        # ikm.add(InlineKeyboardButton(text=hero_dick[i]['name'], callback_data=show_hero_n.new(i)))  # f'geroi#{i}'))
-        #
-        # ikm.add(InlineKeyboardButton(text=hero_dick[i]['name'], callback_data=show_hero_n.new(i)),
-        #        InlineKeyboardButton(text=hero_dick[i + 1]['name'], callback_data=show_hero_n.new(i + 1)))
-
-                    #             InlineKeyboardButton(text=hero_dick[i+1]['name'], callback_data=show_hero_n.new(i+1)))
-    # for i in range(0, len(hero_dick), 2):
-    #     try:
-    #         ikm.add(InlineKeyboardButton(text=hero_dick[i]['name'], callback_data=show_hero_n.new(i)),# f'geroi#{i}'),
-    #             InlineKeyboardButton(text=hero_dick[i+1]['name'], callback_data=show_hero_n.new(i+1)))
-    #         #print('lj,fdbk')
-    #     except:
-    #         try:
-    #             ikm.add(
-    #                 InlineKeyboardButton(text=hero_dick[i]['name'], callback_data=show_hero_n.new(i)))  # f'geroi#{i}'))
-    #             #print('hui')
-    #         except:
-    #             #print('(((')
-    #             break
-    ikm.add(InlineKeyboardButton(text=f'в задницу хочу', callback_data=go_to_shop_menu.new()))  #f'back_to_shop#{chat_id}#{mesas_id}'))
-    #img = types.InputMediaPhoto(caption='asd', media=photo_links_for_shop[0], type='photo')
+    tg_id = int(callback[1])
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, text=enemy_click)
+    buttons = tuple((hero_dick[i]['name'], show_hero_n, (i, tg_id) ) for i in hero_dick)
+    ikm = make_inline_keyboard(3, *buttons)
+    ikm.add(InlineKeyboardButton(text=f'в задницу хочу', callback_data=f"ss"))#go_to_shop_menu.new()))
     img = InputMediaPhoto(caption='ураура', type='photo', media=hero_dick[1]['event_img'])
-    await bot.edit_message_media(reply_markup=ikm, media=img, message_id=callback.message.message_id, chat_id=callback.message.message_id)
+    await bot.edit_message_media(reply_markup=ikm, media=img, message_id=callback.message.message_id,chat_id=callback.message.message_id)
     await bot.answer_callback_query(callback.id)
+
+show_hero_n = CallbackData('heron', 'hero_id', 'tg_user_id')
+@dis.callback_query_handler(show_hero_n.filter())
+async def rshn(callback):
+    come =callback.data.split(':')
+    hero_id = come[1]
+    tg_id = come[2]
+    if callback.from_user.id != tg_id:
+        await bot.answer_callback_query(callback.id, text=enemy_click)
+        return
+
+#tradeitems = CallbackData('tritm', 'tg_user_id')
+@dis.callback_query_handler(tradeitems.filter())
+async def rsri(callback):
+    tg_id = callback.data.split(':')[1]
+    if callback.from_user.id != tg_id:
+        await bot.answer_callback_query(callback.id, text=enemy_click)
+        return
+
+
 ##############################################----WORK-----#############################################
 if __name__ == '__main__':
     aiogram.executor.start_polling(dis, )#skip_updates=True

@@ -1,37 +1,44 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from texts import item_dick
 from aiogram.utils.callback_data import CallbackData
+look_at_item = CallbackData('a', 's', 'asd')
+#########до
+her = len(item_dick)
+ikm = InlineKeyboardMarkup(row_width=her+1)
+for i in range(0, her, 2):
+    try:
+        ikm.add(InlineKeyboardButton(text=item_dick[i]['name'], callback_data=look_at_item.new(i)),
+            InlineKeyboardButton(text=item_dick[i+1]['name'], callback_data=look_at_item.new(i+1)))
+        #print('lj,fdbk')
+    except:
+        try:
+            ikm.add(
+                InlineKeyboardButton(text=item_dick[i]['name'], callback_data=item_dick.new(i)))
+            #print('hui')
+        except:
+            #print('(((')
+            break
+###ПОСЛЕ
 
-show_hero_n = CallbackData('hero', 'hero_id', 'tg_user_id')
-def make_i_keyboard(ikm:InlineKeyboardMarkup, text, call_data:CallbackData, *args):#args - все нужные значения
-    return ikm.add(InlineKeyboardButton(text=text, callback_data=call_data.new(*args)))
-ikm = InlineKeyboardMarkup(row_width=1)
-#print(ikm := make_i_keyboard(ikm, 'asdasd', show_hero_n, 'a', 'ss'))
 
-def menu_keyboard(l, *args: InlineKeyboardButton):#нормально добавляет готовые кнопки
-    ikm = InlineKeyboardMarkup(row_width=l)
-    ikm.add(*args)
-    return ikm #> InlineKeyboardMarkup
-
-#а эта функция должна сама генерировать и добавлять текс
-def make_all(l, *args):#аргс должны принимать
-    buttons = []
-    for i in args:
-        buttons.append(InlineKeyboardButton(text=i[0],callback_data=i[1].new(*i[2])))
-    return InlineKeyboardMarkup(row_width=l).add(*buttons)
-
-aaa = CallbackData('s')
-bbb = CallbackData('b', 'asd')
-ccc = CallbackData('c', 'asd', 'sad')
-#ikm = InlineKeyboardMarkup
-
-print(ikm:= make_all(1, ('asd', aaa, ()), ('asd', bbb, (5,)), ('asd', ccc, (11, 123))))
-#print(ikm:= make_all1(2, ('asd', aaa, ()), ('asd', bbb, (5,)), ('asd', ccc, (11, 123))))
-        #print(*i)#крч вот так будет получаться инфа
-    #print(args[2])
-    #(text, CallbackData, *args)
-#make_all(1,(3, 4, (5, 6, 7)), (6, 7, (8,)))
-#InlineKeyboardButton(text='aaa',callback_data='g' )
-#ikm = menu_keyboard(2, InlineKeyboardButton(text='aaa',callback_data='g'), InlineKeyboardButton(text='aaa',callback_data='g' ), InlineKeyboardButton(text='aaa',callback_data='g' ))
+#функция
+def make_all(l, *args,):#передать инфу в формате n, (text, CallbackData, *args)
+    return InlineKeyboardMarkup(row_width=l).add(*(InlineKeyboardButton(text=i[0],callback_data=i[1]
+                                                                        .new(*i[2]))for i in args))
+#использование
+#tup = tuple((item_dick['farm'][i]['name'],look_at_item, (1,2)) for i in item_dick['farm'])
+#ikm = make_all(3, *tup)
 #print(ikm)
-#ikm.add(InlineKeyboardButton(text='aaa',callback_data='g'))
-#print(ikm)
+#a = [i for i in range(0 ,99999, 100)]
+#print(len(a))
+#b = (i for i in range(0 ,99999, 100))
+a = InlineKeyboardButton(text='sdljhffklgnd;g;dlf.jdgfs', callback_data='ssdfsdfs')
+b = InlineKeyboardButton(text='sdfksdf', callback_data='ssdfsd')
+c = InlineKeyboardButton(text='adasd', callback_data='ssdfsdf')
+d = [a, b, c]
+e = (a, b, c)
+
+
+
+#print(b.__next__())
+#print(b.__next__())
