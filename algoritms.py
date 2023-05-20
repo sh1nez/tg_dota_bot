@@ -1,3 +1,10 @@
+dick = {
+    'asd': 'asdas',
+    "1": 'weqweqw',
+    2: 'zxczxczxc'
+}
+for i in dick:
+    print(i)
 #import random
 #from texts import enemy_click
 # def tfclick(tg_id, click):

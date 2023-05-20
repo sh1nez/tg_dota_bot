@@ -75,12 +75,25 @@ async def starter(tg_id, chat_id,):
 
 
 ###############################################---PROFILE---###############################################
-
+def find_all_items(tg_id):
+    sql_code = f"SELECT id, item_name, count FROM items WHERE tg_id = {tg_id} AND hero_id IS NULL"
+    items = connection.select_all(sql_code)#((id, name, count))
+    return items
+def make_text_inventory(items: tuple, *args):#итемы в формате (хуйня, индекс, количество)
+    text=str(args[0]) if args else ''
+    for i in items:
+        text+=f"{all_items[i[1]]} - {i[2]}шт\n"
+    return text
+def find_all_heroes(tg_id):
+    sql_code = f"SELECT id, hero_name FROM heroes WHERE tg_id = {tg_id}"
+    #мейби ещё ввести чтобы было видно кулдаун на фарм и другие вещи
+    heroes = connection.select_all(sql_code)
+    return heroes
 
 
 ###############################################---SHOP---###############################################
 async def show_main_menu(chat_id, message_id, tg_id, *args):
-    ikm = make_inline_keyboard(2,(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)), ('в зад', del_callback, (tg_id,))))
+    ikm = make_inline_keyboard(2,*(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)), ('в зад', del_callback, (tg_id,))))
     if not args:await bot.send_photo(chat_id=chat_id, caption='магаз у наташки', reply_markup=ikm, photo=photo_links_for_shop[0]); return
     img = InputMediaPhoto(caption='магаз у наташки', media=photo_links_for_shop[0], type='photo')
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=message_id, chat_id=chat_id)
@@ -131,7 +144,7 @@ def make_inline_keyboard(row=3, *args):#передать инфу в форма�
 
 ###############################################---funks---###############################################
 def rnum(): return random.randint(0, len(enemy_click)-1)
-def r_cbd(callback): return map(int,(callback.split(':')[1:]))
+def r_cbd(callback): return int(callback.split(':')[1]) if len(callback.split(':')) == 2 else map(int,callback.split(':')[1:])
 
 def money_of_user(tg_id):
     sql_code = f"SELECT money FROM players WHERE tg_id = {tg_id}"
