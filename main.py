@@ -1,8 +1,4 @@
-#from texts import photo_links_for_shop, all_items, item_dick, hero_dick
-import datetime
-import asyncio
 from database import *
-
 ##############################################----START-----#############################################
 @dis.message_handler(commands=['start'])#создаём пользователя
 async def start_funk(message: aiogram.types):
@@ -61,7 +57,6 @@ async def tradeitems_funk(callback):
     await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id, reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
 
-
 #############################################----BUY_iTEMS-----############################################
 callback_farm_item = CallbackData('cfarmis', 'tg_id')
 @dis.callback_query_handler(callback_farm_item.filter())
@@ -94,8 +89,6 @@ async def rdcfs(callback):
     tg_id = r_cbd(callback.data)
     if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
 
-
-
 ##############################################----BUY_HERO-----#############################################
 
 show_hero_in_shop = CallbackData('shns', 'tg_id', 'hero_id',)
@@ -122,14 +115,12 @@ async def rfwannad7e(callback):
     img = InputMediaPhoto(media=photo_links_for_shop[5], caption='у тебя не хватает денег(')#чёто типо нищий
     ikm = (1, (('naZad', show_hero_in_shop, (tg_id, hero_id,))))#)('тут будет типо иди работй негр', buy_hero_shop, (tg_id, hero_id))
     await bot.edit_message_media(reply_markup=ikm, media=img,)
-
-
 buy_hero_shop = CallbackData('bhs', 'tg_id', 'hero_id')
 @dis.callback_query_handler(buy_hero_shop.filter())
 async def rbhis(callback):
     tg_id, hero_id = r_cbd(callback.data)
     if callback.from_user.id!=tg_id:await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
-    buy_hero(tg_id, hero_id)
+    buy_hero(tg_id, hero_id, hero_dick[hero_id]['price'])
     #тут должно перекидывать на страницу с новым гером
     await bot.answer_callback_query(callback.id, text=f"ура ура ты купил {hero_dick[hero_id]['name']}")
 

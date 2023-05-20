@@ -5,6 +5,8 @@ from texts import *
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from aiogram.utils.callback_data import CallbackData
 import random
+
+
 ################################################---BASE---################################################
 class Connect:
     def __init__(self):
@@ -55,6 +57,7 @@ bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 
 ################################################---START---################################################
+
 async def starter(tg_id, chat_id,):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_id}"
     result = connection.select_all(sql_code)
@@ -70,10 +73,6 @@ async def starter(tg_id, chat_id,):
     else: await bot.send_message(text=f'ты уже зареган, команды\n{commands}', chat_id=chat_id)
 
 
-def create_hero(tg_id, hero_id):
-    sql_code = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_id}', '{hero_id}', '1');"
-    return connection.insert_id(sql_code)
-
 
 ###############################################---PROFILE---###############################################
 
@@ -86,21 +85,42 @@ async def show_main_menu(chat_id, message_id, tg_id, *args):
     img = InputMediaPhoto(caption='магаз у наташки', media=photo_links_for_shop[0], type='photo')
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=message_id, chat_id=chat_id)
     await bot.answer_callback_query(args[0])
+
+
 tradeheroes = CallbackData('trher', 'tg_id')
 
 tradeitems = CallbackData('tritm', 'tg_id')
 
 del_callback = CallbackData('delcs', 'tg_id')
 
-def buy_hero(tg_id, hero_id):
+###############################################---BUY/SELL---###############################################
+
+def buy_hero(tg_id, hero_id, price):
     money = money_of_user(tg_id)
-    price = hero_dick[hero_id]['price']
     sql_code1 = f"UPDATE players SET money = {money - price} WHERE tg_id = {tg_id}"
     sql_code2 = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_id}', '{hero_id}', '1');"
     connection.make_many(sql_code1, sql_code2)
 
+def buy_item_user(tg_id, item_id, price: int, count=1):
+    money = money_of_user(tg_id)
+    sql_code1 = f"UPDATE players SET money = {money-price} WHERE tg_id = {tg_id}"
+    sql_code2 = f"INSERT INTO items (tg_id, item_name, count) VALUES ('{tg_id}', {item_id}, '{count}')"
+    #"""INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_id}', '0')"""
+    connection.make_many(sql_code1, sql_code2)
+
+def wear_item_on_hero(item_id, hero_id):
+    sql_code = f"UPDATE items SET hero_id = {hero_id} WHERE id = {item_id}"
+    connection.update_insert_del(sql_code)
+
+def snat_s_geroya_v_invantar(item_id):
+    sql_code = f'UPDATE items SET hero_id = NULL WHERE id = {item_id}'
+
+def create_hero(tg_id, hero_id):
+    sql_code = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_id}', '{hero_id}', '1');"
+    return connection.insert_id(sql_code)
 
 ###############################################---menu's---###############################################
+
 def make_inline_keyboard(row=3, *args):#передать инфу в формате n, (text, CallbackData, *args)
     return InlineKeyboardMarkup(row_width=row).add(*(InlineKeyboardButton(text=i[0],
                                 callback_data=i[1].new(*i[2])) for i in args))
