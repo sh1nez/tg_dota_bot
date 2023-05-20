@@ -4,6 +4,7 @@ import aiogram
 from texts import *
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from aiogram.utils.callback_data import CallbackData
+import random
 ################################################---BASE---################################################
 class Connect:
     def __init__(self):
@@ -38,6 +39,7 @@ class Connect:
 
 import timeit
 
+
 try: connection = Connect(); print('я начал');
 except: print('нет конекта')
 
@@ -52,14 +54,12 @@ async def starter(tg_user_id, chat_id,):
     #проверил есть ли пользователь. Если есть
     if not result:
         try:
-            connection.conn.ping()
-            with connection.conn.cursor() as cur:
-                sql_code = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_user_id}', '0')"
-                local_user_id = connection.insert_id(sql_code)
-                hero_id = 0
-                hero_lvl = 0
-                new_hero_id = create_hero(tg_user_id=tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
-                #print(new_hero_id)
+            sql_code = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_user_id}', '0')"
+            local_user_id = connection.insert_id(sql_code)
+            hero_id = 0
+            hero_lvl = 0
+            new_hero_id = create_hero(tg_user_id=tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
+            #print(new_hero_id)
             await bot.send_message(text='теперь ты зареган', chat_id=chat_id)
             await bot.send_message(text=new_reg_text, chat_id=chat_id)
         except:
@@ -90,16 +90,19 @@ tradeheroes = CallbackData('trher', 'tg_user_id')
 
 tradeitems = CallbackData('tritm', 'tg_user_id')
 
-del_callback = CallbackData('del', 'tg_user_id')
+del_callback = CallbackData('delcs', 'tg_user_id')
 
 
 
 ###############################################---menu's---###############################################
-def make_inline_keyboard(row, *args):#передать инфу в формате n, (text, CallbackData, *args)
-    buttons = []
-    for i in args:
-        buttons.append(InlineKeyboardButton(text=i[0],callback_data=i[1].new(*i[2])))
-    return InlineKeyboardMarkup(row_width=row).add(*buttons)
+def make_inline_keyboard(row=3, *args):#передать инфу в формате n, (text, CallbackData, *args)
+    return InlineKeyboardMarkup(row_width=row).add(*(InlineKeyboardButton(text=i[0],
+                                callback_data=i[1].new(*i[2])) for i in args))
 #использование
-# tup = tuple((item_dick['farm'][i]['name'],look_at_item, (1,2)) for i in item_dick['farm'])
-# ikm = make_all(2, *tup)
+#tup = ((item_dick['farm'][i]['name'],tradeitems, (1,)) for i in item_dick['farm'])
+#ikm = make_inline_keyboard(2, *tup)
+#print(ikm)
+
+###############################################---funks---###############################################
+def rnum():
+    return random.randint(0, len(enemy_click)-1)
