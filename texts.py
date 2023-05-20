@@ -62,7 +62,7 @@ all_items ={
     3: {'name': 'лотар', 'price': 2700, 'description': 'неуязвимость', 'dis_stats': 'нет', 'fignt':15, 'farm':0},
     4: {'name': 'веточка', 'price': 50, 'description': 'имба', 'dis_stats': 'много статов', 'farm': 1, 'fight': 1 },
     }
-photo_links_for_shop = [
+    photo_links_for_shop = [
     r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
     r'https://mmo13.ru/download/content/202004/15/11/image_5e96c4956372a8.29507748.jpg?1586944173',
     r'https://www.rsi-llc.ru/upload/iblock/3d2/3d29c3bee8d6415b6072f4270ba136f2.jpg',

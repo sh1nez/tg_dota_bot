@@ -36,6 +36,13 @@ class Connect:
             r_id = connection.conn.insert_id()
             self.conn.commit()
         return r_id
+    def make_many(self, *args):
+        self.conn.ping()
+        cur = self.conn.cursor()
+        for i in args:
+            cur.execute(i)
+        cur.close()
+        self.conn.commit()
 
 import timeit
 
@@ -48,27 +55,23 @@ bot = aiogram.Bot(token)
 dis = aiogram.Dispatcher(bot)
 
 ################################################---START---################################################
-async def starter(tg_user_id, chat_id,):
-    sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_user_id}"
+async def starter(tg_id, chat_id,):
+    sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_id}"
     result = connection.select_all(sql_code)
     #проверил есть ли пользователь. Если есть
     if not result:
         try:
-            sql_code = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_user_id}', '0')"
-            local_user_id = connection.insert_id(sql_code)
-            hero_id = 0
-            hero_lvl = 0
-            new_hero_id = create_hero(tg_user_id=tg_user_id, local_user_id=local_user_id, name_hero_id=hero_id)
-            #print(new_hero_id)
-            await bot.send_message(text='теперь ты зареган', chat_id=chat_id)
-            await bot.send_message(text=new_reg_text, chat_id=chat_id)
+            sql_code = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_id}', '0')"
+            hero_id = 0#это типо пуджа выдаёт бесплатно
+            new_hero_id = create_hero(tg_id=tg_id, hero_id=hero_id)
+            await bot.send_message(text=f'теперь ты зареган, {new_reg_text}', chat_id=chat_id)
         except:
             await bot.send_message(text='админ пидор сломал всё', chat_id=chat_id)
     else: await bot.send_message(text=f'ты уже зареган, команды\n{commands}', chat_id=chat_id)
 
-def create_hero(local_user_id, tg_user_id, name_hero_id):
-    sql_code = f"INSERT INTO heroes ( `tg_user_id`, `local_user_id`,  `hero_name`, `hero_lvl`) VALUES ('{tg_user_id}'," \
-               f" '{local_user_id}', '{name_hero_id}', '1');"
+
+def create_hero(tg_id, hero_id):
+    sql_code = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_id}', '{hero_id}', '1');"
     return connection.insert_id(sql_code)
 
 
@@ -79,19 +82,22 @@ def create_hero(local_user_id, tg_user_id, name_hero_id):
 ###############################################---SHOP---###############################################
 async def show_main_menu(chat_id, message_id, tg_id, *args):
     ikm = make_inline_keyboard(2,(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)), ('в зад', del_callback, (tg_id,))))
-    # InlineKeyboardMarkup(row_width=3).add(InlineKeyboardButton(text='герои', callback_data=tradeheroes.new()),
-    #     InlineKeyboardButton(text='предметы', callback_data=tradeitems.new())).add(
-    #     InlineKeyboardButton(text='в зад', callback_data=del_callback.new()))
     if not args:await bot.send_photo(chat_id=chat_id, caption='магаз у наташки', reply_markup=ikm, photo=photo_links_for_shop[0]); return
     img = InputMediaPhoto(caption='магаз у наташки', media=photo_links_for_shop[0], type='photo')
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=message_id, chat_id=chat_id)
     await bot.answer_callback_query(args[0])
-tradeheroes = CallbackData('trher', 'tg_user_id')
+tradeheroes = CallbackData('trher', 'tg_id')
 
-tradeitems = CallbackData('tritm', 'tg_user_id')
+tradeitems = CallbackData('tritm', 'tg_id')
 
-del_callback = CallbackData('delcs', 'tg_user_id')
+del_callback = CallbackData('delcs', 'tg_id')
 
+def buy_hero(tg_id, hero_id):
+    money = money_of_user(tg_id)
+    price = hero_dick[hero_id]['price']
+    sql_code1 = f"UPDATE players SET money = {money - price} WHERE tg_id = {tg_id}"
+    sql_code2 = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_id}', '{hero_id}', '1');"
+    connection.make_many(sql_code1, sql_code2)
 
 
 ###############################################---menu's---###############################################
@@ -104,5 +110,9 @@ def make_inline_keyboard(row=3, *args):#передать инфу в форма�
 #print(ikm)
 
 ###############################################---funks---###############################################
-def rnum():
-    return random.randint(0, len(enemy_click)-1)
+def rnum(): return random.randint(0, len(enemy_click)-1)
+def r_cbd(callback): return map(int,(callback.split(':')[1:]))
+
+def money_of_user(tg_id):
+    sql_code = f"SELECT money FROM players WHERE tg_id = {tg_id}"
+    return int(connection.select_one(sql_code)[0])
