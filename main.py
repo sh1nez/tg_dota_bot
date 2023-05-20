@@ -11,9 +11,12 @@ async def profile_funk(message):
     #sql_code2 = f"SELECT id, item_name FROM items WHERE tg_id = {message.from_user.id} AND hero_id IS NULL;"
     arr = find_all_items(tg_id)
     money = money_of_user(tg_id)
-    ikm = make_inline_keyboard(2, *(('мои герои', my_heroes, (tg_id)),('инвентарь', users_inventory,(tg_id,)),))
-    text = ''
-    text = 'у тебя нет предметов' if not arr else text.join(i for i in arr)
+    ikm = make_inline_keyboard(2, ('мои герои', my_heroes, (tg_id,)),('инвентарь', users_inventory,(tg_id,)),)
+    print(arr, ikm)
+    text = ''#нужно написать состояния всех героев
+    #text = 'у тебя нет предметов' if not arr else  for i in arr
+    #for i in arr:
+    #        text+= text.join(all_items[i[1]]['name'])
     caption_text =f'денег - {money}\n{text}\n'
     #img = InputMediaPhoto(media=photo_links_for_shop[1], caption=)
     await bot.send_photo(chat_id=message.chat.id, reply_markup=ikm, photo=photo_links_for_shop[2], caption=caption_text)
@@ -76,7 +79,7 @@ callback_farm_item = CallbackData('cfarmis', 'tg_id')
 async def rcfarmis(callback):
     tg_id = r_cbd(callback.data)
     if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
-    buttons = ((item_dick['farm'][i]['name'],show_item_in_shop, (tg_id, i, '1')) for i in item_dick['farm'])
+    buttons = ((item_dick['farm'][i]['name'],show_item_in_shop, (tg_id, i, 1)) for i in item_dick['farm'])
     ikm = make_inline_keyboard(2, *buttons).add(InlineKeyboardButton(text='бек', callback_data=tradeitems.new(tg_id)))
     img = InputMediaPhoto(media=photo_links_for_shop[4], caption='фармила')
     await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id, reply_markup=ikm)
@@ -87,10 +90,12 @@ callback_fight_item = CallbackData('cfightis', 'tg_id')
 async def rcfightis(callback):
     tg_id = r_cbd(callback.data)
     if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
-    buttons = ((item_dick['fight'][i]['name'],show_item_in_shop,(tg_id, i,'0')) for i in item_dick['fight'])
+    buttons = ((item_dick['fight'][i]['name'],show_item_in_shop,(tg_id, i,0)) for i in item_dick['fight'])
     ikm = make_inline_keyboard(3, *buttons).add(InlineKeyboardButton(text='бек', callback_data=tradeitems.new(tg_id)))
     img = InputMediaPhoto(media=photo_links_for_shop[4], caption='дрочун')
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+
+#############################################----BUY_iTEMS-----############################################
 
 show_item_in_shop = CallbackData('rsiis', 'tg_id', 'item_id', 'fl')#фл должен означать вернёмся в файт или фарм
 @dis.callback_query_handler(show_item_in_shop.filter())
@@ -98,37 +103,28 @@ async def rsiisf(callback):
     tg_id, item_id, fl = r_cbd(callback.data)
     if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
     back = callback_farm_item if fl else callback_fight_item
-    ikm = make_inline_keyboard(1, ('купить', wanna_d7e_item, (tg_id, item_id)),('бек', back, (tg_id,)))
-    img = InputMediaPhoto(media=photo_links_for_shop[3],caption='sss')
+    ikm = make_inline_keyboard(1, ('купить', buy_item_shop_callback, (tg_id, item_id, fl,0)),('бек', back, (tg_id,)))
+    img = InputMediaPhoto(media=photo_links_for_shop[2],caption='sss')
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id, message_id=callback.message.message_id)
     await bot.answer_callback_query(callback.id)
 
-#############################################----BUY_iTEMS-----############################################
-
-show_in_shop_items = CallbackData('sisi', 'tg_id')
-@dis.callback_query_handler(show_in_shop_items.filter())
-async def rsisi(callback):
-    tg_id = r_cbd(callback.data)
-    if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]); return
-    b = ((), ())
-    ikm = make_inline_keyboard(2, *b)
-    img = InputMediaPhoto(media=photo_links_for_shop[3], caption='магаз')
-    await bot.edit_message_media(reply_markup=ikm, media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id)
-
-wanna_d7e_item = CallbackData('biis', 'tg_id', 'item_id')
-
-@dis.callback_query_handler(wanna_d7e_item.filter())
-async def rbis(callback):
-    tg_id, item_id = r_cbd(callback.data)
+buy_item_shop_callback = CallbackData('biscq', 'tg_id', 'item_id', 'fl', 'count')
+@dis.callback_query_handler(buy_item_shop_callback.filter())
+async def rbisc(callback):
+    tg_id, item_id, fl, count = r_cbd(callback.data)
+    #print(tg_id, type(tg_id))
     if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
-    ikm = make_inline_keyboard(1, ('точно купить?', ),('мисклик'))
-    img = InputMediaPhoto(media=photo_links_for_shop[2], caption=all_items[item_id]['name'])
-    await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id, chat_id=callback.message.chat.id)
-    await bot.answer_callback_query(callback.id)
+    if money_of_user(tg_id)>=all_items[item_id]['price']:
+        buy_item_user(tg_id, item_id, all_items[item_id]['price'])
+    else:await bot.answer_callback_query(callback.id, f"денег малавата братишка")
+    #показывает профиль
+    #await rcfightis(callback)
+    back = callback_farm_item if fl else callback_fight_item
+    ikm = make_inline_keyboard(1, ('купить', buy_item_shop_callback,(tg_id, item_id, fl,count+1)), ('бек',back,(tg_id,)))
+    await bot.answer_callback_query(callback.id, f"ура ты успешно купил {all_items[item_id]['name']}")
+    img = InputMediaPhoto(photo_links_for_shop[1], caption=f'можешь чекнуть /profile\n ты купил {count+1} штук')
+    await bot.edit_message_media(media=img,reply_markup=ikm, message_id=callback.message.message_id, chat_id=callback.message.chat.id)
 
-buy_item_callback = CallbackData
-
-#del_callback = CallbackData('del', 'tg_id')
 @dis.callback_query_handler(del_callback.filter())
 async def rdcfs(callback):
     tg_id = r_cbd(callback.data)
@@ -138,6 +134,8 @@ async def rdcfs(callback):
     #try: await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id-1)
     #№except: await bot.send_message(chat_id=callback.message.chat.id, text=
     # 'дайте админку чтобы я мог удалять сообщения (сейчас нужно удалить сообщение которым вызвали меню)')
+
+
 
 ##############################################----BUY_HERO-----#############################################
 
@@ -164,9 +162,9 @@ async def rfwannad7e(callback):
         await bot.edit_message_media(media=img,reply_markup=ikm, message_id=callback.message.message_id, chat_id=callback.message.chat.id)
         await bot.answer_callback_query(callback.id)
         return
-    img = InputMediaPhoto(media=photo_links_for_shop[5], caption='у тебя не хватает денег(')#чёто типо нищий
+    img = InputMediaPhoto(media=photo_links_for_shop[3], caption='у тебя не хватает денег(')#чёто типо нищий
     ikm = make_inline_keyboard(1, ('naZad', show_hero_in_shop, (tg_id, hero_id,)))  #)('тут будет типо иди работй негр', buy_hero_shop, (tg_id, hero_id))
-    print(ikm)
+    #print(ikm)
     await bot.edit_message_media(reply_markup=ikm, media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id)
 
 

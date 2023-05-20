@@ -117,8 +117,9 @@ def buy_hero(tg_id, hero_id, price):
 def buy_item_user(tg_id, item_id, price: int, count=1):
     money = money_of_user(tg_id)
     sql_code1 = f"UPDATE players SET money = {money-price} WHERE tg_id = {tg_id}"
-    sql_code2 = f"INSERT INTO items (tg_id, item_name, count) VALUES ('{tg_id}', {item_id}, '{count}')"
-    #"""INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_id}', '0')"""
+    value = connection.select_one(f"SELECT count FROM items WHERE tg_id = {tg_id} and item_name = {item_id}")
+    if value:sql_code2 = f'UPDATE items SET count = {value[0]+count} WHERE tg_id = {tg_id} and item_name = {item_id}'
+    else:sql_code2 = f"INSERT INTO items (tg_id, item_name, count) VALUES ('{tg_id}', {item_id}, '{count}')"
     connection.make_many(sql_code1, sql_code2)
 
 def wear_item_on_hero(item_id, hero_id):
