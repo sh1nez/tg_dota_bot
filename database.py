@@ -81,7 +81,7 @@ my_heroes = CallbackData('spmh', 'tg_id')
 users_inventory = CallbackData('suic', 'tg_id')
 async def make_profile(tg_id, chat_id, *args):#message_id, callback_id если надо редактить
     money = money_of_user(tg_id)
-    ikm = make_inline_keyboard(2, ('мои герои', my_heroes, (tg_id,)), ('инвентарь', users_inventory, (tg_id,)), )
+    ikm = make_inline_keyboard(1, ('мои герои', my_heroes, (tg_id,)), ('инвентарь', users_inventory, (tg_id,)), )
     text = 'состояние фарма\n'  # нужно написать состояния всех героев
     for i in find_info_all_heroes(tg_id):
         text += f"{hero_dick[i[1]]['name']} {i[1]} LVL {text_time(i[2])}"
@@ -90,14 +90,19 @@ async def make_profile(tg_id, chat_id, *args):#message_id, callback_id если 
     img = InputMediaPhoto(caption=text, media=photo_links_for_shop[2])
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=chat_id, message_id=args[0])
     await bot.answer_callback_query(args[1])
-def find_all_items(tg_id):
+def find_nowear_items(tg_id):
     sql_code = f"SELECT id, item_name, count FROM items WHERE tg_id = {tg_id} AND hero_id IS NULL"
     items = connection.select_all(sql_code)#((id, name, count))
+    print(items)
     return items
+def find_wear_items(tg_id, hero_id):
+    sql_code = f"SELECT item_name FROM items WHERE tg_id = {tg_id} AND hero_id = {hero_id}"
+    return connection.select_all(sql_code)
+
 def make_text_inventory(items: tuple, *args):#итемы в формате (хуйня, индекс, количество)
     text=str(args[0]) if args else ''
     for i in items:
-        text+=f"{all_items[i[1]]} - {i[2]}шт\n"
+        text+=f"{all_items[i[1]]['name']} - {i[2]}шт\n"
     return text
 def find_info_all_heroes(tg_id):
     sql_code = f"SELECT id, hero_name, last_time FROM heroes WHERE tg_id = {tg_id}"
@@ -107,6 +112,20 @@ def find_info_all_heroes(tg_id):
 def find_id_name_all_heroes(tg_id):
     sql_code = f"SELECT hero_name FROM heroes WHERE tg_id = {tg_id}"
     return connection.select_all(sql_code)
+
+def f_s_hero_farm(tg_id, hero_id):
+    t = datetime.datetime.today().replace(microsecond=0)
+    sql_code = f"UPDATE heroes SET last_time = '{t}' WHERE tg_id = {tg_id} AND hero_name ={hero_id}"
+    connection.update_insert_del(sql_code)
+
+def check_time_farm(tg_id, hero_id): #тру равно свободен
+    sql_code = f"SELECT last_time FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
+    t1 = connection.select_one(sql_code)[0]
+    if not t1: return True
+    t2 = datetime.datetime.today().replace(microsecond=0)
+    dt = (t2-t1).total_seconds()
+    return True if dt > 3600 else False
+
 ###############################################---SHOP---###############################################
 async def show_main_menu(chat_id, message_id, tg_id, *args):
     ikm = make_inline_keyboard(2,*(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)), ('в зад', del_callback, (tg_id,))))
@@ -148,11 +167,14 @@ def snat_s_geroya_v_invantar(item_id):
 def create_hero(tg_id, hero_id):
     sql_code = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`) VALUES ('{tg_id}', '{hero_id}', '1');"
     return connection.insert_id(sql_code)
+def chek_bp(tg_id):#
+    sql_code = f"SELECT status FROM players WHERE tg_id"
+    a =connection.select_one(sql_code)[0]
+    return a if a else False
 
 ###############################################---menu's---###############################################
 
 def make_inline_keyboard(row=3, *args):#передать инфу в формате n, (text, CallbackData, *args)
-    print(args)
     return InlineKeyboardMarkup(row_width=row).add(*(InlineKeyboardButton(text=i[0],
                                 callback_data=i[1].new(*i[2])) for i in args))
 #использование
