@@ -6,7 +6,8 @@
 #     def send_nudes(self):
 #         return [self.name]
 #
-# class Test_Stats_hero(Hero):#ещё нужно добавить кэф маг и физ урона. Чтобы на дизрапторе не собирались в физ а на антимаге в маг
+# class Test_Stats_hero(Hero):
+# #ещё нужно добавить кэф маг и физ урона. Чтобы на дизрапторе не собирались в физ а на антимаге в маг
 #     def __init__(self, index, name, hp, damage, lvl_up):
 #         super().__init__(index, name)
 #         self.hp = hp
@@ -52,101 +53,79 @@
 #         self.img = img
 #         self.event_img = event_img
 #
-# pudge = Info_hero(8800, 'пудж', 'самый секс перс доты имба покупай', 'много статов', r'https://cq.ru/storage/uploads/images/1530144/1.jpg',
-#                   "https://hsto.org/getpro/habr/post_images/6fc/750/e38/6fc750e38c21f9dc6a777c15cbf4be43.jpg")
+# pudge = Info_hero(8800, 'пудж', 'самый секс перс доты имба покупай', 'много статов', r'https://cq.ru
+# /storage/uploads/images/1530144/1.jpg',
+#  https://hsto.org/getpro/habr/post_images/6fc/750/e38/6fc750e38c21f9dc6a777c15cbf4be43.jpg")
 
-class Hero:
-    def __init__(self, index, name, ):
-        self.index = index
+class BaseHero:
+    def __init__(self, name: str, price: int, ):
         self.name = name
-    def send_nudes(self):
-        return [self.index, self.name]
-    def send_text(self):
-        return Exception('не тот класс')
-    def calculate(self):
-        return ValueError('не тот класс')
-    def new_stats_lvl(self):
-        return ValueError('не тот класс')
-class Info(Hero):
-    def __init__(self, index, name, price, description,  img):
-        super().__init__( index, name,)
         self.price = price
+    # def __new__(cls, *args, **kwargs):
+
+    def send_description(self, *args, **kwargs) -> Exception:
+        return Exception('это BaseHero')
+
+    def send_text(self, *args, **kwargs) -> Exception:
+        return Exception('это BaseHero')
+
+    def calculate(self, *args, **kwargs) -> Exception:
+        return ValueError('это BaseHero')
+
+    def lvlup(self, *args, **kwargs):
+        pass
+
+
+class HeroNew(BaseHero):
+    def __init__(self, name: str, price: int, description: str or None, img: str, good_event: str, bad_event: str,
+                 magic_damage_kef: float,  fiz_damage_kef: float, total_mag_d: int, total_fiz_d: int,
+                 farm: float, total_farm: int, hp: int, lvl_up: tuple):
+        super().__init__(name, price)
         self.description = description
-        #self.stats = stats
-        self.img = img
-    def send_nudes(self):
-        return [self.name, self.price, self.description]
-    def send_text(self):
-        text = f"это {self.name}, он стоит {self.price}"
-        text+= f"{self.description}"
-        return text
-class Stat_hero(Info):
-    def __init__(self, index, name, price, description, img, damage, hp, lvl_up):
-        super().__init__(index, name, price, description, img)
-        self.damage = damage
+        self.farm_t = total_farm
+        self.farm_k = farm  # 0-2
+        self.kef_mag = magic_damage_kef  # 0-2
+        self.kef_fiz = fiz_damage_kef  # 0-2
+        self.total_mag = total_mag_d
+        self.total_fiz = total_fiz_d
         self.hp = hp
         self.lvl_up = lvl_up
-    def new_stats_lvl(self, lvl):
-        return [self.damage + self.lvl_up[0]*lvl,
-                self.hp + self.lvl_up[1]*lvl
-                ]
+        self.img = img
+        self.good = good_event
+        self.bad = bad_event
+
+    def send_description(self):
+        desc = self.description+'\n' if self.description else ''
+        text = f"Это {self.name}, он стоит {self.price}\n{desc}" \
+               f"Базовые:\n Хп - {self.hp}, фрам\n" \
+               f"Потанцевалы:\n" \
+               f"Фрам - {int(self.farm_k*50)}%, файт - {int((self.fizd+self.magd)*25)}%\n" \
+               f"Урон:\n{int(self.fizd*50)}% - физ, {int(self.magd*50)}% - маг"
+        return text
+
+    def send_text(self) -> str:
+        text = f"это {self.name}, он стоит "  # {self.price}"
+        text += f"{self.description}"
+        return text
+
+    def lvlup(self, lvl) -> str:  # magic, fiz damage, hp, farm
+        pass  # return
+
     def calculate(self):
         return 1+1
-pudge_lvl_up = [3, 5]
-pudge = Stat_hero(0, 'пудж', 8800, 'топ чар', r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
-                  100, 100, pudge_lvl_up)
-tetchis_lvl_up = [1, 2]
-tetchis = Stat_hero(1, 'тетчис', 5000, 'говно',r'https://cojo.ru/wp-content/uploads/2022/12/pudzh-kompendium-2020-1.webp',
-                    50, 50,tetchis_lvl_up )
-hero_dick = [
-    pudge,
-    tetchis
-]
-for i in hero_dick:
-    print(i.index)
-    print(i.name)
-    print(i.price)
-    print(i.description)
-    print(i.img)
-    print(i.damage)
-    print(i.hp)
-    print(i.lvl_up)
-    print(i.new_stats_lvl(5))
-
-#пусть универсал - 0, сила - 1, ловкость -2, интеллект 3
-#pudge_lvl_up = [1,2]
-#pudge = Test_Stats_hero(10, 10, pudge_lvl_up)
-
-test_Stats_heroes = [
-    pudge
-]
 
 
+pudge_lvlup = (1, 2, 3,)
+pudge = HeroNew('пудж', 8800, 'имба', 'url', 'url2', 'url3', 0.9, 0.55, 0.9, 1000, pudge_lvlup)
+sf_lvlup = ((3, 2, 1),)
+sf_urls = ('url', 'url2', 'url3')
+sf_stats = (1.5, 1.5, 50, 50, 1.0, 50, 500)  # 7 штук
+'''   mag_k, fiz_k, t_mag,t_fiz,farm, t_farm, hp'''
+sf = HeroNew('сф', 10000, None, *sf_urls, *sf_stats, *sf_lvlup)
 
-############################
+"""name, price, description, img, good_event, bad_event, magic_damage_kef, fiz_damage_kef,
+    total_mag_d, total_fiz_d, farm, total_farm, hp, lvl_up"""
 
-#слишком сложно для школяра, сначала проще сделаю
-# pudge_lvl = 5
-# pudge_lvl_up = [0, 1, 2, 2, 1, 1]
-# pudge = Stats_hero(index=0, main_stat=1, esc=5, fiz_damage=10, magic_gamage=15, farm=30, fiz_hp=10, mag_hp=10, lvl_up=pudge_lvl_up,)
-# #тут у  меня будут заданы все герои с их базовым характеристиками
-# #это мы не меняем, тут у нас всегда определённые статы (кроме патчей)
-# #print(50/30)
-# antimage_lvl_up = [5, 3, 1, 1.6]
-# antimage = Stats_hero(index=1, main_stat=2, esc=20, fiz_damage=5, magic_gamage=3, farm=50, fiz_hp=1, mag_hp=15, lvl_up=antimage_lvl_up)
-# void_spirit_lvl_up = [1, 2.5, 2.5, 1]
-# void_spirit = Stats_hero(index=2,main_stat=3, esc=15, fiz_damage=25, magic_gamage=25, farm=10, lvl_up=void_spirit_lvl_up )
-# Stats_heroes = [
-#     pudge,
-#     antimage
-# ]
-#
-# print('пудж 0 лвл', Stats_heroes[0].send_nudes())
-# print('пудж 5 лвл', Stats_heroes[0].lvl_up(5))
-# asd = Stats_heroes[0].lvl_up(5)
-# dick = {}
-# #for i in asd:
-    #dick.items()
-#эта хуйня должна возвращать текущие значения героя. то есть например у пуджа васи будет 10 лвл.
-#тогда мы берём данные с героя, помножаем их на кэф васи, и возвращаем текущие данные его героя
-#самого героя мы никак не возвращаем и не меняем
+print(pudge.send_description())
+print()
+print(sf.send_description())

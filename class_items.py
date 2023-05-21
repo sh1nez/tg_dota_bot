@@ -1,51 +1,38 @@
-class Item:
-    def __init__(self, name, description, price, main_stat, index,farm, fight, helth, damage):
+class BaseItem:
+    def __init__(self, name: str, description: str, price: int, main_stat: int):
         self.name = name
         self.description = description
-        self.stat = main_stat
         self.price = price
-        self.index = index
-        self.farm = farm
-        self.fight = fight
-        self.helth = helth
+        self.stat = main_stat
+
+    def make_text(self, *args, **kwargs):
+        pass
+
+    def fight(self, *args, **kwargs):
+        pass
+
+
+class FarmItem(BaseItem):
+    def __init__(self, name: str, description: str or None, price: int, main_stat: int, movespeed: int, farmspeed: int):
+        super().__init__(name, description, price, main_stat)
+        self.ms = movespeed
+        self.farm = farmspeed   # от 0 до 100
+
+    def make_text(self):
+        text = f"это {self.name}, он стоит {self.price}\n{self.description if self.description else ''}" \
+               f"{f'основной стат - {stats_arr[self.stat]}' if self.stat else 'нет основного атрибута'}\n" \
+               f"даёт в фарме:\n{self.ms} скорости и {self.farm} эффективности"
+        return text
+
+
+class FightItem(BaseItem):
+    def __init__(self, name: str, description: str, price: int, main_stat: int, damage: float, helth: int):
+        super().__init__(name, description, price, main_stat)
         self.damage = damage
-    def send_item(self):
-        return self.stat, self.price, self.index
-# class Farm_items(Item):
-#     def __init__(self, name, description, price, main_stat, index, farm):
-#         super().__init__(name, description, price, main_stat, index,)
-#         self.farm = farm
-#         #self.mobil_farm = mobilit
-#     def send_item(self):
-#         return self.farm, self.price, self.stat, self.index
-# class Fight_items(Item):
-#     def __init__(self, name, description, price, main_stat, index, helth, damage,): #magic_ fiz_damage):#, esc, control):
-#         super().__init__(name, description, price, main_stat, index)
-#         self.hp = helth
-#         self.damage = damage
-#         #self.fiz_damage = fiz_damage
-#         # self.esc = esc
-#         # self.control = control
-# class Ultimate_items(Item):
-#     def __init__(self,name, description,  price, main_stat, index, farm, helth, damage):#esc,, control, mobility,magic_damage, fiz_
-#         super().__init__(name, description, price, main_stat, index)
-#         self.hp = helth
-#         self.damage = damage
-#         #self.fiz_damage = fiz_damage
-#         self.farm = farm
-#(name, description, price, main_stat, index,farm, fight, helth, damage)
-topor = Item(name='топор', description='да это мой топор', price='100',main_stat=0, index,farm, fight, helth, damage)
-desolator = Item(index=1, price=3500,main_stat=0, damage=20, helth=0, description='', name='')
-vetochka = Item(price=50, main_stat=0, damage=1, index=2, helth=1, farm=1, description='', name='')
+        self.hp = helth
 
-test_class_items = [
-    topor,
-    desolator,
-    vetochka
-]
-for i in test_class_items:
-    print(i.__dict__)
-    print(type(i))
-#print(topor.send_farm())
-#print(Item.Farm_Items.topor)
 
+stats_arr = ['ультимативный', 'сила', 'ловкость', 'интеллект']
+
+midas = FarmItem('мидас', None, 2250, 0, 0, 70)
+print(midas.make_text())

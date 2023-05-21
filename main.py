@@ -21,7 +21,7 @@ async def show_items_hero(tg_id, hero_id, chat_id, message_id, callback_id):
         ikm = make_inline_keyboard(3, *b).add(
             InlineKeyboardButton(text='одеть ещё', callback_data=wear_more_items.new(tg_id, hero_id))).add(
             InlineKeyboardButton(text='назад к герою', callback_data=show_hero_in_inventory.new(tg_id, hero_id, )))
-    img = InputMediaPhoto(media=photo_links_for_shop[0], caption=text)
+    img = InputMediaPhoto(media=images['shop'], caption=text)
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=chat_id,
                                  message_id=message_id)
     await bot.answer_callback_query(callback_id)
