@@ -1,3 +1,5 @@
+import datetime
+
 from database import *
 ##############################################----START-----#############################################
 @dis.message_handler(commands=['start'])#создаём пользователя
@@ -5,24 +7,34 @@ async def start_funk(message: aiogram.types):
     await starter(tg_id=message.from_user.id, chat_id=message.chat.id)
 
 ##############################################----PROFILE-----#############################################
+
 @dis.message_handler(commands=['profile'])
 async def profile_funk(message):
     tg_id = message.from_user.id
-    #sql_code2 = f"SELECT id, item_name FROM items WHERE tg_id = {message.from_user.id} AND hero_id IS NULL;"
-    arr = find_all_items(tg_id)
-    money = money_of_user(tg_id)
-    ikm = make_inline_keyboard(2, ('мои герои', my_heroes, (tg_id,)),('инвентарь', users_inventory,(tg_id,)),)
-    print(arr, ikm)
-    text = ''#нужно написать состояния всех героев
-    #text = 'у тебя нет предметов' if not arr else  for i in arr
-    #for i in arr:
-    #        text+= text.join(all_items[i[1]]['name'])
-    caption_text =f'денег - {money}\n{text}\n'
-    #img = InputMediaPhoto(media=photo_links_for_shop[1], caption=)
-    await bot.send_photo(chat_id=message.chat.id, reply_markup=ikm, photo=photo_links_for_shop[2], caption=caption_text)
+    await make_profile(tg_id, message.chat.id)
 
-my_heroes = CallbackData('spmh', 'tg_id')
-users_inventory = CallbackData('suic', 'tg_id')
+#my_heroes = CallbackData('spmh', 'tg_id')
+@dis.callback_query_handler(my_heroes.filter())
+async def rsmhip(callback):
+    tg_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
+    tup = find_id_name_all_heroes(tg_id)
+    buttons = ((hero_dick[i[0]]['name'], show_hero_in_inventory, (tg_id, i[0],),) for i in tup)
+    ikm = make_inline_keyboard(2, *buttons).add(InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
+    print(ikm)
+    img = InputMediaPhoto(caption='герои', media=photo_links_for_shop[3])
+    await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id, chat_id=callback.message.chat.id)
+    await bot.answer_callback_query(callback.id)
+
+show_hero_in_inventory = CallbackData('shiip', 'tg_id', 'hero_id')
+
+back_to_profile = CallbackData('pbtp', 'tg_id')
+@dis.callback_query_handler(back_to_profile.filter())
+async def rbtpn(callback):
+    tg_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id: await bot.answer_callback_query(callback.id, enemy_click[rnum()]);return
+    await make_profile(tg_id, callback.message.chat.id, callback.message.message_id, callback.id)
+#users_inventory = CallbackData('suic', 'tg_id')
 @dis.callback_query_handler(users_inventory.filter())
 async def rsuif(callback):
     tg_id = r_cbd(callback.data)

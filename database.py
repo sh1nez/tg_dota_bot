@@ -1,3 +1,5 @@
+import datetime
+
 import pymysql
 from config import *
 import aiogram
@@ -75,6 +77,19 @@ async def starter(tg_id, chat_id,):
 
 
 ###############################################---PROFILE---###############################################
+my_heroes = CallbackData('spmh', 'tg_id')
+users_inventory = CallbackData('suic', 'tg_id')
+async def make_profile(tg_id, chat_id, *args):#message_id, callback_id если надо редактить
+    money = money_of_user(tg_id)
+    ikm = make_inline_keyboard(2, ('мои герои', my_heroes, (tg_id,)), ('инвентарь', users_inventory, (tg_id,)), )
+    text = 'состояние фарма\n'  # нужно написать состояния всех героев
+    for i in find_info_all_heroes(tg_id):
+        text += f"{hero_dick[i[1]]['name']} {i[1]} LVL {text_time(i[2])}"
+    caption_text = f'денег - {money}\n{text}\n'
+    if not args: await bot.send_photo(chat_id=chat_id, reply_markup=ikm, photo=photo_links_for_shop[2], caption=caption_text);return
+    img = InputMediaPhoto(caption=text, media=photo_links_for_shop[2])
+    await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=chat_id, message_id=args[0])
+    await bot.answer_callback_query(args[1])
 def find_all_items(tg_id):
     sql_code = f"SELECT id, item_name, count FROM items WHERE tg_id = {tg_id} AND hero_id IS NULL"
     items = connection.select_all(sql_code)#((id, name, count))
@@ -84,13 +99,14 @@ def make_text_inventory(items: tuple, *args):#итемы в формате (ху
     for i in items:
         text+=f"{all_items[i[1]]} - {i[2]}шт\n"
     return text
-def find_all_heroes(tg_id):
-    sql_code = f"SELECT id, hero_name FROM heroes WHERE tg_id = {tg_id}"
+def find_info_all_heroes(tg_id):
+    sql_code = f"SELECT id, hero_name, last_time FROM heroes WHERE tg_id = {tg_id}"
     #мейби ещё ввести чтобы было видно кулдаун на фарм и другие вещи
     heroes = connection.select_all(sql_code)
     return heroes
-
-
+def find_id_name_all_heroes(tg_id):
+    sql_code = f"SELECT hero_name FROM heroes WHERE tg_id = {tg_id}"
+    return connection.select_all(sql_code)
 ###############################################---SHOP---###############################################
 async def show_main_menu(chat_id, message_id, tg_id, *args):
     ikm = make_inline_keyboard(2,*(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)), ('в зад', del_callback, (tg_id,))))
@@ -136,6 +152,7 @@ def create_hero(tg_id, hero_id):
 ###############################################---menu's---###############################################
 
 def make_inline_keyboard(row=3, *args):#передать инфу в формате n, (text, CallbackData, *args)
+    print(args)
     return InlineKeyboardMarkup(row_width=row).add(*(InlineKeyboardButton(text=i[0],
                                 callback_data=i[1].new(*i[2])) for i in args))
 #использование
@@ -150,3 +167,13 @@ def r_cbd(callback): return int(callback.split(':')[1]) if len(callback.split(':
 def money_of_user(tg_id):
     sql_code = f"SELECT money FROM players WHERE tg_id = {tg_id}"
     return int(connection.select_one(sql_code)[0])
+
+def text_time(t: datetime.datetime):
+    if not t: return '- готов'
+    s = 3600-(datetime.datetime.today().replace(microsecond=0) - t).total_seconds()
+    if s<=0: return ' - готов'
+    text = '- '
+    if s >= 3600: text+=f'{int(s//3600)} часов '; s %= 3600
+    if s >= 60: text+=f"{int(s//60)} мин "; s %= 60
+    text+=f"{int(s)} сек"
+    return text
