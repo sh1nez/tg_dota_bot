@@ -1,3 +1,59 @@
+from dota import NewHero, LocalHero
+sf_stats = (
+    *('url', 'url2', 'url3'),
+    *(500, 1, 1,),  # hp, fiz_armor, mag_armor, от
+    *(50, 10, 100, 10),  # fiz_damage: int, attack_speed: int, magic_damage: int, magic_speed: float
+    1000,  # базовый exp
+    {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
+     'fiz_damage': 10, 'attack_speed': 0.05, 'magic_damage': 7, 'magic_speed': 0, }  # магическое время не увеличиваются
+)
+"""hp, fiz_armor, mag_armor, fiz_damage, attack_speed, magic_damage, magic_speed"""
+
+sf1 = NewHero('сф', 10000, None, *sf_stats,)
+tup = sf1.lvlup_hero(4)
+fs1 = LocalHero(*tup)
+sf2 = NewHero('сф', 10000, None, *sf_stats,)
+tup = sf1.lvlup_hero(10)
+fs = LocalHero(*tup)
+print(fs1 > fs)
+'''хп, физ armor, маг armor, физ урон физ ас маг урон маг ас '''
+print(tup, sep='\n')
+
+
+"""name, price, description, img, good_event, bad_event, magic_damage_kef, fiz_damage_kef,
+    total_mag_d, total_fiz_d, farm, total_farm, hp, lvl_up"""
+
+
+
+'''for i in items:
+    buf = i.stats()
+    for j in buf:
+        pisapopa[j] += buf[j]
+        print(pisapopa[j], buf[j])
+# бафы итемов прибавлены
+print(pisapopa)
+end_farm = int(pisapopa['total_farm']*pisapopa['kef_farm'])
+end_mag = int(pisapopa['total_mag']*pisapopa['kef_mag'])
+end_fiz = int(pisapopa['total_fiz']*pisapopa['kef_fiz'])
+'''
+
+
+'''# действия
+pisapopa = pudge.local_dick()  # сначала для рассчёта создам локальный словарь который будем насиловать
+# сейчас мы должны прибавить бафы для лвла
+print(pisapopa)
+lvl_pudge = pudge.lvlup(5)
+pisapopa['total_farm'] += lvl_pudge['farm']
+pisapopa['total_mag'] += lvl_pudge['magic']
+pisapopa['total_fiz'] += lvl_pudge['fiz']
+# ура готово лвл прибавлен
+print(pisapopa)
+# сейчас мы должны прибавить бафы итемов
+items = (midas, desolator)'''
+
+
+
+
 next_text = """ ты зареган 
 доступные команды:
 /profile

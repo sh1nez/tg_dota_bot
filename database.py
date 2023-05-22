@@ -146,6 +146,8 @@ def rnum(): return random.randint(0, len(enemy_click)-1)
 def r_cbd(callback): return int(callback.split(':')[1]) if len(callback.split(':')) == 2 else map(int,callback.split(':')[1:])
 
 
+
+
 def chek_hero_user(tg_id, hero_id):
     sql_code = f"SELECT id FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     return True if connection.select_one(sql_code) else False
