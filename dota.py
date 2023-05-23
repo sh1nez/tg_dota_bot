@@ -1,22 +1,21 @@
-import time
+class DifferentLens(Exception):
+    """Нельзя использовать разные длины buffs"""
+    def __init__(self, *args, **kwargs):
+        print(*args, **kwargs)
+        print('загляни в lvlup_hero, длины кортежей check')
 
 
 class BaseHero:
     """def __init__(self, name: str, price: int, img1: str, img2: str, img3: str):"""
-    def __init__(self, hp: int, fiz_hp: int, mag_hp: int, farm_speed: int, total_farm: int,
-                 fiz_damage: int, attack_speed: float, magic_damage: int, magic_speed: float):
+    def __init__(self, hp: int, farm_speed: int, total_farm: int, fiz_tuple: tuple, magic_tuple: tuple):
         # mag_hp: int, fiz_hp:int,
         self.hp = hp
-        self.fiz_hp = fiz_hp
-        self.mag_hp = mag_hp
 
         self.farm_speed = farm_speed
         self.total_farm = total_farm
 
-        self.fiz_dmg = fiz_damage
-        self.attack_speed = attack_speed
-        self.mag_dmg = magic_damage
-        self.mag_speed = magic_speed
+        self.fiz_tuple = fiz_tuple
+        self.mag_tuple = magic_tuple
 
     def __lt__(self, *args, **kwargs) -> Exception:
         return Exception('фигню сделал')
@@ -28,20 +27,18 @@ class BaseHero:
     def lvlup_hero(self, *args, **kwargs) -> Exception:
         return Exception('не тот класс')
 
-    def select_hp(self, *args, **kwargs) -> Exception:
-        return Exception('не тот класс')
-
 
 class NewHero(BaseHero):
-    def __init__(self, name, price, description: str or None, img1, img2, img3, #интерфейс
-                 hp: int, fiz_hp: int, mag_hp: int, # базовые хп
+    def __init__(self, name: str, price: int, description: str or None, img1, img2, img3,  # интерфейс
+                 hp: int, fiz_armor: float, mag_armor: float,  # базовые хп
                  farm_speed: int, total_farm: int, kef_farm: float,
-                 fiz_damage: int, attack_speed: float, fiz_buf: float,
-                 magic_damage: int, magic_speed: float, magic_buf: float, # базовый fight
-                 exp: int, lvl_up: dict): # для lvl up
-        super().__init__(hp, # базовое здоровье
-                         farm_speed, total_farm, # base farm
-                         fiz_damage, magic_damage,) # base dmg
+                 fiz_tuple: tuple, fiz_buf: float,  # attack_speed: float,
+                 magic_tuple: tuple, magic_buf: float,  # magic_tuple - (dmg, sec), (20, 0.57)
+                 exp: int, lvl_up: dict):  # для lvl up
+        """self, hp: int, farm_speed: int, total_farm: int,
+                 fiz_damage: int, attack_speed: float, magic_damage: int, magic_speed: float):"""
+        super().__init__(hp, farm_speed, total_farm,
+                         fiz_tuple, magic_tuple)  # base dmg
         """интерфейс"""
         self.name = name
         self.price = price
@@ -49,34 +46,44 @@ class NewHero(BaseHero):
         self.img = img1
         self.good = img2
         self.bad = img3
+        """Stats"""
+        self.fiz_armor = fiz_armor  # 0-100
+        self.mag_armor = mag_armor  # 0-100
         """коэффициенты"""
-        self.kef_farm = kef_farm
-        self.fiz_buf = fiz_buf
-        self.magic_buf = magic_buf
+        self.kef_farm = kef_farm  # 0-n
+        self.fiz_buf = fiz_buf  # 0-n
+        self.magic_buf = magic_buf  # 0-n
         """лвл апы"""
-        self.exp = exp
-        self.lvl_up = lvl_up
+        self.exp = exp  # ~300-500
+        self.lvl_up = lvl_up  # tuple buffs
 
-    def select_hp(self) -> tuple:
-        mag_hp = self.hp * self.fiz_armor
-        fiz_hp = self.hp * self.fiz_hp / 100
-        tup = mag_hp, fiz_hp
-        return tup
+    def base_stats(self):
+        return
 
     def lvlup_hero(self, lvl) -> tuple:
-        """ exp, hp, fiz_armor, mag_armor, fiz_damage, attack_speed, magic_damage, magic_speed"""
-        '''прибавки за уровень локального героя'''
-        # нужно узнать сколько сейчас лвл exp: базовый + сколько накапало за уровни
-        # мы прибавили уровень и обнулили эксп, это нужно вернуть
-        tup = int(self.hp + self.lvl_up['hp'] * lvl),\
-            int(self.fiz_armor + self.lvl_up['fiz_armor'] * lvl),\
-            int(self.mag_armor + self.lvl_up['mag_armor'] * lvl),\
-            int(self.fiz_dmg + self.lvl_up['fiz_damage'] * lvl),\
-            int(self.attack_speed + self.lvl_up['attack_speed'] * lvl),\
-            int(self.mag_dmg + self.lvl_up['magic_damage'] * lvl),\
-            int(self.mag_speed + self.lvl_up['magic_speed'] * lvl),
-
-        return tup
+        """Прибавки за уровень локального героя"""
+        """ exp, hp, fiz_armor, mag_armor, fiz_damage, attack_speed, (magic_damage, magic_speed)"""
+        if len(self.lvl_up['magic_tuple']) != len(self.mag_tuple):
+            raise DifferentLens('магия длины кортежей')
+        if len(self.lvl_up['fiz_tuple']) != len(self.fiz_tuple):
+            raise DifferentLens('физика длины кортежей')
+        mag = ()
+        for i in zip(self.mag_tuple, self.lvl_up['magic_tuple']):
+            mag += ((i[0][0]+(i[1][0]*lvl), i[0][1]-(i[1][1]*lvl)),)
+        fiz = ()
+        for i in zip(self.fiz_tuple, self.lvl_up['fiz_tuple']):
+            fiz += ((i[0][0]+(i[1][0]*lvl), i[0][1]+(i[1][1]*lvl)),)
+        """все источники маг урона изменены"""
+        print(self.fiz_armor, round((1 - self.fiz_armor), 5), self.lvl_up['fiz_armor'], lvl)
+        fiz_armor = float(self.fiz_armor)
+        magic_armor = float(self.mag_armor)
+        for i in range(lvl):
+            fiz_armor += (1 - fiz_armor) * self.lvl_up['fiz_armor']
+            magic_armor += (1-fiz_armor) * self.lvl_up['mag_armor']
+        tup_hp = int(self.hp + self.lvl_up['hp'] * lvl), fiz_armor, magic_armor
+        tup_farm = self.farm_speed + self.lvl_up['farm_speed']*lvl,\
+            self.total_farm + self.lvl_up['total_farm']*lvl,
+        return tup_hp, tup_farm, fiz, mag
 
     def exp_up_lvl(self, lvl, exp):
         """Можем у героя вызвать этот класс, чтобы проверить эксп"""
@@ -90,58 +97,87 @@ class NewHero(BaseHero):
 
 
 class LocalHero(BaseHero):
-    def __init__(self, hp: int, fiz_damage: int, attack_speed: float, magic_damage: int, magic_speed: float,
-                 mag_hp: int, fiz_hp: int,):
-        """hp: int, fiz_damage: int, attack_speed: float, magic_damage: int, magic_speed: float"""
-        super().__init__(hp, fiz_damage, attack_speed, magic_damage, magic_speed)
-        self.mag_hp = mag_hp
-        self.fiz_hp = fiz_hp
-        """физика"""
+    def __init__(self, hp: int, fiz_armor: float, magic_armor: float, farm_speed: int, total_farm: int,
+                 fiz_tuple: tuple, magic_tuple: tuple,):
+        """ hp: int, farm_speed: int, total_farm: int, fiz_tuple: tuple, magic_tuple: tuple):"""
+        super().__init__(hp, farm_speed, total_farm, fiz_tuple, magic_tuple)
+        self.magic_armor = magic_armor
+        self.fiz_armor = fiz_armor
 
     def __lt__(self, other: object) -> bool or Exception:
         if not isinstance(other, LocalHero):
             return Exception('нужен LocalHero')
-        print(self.select_hp())
-        print(other.select_hp())
         return False
 
 
 class BaseItem:
-    pass
+    def __init__(self, hp: int, fiz_armor: float, mag_armor: float,
+                 fiz_dmg: int, attack_speed: float, mag_dmg: int, mag_speed: float,
+                 farm_speed: int, total_farm: int,):
+        self.hp = hp
+        self.fiz_armor = fiz_armor
+        self.mag_armor = mag_armor
+        self.fiz_dmg = fiz_dmg
+        self.attack_speed = attack_speed
+        self.mag_dmg = mag_dmg
+        self.mag_speed = mag_speed
+        self.farm_speed = farm_speed
+        self.total_farm = total_farm
+
+    def __add__(self, other: LocalHero):
+        if not isinstance(other, LocalHero):
+            raise Exception('можно прибавлять только предметы к герою')
+        print(LocalHero)
+
+    def __radd__(self, other):
+        self.__add__(other)
+class ShopItem(BaseItem):
+    def __init__(self, price: int, description: str or None, img1: str, img2: str,
+                 main_stat: int,
+                 hp: int, fiz_armor: float, mag_armor: float,
+                 fiz_dmg: int, attack_speed: float, mag_dmg: int, mag_speed: float,
+                 farm_speed: int, total_farm: int,
+                 ):
+        super().__init__(hp, fiz_armor, mag_armor, fiz_dmg, attack_speed, mag_dmg,
+                         mag_speed, farm_speed, total_farm)
+        self.main_stat = main_stat
+        self.price = price
+        self.description = description
+        self.img1 = img1
+        self.img2 = img2
 
 
-tup = (10, 0.5,), (30, 1)
+class FightItems(BaseItem):
+    def __init__(self, hp: int, fiz_armor: float, mag_armor: float,
+                 fiz_dmg: int, attack_speed: float, mag_dmg: int, mag_speed: float,
+                 farm_speed: int, total_farm: int,):
+        super().__init__(hp, fiz_armor, mag_armor, fiz_dmg, attack_speed, mag_dmg,
+                         mag_speed, farm_speed, total_farm)
 
 
-def die_second1(hp: int, timers: list) -> float:
+def die_second1(hp: int, timers: list) -> int and float:
     """[[dmg, time, count],[10, 0.47, 0]]"""
     dmg = sum([i[0] for i in timers])
     seconds = 0
-    # нужно найти самую маленькую единицу
     timers.sort(key=lambda k: k[1])
     small = timers[0][1]
-    # small - 0.33 cek
-    """"""
     while dmg < hp:
         for i in timers:
-            #print(i, seconds // i[1], i[2])
             if seconds // i[1] > i[2]:
-                #print(seconds)
-                #print(i[2])
                 i[2] += 1
                 dmg += i[0]
-        #print()
+            else:
+                break
         seconds = round(seconds+small, 5)
     return dmg, seconds
+
+
 def die_second2(hp: int, timers: list) -> float:
-    """[[dmg, time, count],[10, 0.47, 0]]"""
+    """test_arr = [[22, 0.47123, 0], [10, 0.3331212, 0], [100, 12.123123,  0], [321, 10.81283, 0]]"""
     speeds = [i[0]/i[1] for i in timers]
     return hp/sum(speeds)
 
-test_arr = [[2, 0.47, 0], [1, 0.33, 0], [999.0, 1,  0]]
-#t = dat
-print(die_second1(999999, test_arr))
-#print(die_second2(1000, test_arr))
 
-class Item:
-    pass
+# test_arr = [[22, 0.47123, 0], [10, 0.3331212, 0], [100, 12.123123,  0], [321, 10.81283, 0]]
+# print(die_second1(999999, test_arr))
+# print(die_second2(999999, test_arr))

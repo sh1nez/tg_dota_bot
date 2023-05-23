@@ -1,24 +1,26 @@
 from dota import NewHero, LocalHero
 sf_stats = (
     *('url', 'url2', 'url3'),
-    *(500, 1, 1,),  # hp, fiz_armor, mag_armor, от
-    *(50, 10, 100, 10),  # fiz_damage: int, attack_speed: int, magic_damage: int, magic_speed: float
+    *(500, 0.22, 0.22,),  # hp, fiz_armor, mag_armor, от
+    *(250, 150, 1.1),  # фарм, в мс, тотал и кефе
+    *(((150, 10),), 0.7, ((100, 30,), (300, 20)), 1.488),
+    # fiz_damage: int, attack_speed: float, fiz_buf: float, magic_tuple, mag_buff
     1000,  # базовый exp
-    {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
-     'fiz_damage': 10, 'attack_speed': 0.05, 'magic_damage': 7, 'magic_speed': 0, }  # магическое время не увеличиваются
+    {'exp': 300, 'hp': 50, 'fiz_armor': 0.8, 'mag_armor': 0.7,
+     'fiz_tuple': ((10, 2),), 'magic_tuple': ((7, 0.21), (21, 0.27)),
+     'total_farm': 5, 'farm_speed': 1, }
+    # можно уменьшат кд, можно не уменьшать добавив 0
 )
-"""hp, fiz_armor, mag_armor, fiz_damage, attack_speed, magic_damage, magic_speed"""
 
-sf1 = NewHero('сф', 10000, None, *sf_stats,)
-tup = sf1.lvlup_hero(4)
-fs1 = LocalHero(*tup)
-sf2 = NewHero('сф', 10000, None, *sf_stats,)
-tup = sf1.lvlup_hero(10)
-fs = LocalHero(*tup)
-print(fs1 > fs)
+sf = NewHero('негр', 80000, None, *sf_stats)
+hp, farm, fiz_dmg, mag_dmg = sf.lvlup_hero(5)
+print(sf.__dict__)
+#print(hp, farm, fiz_dmg, mag_dmg, sep='\n')
+local_hero = LocalHero(*hp, *farm, fiz_dmg, mag_dmg)
+print(local_hero.__dict__)
+"""изменены атрибуты в формате хп, физ armor, magic armor, кортеж физ урон, маг урон"""
+
 '''хп, физ armor, маг armor, физ урон физ ас маг урон маг ас '''
-print(tup, sep='\n')
-
 
 """name, price, description, img, good_event, bad_event, magic_damage_kef, fiz_damage_kef,
     total_mag_d, total_fiz_d, farm, total_farm, hp, lvl_up"""
