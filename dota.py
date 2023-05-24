@@ -8,6 +8,10 @@ class DifferentLens(Exception):
 
 class BaseHero:
     """def __init__(self, name: str, price: int, img1: str, img2: str, img3: str):"""
+    __rd = 5
+    __max_as = 1000
+    __max_sec = 10
+    __min_sec = 0.1
 
     def __init__(self, hp: int, farm_speed: int, total_farm: int, fiz_tuple: tuple, mag_tuple: tuple,
                  magic_buf: float):
@@ -34,8 +38,19 @@ class BaseHero:
     def no_items(self, *args, **kwargs) -> Exception:
         return Exception('не тот класс')
 
+    def battle(self, *args, **kwargs) -> Exception:
+        return Exception('не тот класс')
+
+    def die_second1(self, *args, **kwargs) -> Exception:
+        return Exception('не тот класс')
+
+    def die_second2(self, *args, **kwargs) -> Exception:
+        return Exception('не тот класс')
+
 
 class NewHero(BaseHero):
+    __rd = 5
+
     def __init__(self, name: str, price: int, description: str or None, img1, img2, img3,  # интерфейс
                  hp: int, fiz_armor: float, mag_armor: float,  # базовые хп
                  farm_speed: int, total_farm: int, kef_farm: float,
@@ -81,14 +96,19 @@ class NewHero(BaseHero):
         fiz_armor = float(self.fiz_armor)
         mag_armor = float(self.mag_armor)
         for i in range(lvl):
-            fiz_armor = round(fiz_armor + (100 - fiz_armor)/100 * self.lvl_up['fiz_armor'], 5)
-            mag_armor = round(mag_armor + (100 - fiz_armor)/100 * self.lvl_up['mag_armor'], 5)
+            fiz_armor = round(fiz_armor + (100 - fiz_armor)/100 * self.lvl_up['fiz_armor'], self.__rd)
+            mag_armor = round(mag_armor + (100 - fiz_armor)/100 * self.lvl_up['mag_armor'], self.__rd)
         tup_hp = int(self.hp + self.lvl_up['hp'] * lvl), fiz_armor, mag_armor,
         tup_farm = self.farm_speed + self.lvl_up['farm_speed'] * lvl, self.total_farm + self.lvl_up['total_farm'] * lvl
         return tup_hp, tup_farm, fiz, mag, self.mag_buf
 
 
 class LocalHero(BaseHero):
+    __rd = 5
+    __max_as = 1000
+    __max_sec = 10
+    __min_sec = 0.1
+
     def __init__(self, hp: int, fiz_armor: float, mag_armor: float, farm_speed: int, total_farm: int,
                  fiz_tuple: tuple, mag_tuple: tuple, magic_buf: float):
         """ hp: int, farm_speed: int, total_farm: int, fiz_tuple: tuple, mag_tuple: tuple):"""
@@ -96,7 +116,7 @@ class LocalHero(BaseHero):
         self.mag_armor = mag_armor
         self.fiz_armor = fiz_armor
 
-    def no_items(self):
+    def no_items(self) -> dict:
         dick = {
             'hp': self.hp,
             'farm_speed': self.farm_speed,
@@ -106,31 +126,57 @@ class LocalHero(BaseHero):
             'mag_buf': self.mag_buf,
             'mag_armor': self.mag_armor,
             'fiz_armor': self.fiz_armor,
-
         }
         return dick
 
-    @staticmethod
-    def battle(dick1, dick2):
-        """быть"""
-        # я хочу использовать die second, но мне нужны данные в формате проходящий урон
-        print()
-        # print(dick1['fiz_tuple'])
-        # print(dick2['fiz_tuple'][0][0])
-        # print(dick2['fiz_armor'])
-        # print(dick2['fiz_tuple'][0][0] * (100-dick2['fiz_armor'])/100)
-        fiz_dmg1 = [[dick2['fiz_tuple'][0][0] * (100-dick2['fiz_armor'])/100, i[1], 0] for i in dick1['fiz_tuple']]
-        mag_dmg1 = [[round(i[0] * (100 - dick2['mag_armor']/100), 5), i[1], 0] for i in dick1['mag_tuple']]
-        fiz_dmg2 = [[dick1['fiz_tuple'][0][0] * (100-dick1['fiz_armor'])/100, i[1], 0] for i in dick2['fiz_tuple']]
-        mag_dmg2 = [[round(i[0] * (100 - dick1['mag_armor']/100), 5), i[1], 0] for i in dick2['mag_tuple']]
-        print(dick2['hp'], fiz_dmg1+mag_dmg1)
-        print(dick1['hp'], fiz_dmg2+mag_dmg2)
-        seconds1 = die_second1(dick2['hp'], fiz_dmg1)  # + mag_dmg1)
-        seconds2 = die_second1(dick1['hp'], fiz_dmg2)  # + mag_dmg2)
+    def battle(self, dick1: dict, dick2: dict) -> tuple['tuple', 'tuple']:
+        """Возвращает урон и секунды fight"""
+        """первый
+        __max_as = 1000
+        __max_sec = 10
+        __min_sec = 0.1
+        """
+        print(dick1, dick2, sep='\n')
+        fiz_dmg1 = [[round(dick2['fiz_tuple'][0][0] * (100-dick2['fiz_armor'])/100, self.__rd),
+                     round(self.__max_sec - ((self.__max_sec-self.__max_sec) * i[1] / self.__max_as), self.__rd), 0]
+                    for i in dick1['fiz_tuple']]
+        mag_dmg1 = [[round(i[0] * (100 - dick2['mag_armor']/100), self.__rd), i[1], 0] for i in dick1['mag_tuple']]
+
+        """второй"""
+        fiz_dmg2 = [[round(dick1['fiz_tuple'][0][0] * (100-dick1['fiz_armor'])/100, self.__rd),
+                     round(self.__max_sec - ((self.__max_sec-self.__max_sec) * i[1]/self.__max_as), self.__rd), 0]
+                    for i in dick2['fiz_tuple']]
+        mag_dmg2 = [[round(i[0] * (100 - dick1['mag_armor']/100), self.__rd), i[1], 0] for i in dick2['mag_tuple']]
+        print(fiz_dmg1, fiz_dmg2)
+        seconds1 = self.die_second1(dick2['hp'], fiz_dmg1 + mag_dmg1)  # + mag_dmg1)
+        seconds2 = self.die_second1(dick1['hp'], fiz_dmg2 + mag_dmg2)  # + mag_dmg2)
         return seconds1, seconds2
+
+    def die_second1(self, hp: int, timers: list) -> int and float:
+        """[[dmg, time, count],[10, 0.47, 0]]"""
+        dmg = sum([i[0] for i in timers])
+        seconds = 0
+        timers.sort(key=lambda k: k[1])
+        small = timers[0][1]
+        while dmg < hp:
+            for i in timers:
+                if seconds // i[1] > i[2]:
+                    i[2] += 1
+                    dmg = round(dmg + i[0], self.__rd)
+                else:
+                    break
+            seconds = round(seconds + small, self.__rd)
+        return dmg, round(seconds, self.__rd)
+
+    def die_second2(self, hp: int, timers: list) -> float:
+        """test_arr = [[22, 0.47123, 0], [10, 0.3331212, 0], [100, 12.123123,  0], [321, 10.81283, 0]]"""
+        speeds = [i[0] / i[1] for i in timers]
+        return round(hp / sum(speeds), self.__rd)
 
 
 class BaseItem:
+    __rd = 5
+
     def __init__(self, hp: int or None, fiz_armor: float or None, mag_armor: float or None,
                  fiz_tuple: tuple or None, mag_tuple: tuple or None, mag_buf: float or None,
                  farm_speed: int or None, total_farm: int or None, ):
@@ -145,6 +191,9 @@ class BaseItem:
 
     def __mul__(self, *args, **kwargs) -> Exception:
         return Exception('не тот класс')
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
 
 class ShopItem(BaseItem):
@@ -168,7 +217,6 @@ class ShopItem(BaseItem):
         end_fiz_tup = ()
         """Вернёт изменённую в зависимости от героя информацию для создания FightItem"""
         for i in other['fiz_tuple']:
-            # print(i[0])
             fiz_damage = i[0] + self.fiz_tuple[0] if self.fiz_tuple[0] else i[0]
             fiz_speed = i[1] - self.fiz_tuple[1] if self.fiz_tuple[1] else i[1]
             end_fiz_tup += ((fiz_damage, fiz_speed),)
@@ -188,36 +236,9 @@ class ShopItem(BaseItem):
             'fiz_tuple': end_fiz_tup,
             'mag_tuple': end_mag_tup,
             'mag_buf': self.mag_buf + other['mag_buf'] if self.mag_buf else other['mag_buf'],
-            'mag_armor': round(other['mag_armor'] + (self.mag_armor * (100 - other['fiz_armor']) / 100), 5)
+            'mag_armor': round(other['mag_armor'] + (self.mag_armor * (100 - other['fiz_armor']) / 100), self.__rd)
             if self.mag_armor else other['mag_armor'],
-            'fiz_armor': round(self.fiz_armor + (other['fiz_armor'] * (100 - other['fiz_armor']) / 100), 5)
+            'fiz_armor': round(self.fiz_armor + (other['fiz_armor'] * (100 - other['fiz_armor']) / 100), self.__rd)
             if self.fiz_armor else other['fiz_armor'],
         }
         return dick
-
-
-def die_second1(hp: int, timers: list) -> int and float:
-    """[[dmg, time, count],[10, 0.47, 0]]"""
-    dmg = sum([i[0] for i in timers])
-    seconds = 0
-    timers.sort(key=lambda k: k[1])
-    small = timers[0][1]
-    a = len(str(small))
-    b = len(str(int(small)))
-    row = a-b-1
-
-    while dmg < hp:
-        for i in timers:
-            if seconds // i[1] > i[2]:
-                i[2] += 1
-                dmg = round(dmg+i[0], 5)
-            else:
-                break
-        seconds = round(seconds + small, row)
-    return dmg, 5, round(seconds, 5)
-
-
-def die_second2(hp: int, timers: list) -> float:
-    """test_arr = [[22, 0.47123, 0], [10, 0.3331212, 0], [100, 12.123123,  0], [321, 10.81283, 0]]"""
-    speeds = [i[0] / i[1] for i in timers]
-    return round(hp / sum(speeds), 3)

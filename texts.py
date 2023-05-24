@@ -1,14 +1,23 @@
-from dota import NewHero, LocalHero, ShopItem  # FightItems
+from dota import NewHero, ShopItem, LocalHero
+
 
 sf_dick = {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
-           'fiz_tuple': ((10, 2),), 'mag_tuple': ((7, 0.21), (21, 0.27),),  # можно уменьшат кд (0 - не уменьшать)
+           'fiz_tuple': ((10, 2),), 'mag_tuple': ((10, 0.21), (10, 0.21), (10, 0.21)),
            'total_farm': 5, 'farm_speed': 1, }
 sf_urls = (r'https://dota2ok.ru/wp-content/uploads/2021/01/SF-1024x576.jpg',
            )
 sf = NewHero(name='негр', price=80000, description=None, img1=sf_urls[0], img2=None, img3=None,
-             hp=500, fiz_armor=15, mag_armor=15,
-             farm_speed=250, total_farm=150, kef_farm=1.2, fiz_tuple=((50, 1),), mag_tuple=((100, 30,), (300, 20),),
+             hp=500, fiz_armor=5, mag_armor=5,
+             farm_speed=250, total_farm=150, kef_farm=1.2, fiz_tuple=((50, 100),),
+             mag_tuple=((100, 10,), (100, 10,), (100, 10,)),
              fiz_buf=0.7, mag_buf=1.4, exp=1000, lvl_up=sf_dick)
+pudge_dick = {}
+pudge_urls = ('https://cq.ru/storage/uploads/images/1530144/cri/1___media_library_original_1018_636.jpg', )
+pudge = NewHero(name='пудж', price=0, description=None, img1=pudge_urls[0], img2=None, img3=None,
+                hp=1000, fiz_armor=20, mag_armor=25,
+                farm_speed=280, total_farm=200, kef_farm=1.5, fiz_tuple=((10, 30),), mag_tuple=((20, 0.2,),),
+                fiz_buf=0.5, mag_buf=1.7, exp=1000, lvl_up=sf_dick)
+
 '''
 (def __init__(self, price: int, description: str or None, img1: str, img2: str or None,
                  main_stat: int or None,
@@ -24,7 +33,6 @@ midas_stats = (2250, 'IMBA', 'img', None,    # price desc img1 img2
 '''
 midas_urls = (
     'https://avatars.dzeninfra.ru/get-zen_doc/3126430/pub_604f9ae70a7d51654a5834d3_604f9b59011181447bd702d5/scale_1200',
-
 )
 midas = ShopItem(price=2250, name='мидас', description=None, img1=midas_urls[0], img2=None, main_stat=None, hp=500,
                  fiz_armor=None, mag_armor=None, fiz_tuple=(None, 0.2), mag_tuple=(None, None),
@@ -32,25 +40,32 @@ midas = ShopItem(price=2250, name='мидас', description=None, img1=midas_url
 """price=0, name=None, description=None, img1=None, img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
                mag_buf=None, farm_speed=None, total_farm=None"""
-mom = ShopItem(price=2000, name='мом', description=None, img1=None, img2=None, main_stat=None, hp=None,
+mom_urls = (
+    'https://steamuserimages-a.akamaihd.net/ugc/5114431931285788573/9D8C5A31B5B184ECA192F18D172B1F3EFE28697A/',
+            )
+mom = ShopItem(price=2000, name='мом', description=None, img1=mom_urls[0], img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
                mag_buf=None, farm_speed=None, total_farm=None)
 
-'''
+
 hp, farm, fiz_dmg, mag_dmg, mag_buf = sf.lvlup_hero(5)
 # print(hp, farm, fiz_dmg, mag_dmg, mag_buf, sep='\n')
 local_hero1 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf)
 local_hero2 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf)
-hero_dick1 = local_hero1.__dict__
+hero_dick1 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf).__dict__
 hero_dick1 *= midas
 hero_dick1 *= midas
 hero_dick2 = local_hero2.no_items()
 # сейчас у меня есть
-print(LocalHero.battle(hero_dick1, hero_dick2))
+# print(hero_dick1, hero_dick2)
+a = local_hero1.battle(hero_dick1, hero_dick2)
+b = local_hero2.battle(hero_dick1, hero_dick2)
+print(a, b)
 
-'''
+"""
 hero_dick = {
-    0: sf
+    0: pudge,
+    1: sf
 }
 
 
@@ -80,11 +95,11 @@ images = {
 
 }
 
-next_text = """ ты зарегистрирован 
+next_text =  ты зарегистрирован 
 доступные команды:
 /profile
 /shop
-"""
+
 
 gold_user = 'голда выдана, итого сейчас'
 
@@ -96,14 +111,9 @@ enemy_click = [
     'ээ потише',
 ]
 
-new_reg_text = f'Также тебе выдан бонусный герой - пудж, не забудь заглянуть в профиль'
+new_reg_text = f'Также тебе выдан бонусный герой - пудж, не забудь заглянуть в профиль /profile '
 
-commands = '''/gold
-/profile
-/shop
-'''
 
-"""
 hero_dick = {
     0: {'name': 'pudge', 'description': 'самый секс перс доты имба покупай', 'price': 8800,
         'stats': 'asasd', 'img':r'https://cq.ru/storage/uploads/images/1530144/1.jpg',
@@ -120,17 +130,18 @@ hero_dick = {
 item_dick = {
     'fight':{
         0: {'name': 'дезолятор', 'global_id': 2, 'price': 3500, 'description': '', 'dis_stats': '', 'fight': 20 },
-        1: {'name': 'лотар','global_id': 3, 'price': 2700, 'description': 'неуязвимость', 'dis_stats': 'нет', 'fignt':15},
+    1: {'name': 'лотар','global_id': 3, 'price': 2700, 'description': 'неуязвимость', 'dis_stats': 'нет', 'fignt':15},
 
     },
     'netral': {
-        0: {'name': 'веточка', 'global_id': 4, 'price': 50, 'description': 'имба', 'dis_stats': 'много статов', 'farm': 1, 'fight': 1 },
+0: {'name': 'веточка', 'global_id': 4, 'price': 50, 'description': 'имба',
+ 'dis_stats': 'много статов', 'farm': 1, 'fight': 1 },
     }
 }
 
 all_items ={
     0: {'name': 'топорик', 'price': 100, 'description': 'шшаа', 'dis_stats':'немного фарма', 'farm': 5, 'fight':0},
-    1: {'name': 'мидас', 'price': 2250, 'description': 'вс антиагаа', 'dis_stats': 'много фарма', 'farm': 100, 'fight':0 },
+1: {'name': 'мидас', 'price': 2250, 'description': 'вс антиагаа', 'dis_stats': 'много фарма', 'farm': 100, 'fight':0 },
     2: {'name': 'дезолятор', 'price': 3500, 'description': '', 'dis_stats': '', 'fight': 20, 'farm':0 },
     3: {'name': 'лотар', 'price': 2700, 'description': 'неуязвимость', 'dis_stats': 'нет', 'fignt':15, 'farm':0},
     4: {'name': 'веточка', 'price': 50, 'description': 'имба', 'dis_stats': 'много статов', 'farm': 1, 'fight': 1 },
@@ -143,11 +154,4 @@ all_items ={
 #     r'https://instamag.ru/upload/medialibrary/ccf/cards_polaroids_19_1_min.jpg',
 #     #r'https://static.dw.com/image/38357849_605.jpg',
 #     r'https://upload.wikimedia.org/wikipedia/commons/c/cd/Gay_Couple_Savv_and_Pueppi_02.jpg',
-# ]
-
-    }
-}
-
-
-арт красиво
 """
