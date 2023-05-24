@@ -138,15 +138,15 @@ class LocalHero(BaseHero):
         """
         print(dick1, dick2, sep='\n')
         fiz_dmg1 = [[round(dick2['fiz_tuple'][0][0] * (100-dick2['fiz_armor'])/100, self.__rd),
-                     round(self.__max_sec - ((self.__max_sec-self.__max_sec) * i[1] / self.__max_as), self.__rd), 0]
+                     round(self.__max_sec - ((self.__max_sec-self.__min_sec) * i[1] / self.__max_as), self.__rd), 0]
                     for i in dick1['fiz_tuple']]
-        mag_dmg1 = [[round(i[0] * (100 - dick2['mag_armor']/100), self.__rd), i[1], 0] for i in dick1['mag_tuple']]
+        mag_dmg1 = [[round(i[0] * ((100 - dick2['mag_armor'])/100), self.__rd), i[1], 0] for i in dick1['mag_tuple']]
 
         """второй"""
         fiz_dmg2 = [[round(dick1['fiz_tuple'][0][0] * (100-dick1['fiz_armor'])/100, self.__rd),
-                     round(self.__max_sec - ((self.__max_sec-self.__max_sec) * i[1]/self.__max_as), self.__rd), 0]
+                     round(self.__max_sec - ((self.__max_sec-self.__min_sec) * i[1]/self.__max_as), self.__rd), 0]
                     for i in dick2['fiz_tuple']]
-        mag_dmg2 = [[round(i[0] * (100 - dick1['mag_armor']/100), self.__rd), i[1], 0] for i in dick2['mag_tuple']]
+        mag_dmg2 = [[round(i[0] * ((100 - dick1['mag_armor'])/100), self.__rd), i[1], 0] for i in dick2['mag_tuple']]
         print(fiz_dmg1, fiz_dmg2)
         seconds1 = self.die_second1(dick2['hp'], fiz_dmg1 + mag_dmg1)  # + mag_dmg1)
         seconds2 = self.die_second1(dick1['hp'], fiz_dmg2 + mag_dmg2)  # + mag_dmg2)
