@@ -53,9 +53,9 @@ class NewHero(BaseHero):
         self.name = name
         self.price = price
         self.description = description
-        self.img = img1
-        self.good = img2
-        self.bad = img3
+        self.img1 = img1
+        self.img2 = img2
+        self.img3 = img3
         """коэффициенты"""
         self.kef_farm = kef_farm  # 0-n
         self.fiz_buf = fiz_buf  # 0-n
@@ -148,7 +148,7 @@ class BaseItem:
 
 
 class ShopItem(BaseItem):
-    def __init__(self, price: int, description: str or None, img1: str or None, img2: str or None,
+    def __init__(self, price: int, name: str, description: str or None, img1: str or None, img2: str or None,
                  main_stat: int or None,
                  hp: int or None, fiz_armor: float or None, mag_armor: float or None,
                  fiz_tuple: tuple or None, mag_tuple: tuple or None, mag_buf: float or None,
@@ -157,8 +157,12 @@ class ShopItem(BaseItem):
         self.main_stat = main_stat
         self.price = price
         self.description = description
+        self.name = name
         self.img1 = img1
         self.img2 = img2
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __mul__(self, other: dict) -> dict:
         end_fiz_tup = ()
@@ -210,7 +214,7 @@ def die_second1(hp: int, timers: list) -> int and float:
             else:
                 break
         seconds = round(seconds + small, row)
-    return dmg, seconds
+    return dmg, 5, round(seconds, 5)
 
 
 def die_second2(hp: int, timers: list) -> float:

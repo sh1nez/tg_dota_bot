@@ -1,12 +1,14 @@
 from dota import NewHero, LocalHero, ShopItem  # FightItems
 
-dick = {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
-        'fiz_tuple': ((10, 2),), 'mag_tuple': ((7, 0.21), (21, 0.27),),  # можно уменьшат кд (0 - не уменьшать)
-        'total_farm': 5, 'farm_speed': 1, }
-sf = NewHero(name='негр', price=80000, description=None, img1=None, img2=None, img3=None,
+sf_dick = {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
+           'fiz_tuple': ((10, 2),), 'mag_tuple': ((7, 0.21), (21, 0.27),),  # можно уменьшат кд (0 - не уменьшать)
+           'total_farm': 5, 'farm_speed': 1, }
+sf_urls = (r'https://dota2ok.ru/wp-content/uploads/2021/01/SF-1024x576.jpg',
+           )
+sf = NewHero(name='негр', price=80000, description=None, img1=sf_urls[0], img2=None, img3=None,
              hp=500, fiz_armor=15, mag_armor=15,
              farm_speed=250, total_farm=150, kef_farm=1.2, fiz_tuple=((50, 1),), mag_tuple=((100, 30,), (300, 20),),
-             fiz_buf=0.7, mag_buf=1.4, exp=1000,  lvl_up=dick)
+             fiz_buf=0.7, mag_buf=1.4, exp=1000, lvl_up=sf_dick)
 '''
 (def __init__(self, price: int, description: str or None, img1: str, img2: str or None,
                  main_stat: int or None,
@@ -20,57 +22,63 @@ midas_stats = (2250, 'IMBA', 'img', None,    # price desc img1 img2
                (None, None,), (None, None,),  # (fiz_tup,), (mag_tup,)
                None, None, None)  # mag_buf, farm_speed, total_far
 '''
-midas = ShopItem(price=2250, description=None, img1=None, img2=None, main_stat=None, hp=500,
+midas_urls = (
+    'https://avatars.dzeninfra.ru/get-zen_doc/3126430/pub_604f9ae70a7d51654a5834d3_604f9b59011181447bd702d5/scale_1200',
+
+)
+midas = ShopItem(price=2250, name='мидас', description=None, img1=midas_urls[0], img2=None, main_stat=None, hp=500,
                  fiz_armor=None, mag_armor=None, fiz_tuple=(None, 0.2), mag_tuple=(None, None),
                  mag_buf=None, farm_speed=None, total_farm=None)
-"""price=0, description=None, img1=None, img2=None, main_stat=None, hp=None,
+"""price=0, name=None, description=None, img1=None, img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
                mag_buf=None, farm_speed=None, total_farm=None"""
-mom = ShopItem(price=0, description=None, img1=None, img2=None, main_stat=None, hp=None,
+mom = ShopItem(price=2000, name='мом', description=None, img1=None, img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
                mag_buf=None, farm_speed=None, total_farm=None)
 
+'''
 hp, farm, fiz_dmg, mag_dmg, mag_buf = sf.lvlup_hero(5)
 # print(hp, farm, fiz_dmg, mag_dmg, mag_buf, sep='\n')
 local_hero1 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf)
 local_hero2 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf)
-
-hero_dick1 = midas * local_hero1.__dict__
+hero_dick1 = local_hero1.__dict__
+hero_dick1 *= midas
+hero_dick1 *= midas
 hero_dick2 = local_hero2.no_items()
-print(hero_dick1)
-print(hero_dick2)
 # сейчас у меня есть
 print(LocalHero.battle(hero_dick1, hero_dick2))
 
-# hero_dick2 = sf.no_items()
-# сейчас есть словарь со всей боевой информацией
-# нужен статик метод который примет 2 словаря и вернёт 2 кортежа
-# print(hero_dick)
-# print(local_hero.battle(hero_dick, hero_dick))
-'''for i in items:
-    buf = i.stats()
-    for j in buf:
-        pisapopa[j] += buf[j]
-        print(pisapopa[j], buf[j])
-# бафы итемов прибавлены
-print(pisapopa)
-end_farm = int(pisapopa['total_farm']*pisapopa['kef_farm'])
-end_mag = int(pisapopa['total_mag']*pisapopa['kef_mag'])
-end_fiz = int(pisapopa['total_fiz']*pisapopa['kef_fiz'])
 '''
+hero_dick = {
+    0: sf
+}
 
-'''# действия
-pisapopa = pudge.local_dick()  # сначала для рассчёта создам локальный словарь который будем насиловать
-# сейчас мы должны прибавить бафы для лвла
-print(pisapopa)
-lvl_pudge = pudge.lvlup(5)
-pisapopa['total_farm'] += lvl_pudge['farm']
-pisapopa['total_mag'] += lvl_pudge['magic']
-pisapopa['total_fiz'] += lvl_pudge['fiz']
-# ура готово лвл прибавлен
-print(pisapopa)
-# сейчас мы должны прибавить бафы итемов
-items = (midas, desolator)'''
+
+item_dick = {
+    'farm': {0: midas,
+             1: mom},
+    'fight': {}
+}
+all_items = {
+    0: midas,
+    1: mom
+}
+
+images = {
+    'dyrachyo': 'https://meta-ratings.kz/_images/insecure/w-680:h-512/bG9jYWw6Ly8vaW1hZ2VzL2MzLzQzL2MzNDNjZmZ'
+                'mMmZmOTU4MjdmNGMyNmVkNzY5Y2EwNjY4LmpwZw==.webp',
+    'throne': 'https://static.wikia.nocookie.net/anime-characters-fight/images/6/6d/Buhoianc.png/revision/latest/'
+              'scale-to-width-down/700?cb=20220924120451&path-prefix=ru',
+    'salesman': r'https://i.playground.ru/p/YHdC7uONxlTs8noj6L7pUg.jpeg?800-auto',
+    'items': r'https://ggdt.ru/file/2020/10/dota2items4.jpg',
+    'anime1': r"https://i.scdn.co/image/ab67616d0000b2736134f695c97c4e83c12ee69b",
+    'bg1': r'https://cq.ru/storage/uploads/posts/83811/cri/dota-geroi-fan-art-personazhi___'
+           r'media_library_original_1332_850.jpg',
+    'bg2': r'https://phonoteka.org/uploads/posts/2021-09/thumbs/1631660201_16-phonoteka-org-p-zadnii-fon-'
+           r'dota-krasivo-16.jpg',
+    'woman': r'https://indota2.ru/wp-content/uploads/2019/02/87.jpg'
+
+}
 
 next_text = """ ты зарегистрирован 
 доступные команды:
@@ -110,12 +118,6 @@ hero_dick = {
 }
 
 item_dick = {
-    'farm': {
-        0: {'name': 'топорик', 'global_id': 0, 'price': 100, 'description': 'шшаа', 'dis_stats':'немного фарма', 'farm': 5},
-        1: {'name': 'мидас', 'global_id': 1, 'price': 2250, 'description': 'вс антиагаа', 'dis_stats': 'много фарма', 'farm': 100 },
-        2: {'name': 'мидас', 'global_id': 1, 'price': 2250, 'description': 'вс антиагаа', 'dis_stats': 'много фарма', 'farm': 100 },
-        3: {'name': 'дезолятор', 'global_id': 2, 'price': 3500, 'description': '', 'dis_stats': '', 'fight': 20 },
-    },
     'fight':{
         0: {'name': 'дезолятор', 'global_id': 2, 'price': 3500, 'description': '', 'dis_stats': '', 'fight': 20 },
         1: {'name': 'лотар','global_id': 3, 'price': 2700, 'description': 'неуязвимость', 'dis_stats': 'нет', 'fignt':15},
@@ -143,27 +145,9 @@ all_items ={
 #     r'https://upload.wikimedia.org/wikipedia/commons/c/cd/Gay_Couple_Savv_and_Pueppi_02.jpg',
 # ]
 
-images = {
-    'shop': {
-       'shop': r'https://steamcommunity.com/sharedfiles/filedetails/?id=2527986587&searchtext=Hledat+n%C3%A1vody+pro+hru+Dota+2',
-        'bg1' : r'https://phonoteka.org/uploads/posts/2021-09/thumbs/1631660201_16-phonoteka-org-p-zadnii-fon-dota-krasivo-16.jpg',
-        'many_heroes': r'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAVG0yTq7HZqhIHwfXWrx_xvNZTkatNxxcdw&usqp=CAU',
-
-
-    },
-    'profile': {
-        'anime1': r"https://i.scdn.co/image/ab67616d0000b2736134f695c97c4e83c12ee69b",
-        'bg1' : r'https://cq.ru/storage/uploads/posts/83811/cri/dota-geroi-fan-art-personazhi___media_library_original_1332_850.jpg',
-
     }
 }
 
-пудж https://hsto.org/getpro/habr/post_images/6fc/750/e38/6fc750e38c21f9dc6a777c15cbf4be43.jpg
-сф https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvL1HZYHXfLVYE6DrWT98DujBzDquKy8f0hLKKcvqudndYk4_GwOu_GbQoB7lgW91Naxw&usqp=CAU
-ам(?) https://mmo-obzor.ru/_bd/1/27135127.jpg
-химик https://mmo-obzor.ru/_bd/0/55786770.jpg 
-вс https://avatars.dzeninfra.ru/get-zen_doc/3504072/pub_5ed0e87d7c1a732a1551b54a_5ed0fc29335fdd4d23a738bb/scale_1200
-шторм https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e7/Cosmetic_icon_Corridan_Maestro.png/revision/latest?cb=20161029000314 
- 
+
 арт красиво
 """
