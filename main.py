@@ -9,11 +9,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 @dis.message_handler(commands=['start'])
 async def start_funk(message: aiogram.types):
-    # sheduler.add_job(func=starter, trigger='interval', seconds=5, args=(message.from_user.id, message.chat.id))
-    sheduler.add_job(func=starter, trigger="interval", seconds=5, args=(message.from_user.id, message.chat.id,))
-    print(sheduler.__dict__)
-    # await starter(tg_id=message.from_user.id, chat_id=message.chat.id)
-    print(sheduler.__dict__)
+    await starter(tg_id=message.from_user.id, chat_id=message.chat.id)
+
 
 
 """############################################----FUNKS-----#############################################"""
@@ -66,7 +63,6 @@ async def make_profile(tg_id, chat_id, *args):
 
 
 async def starter(tg_id, chat_id):
-    print(123)
     if not reg_user(tg_id):
         if chat_id != tg_id:
             await bot.send_message(chat_id, 'регистрироваться можно только в личных сообщениях')
@@ -548,6 +544,6 @@ async def rbhis(callback):
 '''##############################################----WORK-----#############################################'''
 if __name__ == '__main__':
     sheduler = AsyncIOScheduler(timezone='Europe/Moscow')
-    sheduler.add_job(func=clean_bonus, )
+    sheduler.add_job(func=clean_bonus, trigger='cron', hour=0,)
     sheduler.start()
     aiogram.executor.start_polling(dis, )  # skip_updates=True
