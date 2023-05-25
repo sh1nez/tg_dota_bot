@@ -10,11 +10,11 @@ class BaseHero:
     """def __init__(self, name: str, price: int, img1: str, img2: str, img3: str):"""
     __rd = 5
     __max_as = 1000
-    __max_sec = 10
+    __max_sec = 5
     __min_sec = 0.1
 
     def __init__(self, hp: int, farm_speed: int, total_farm: int, fiz_tuple: tuple, mag_tuple: tuple,
-                 magic_buf: float):
+                 magic_buf: float, fiz_buf: float):
         # mag_hp: int, fiz_hp:int,
         self.hp = hp
 
@@ -24,6 +24,7 @@ class BaseHero:
         self.fiz_tuple = fiz_tuple
         self.mag_tuple = mag_tuple
         self.mag_buf = magic_buf
+        self.fiz_buf = fiz_buf
 
     def __mul__(self, other) -> Exception:
         return Exception('фигню сделал')
@@ -60,7 +61,7 @@ class NewHero(BaseHero):
         """self, hp: int, farm_speed: int, total_farm: int,
                  fiz_damage: int, attack_speed: float, mag_damage: int, mag_speed: float):"""
         super().__init__(hp, farm_speed, total_farm,
-                         fiz_tuple, mag_tuple, mag_buf)  # base dmg
+                         fiz_tuple, mag_tuple, mag_buf, fiz_buf)  # base dmg
         """Stats"""
         self.fiz_armor = fiz_armor  # 0-100
         self.mag_armor = mag_armor  # 0-100
@@ -73,7 +74,6 @@ class NewHero(BaseHero):
         self.img3 = img3
         """коэффициенты"""
         self.kef_farm = kef_farm  # 0-n
-        self.fiz_buf = fiz_buf  # 0-n
         """лвл апы"""
         self.exp = exp  # ~300-500
         self.lvl_up = lvl_up  # tuple buffs
@@ -96,23 +96,24 @@ class NewHero(BaseHero):
         fiz_armor = float(self.fiz_armor)
         mag_armor = float(self.mag_armor)
         for i in range(lvl):
-            fiz_armor = round(fiz_armor + (100 - fiz_armor)/100 * self.lvl_up['fiz_armor'], self.__rd)
-            mag_armor = round(mag_armor + (100 - fiz_armor)/100 * self.lvl_up['mag_armor'], self.__rd)
-        tup_hp = int(self.hp + self.lvl_up['hp'] * lvl), fiz_armor, mag_armor,
+            fiz_armor = round(fiz_armor + (100 - fiz_armor) / 100 * self.lvl_up['fiz_armor'], self.__rd)
+            mag_armor = round(mag_armor + (100 - fiz_armor) / 100 * self.lvl_up['mag_armor'], self.__rd)
+        tup_hp = int(self.hp + self.lvl_up['hp'] * lvl), fiz_armor, mag_armor
         tup_farm = self.farm_speed + self.lvl_up['farm_speed'] * lvl, self.total_farm + self.lvl_up['total_farm'] * lvl
-        return tup_hp, tup_farm, fiz, mag, self.mag_buf
+        buffs = self.mag_buf, self.fiz_buf
+        return tup_hp, tup_farm, fiz, mag, buffs
 
 
 class LocalHero(BaseHero):
     __rd = 5
     __max_as = 1000
-    __max_sec = 10
+    __max_sec = 5
     __min_sec = 0.1
 
     def __init__(self, hp: int, fiz_armor: float, mag_armor: float, farm_speed: int, total_farm: int,
-                 fiz_tuple: tuple, mag_tuple: tuple, magic_buf: float):
+                 fiz_tuple: tuple, mag_tuple: tuple, magic_buf: float, fiz_buf: float):
         """ hp: int, farm_speed: int, total_farm: int, fiz_tuple: tuple, mag_tuple: tuple):"""
-        super().__init__(hp, farm_speed, total_farm, fiz_tuple, mag_tuple, magic_buf)
+        super().__init__(hp, farm_speed, total_farm, fiz_tuple, mag_tuple, magic_buf, fiz_buf)
         self.mag_armor = mag_armor
         self.fiz_armor = fiz_armor
 
@@ -124,33 +125,41 @@ class LocalHero(BaseHero):
             'fiz_tuple': self.fiz_tuple,
             'mag_tuple': self.mag_tuple,
             'mag_buf': self.mag_buf,
+            'fiz_buf': self.fiz_buf,
             'mag_armor': self.mag_armor,
             'fiz_armor': self.fiz_armor,
         }
         return dick
 
-    def battle(self, dick1: dict, dick2: dict) -> tuple['tuple', 'tuple']:
+    def battle(self, dick1: dict, dick2: dict) -> tuple:
         """Возвращает урон и секунды fight"""
         """первый
         __max_as = 1000
         __max_sec = 10
         __min_sec = 0.1
         """
-        print(dick1, dick2, sep='\n')
-        fiz_dmg1 = [[round(dick2['fiz_tuple'][0][0] * (100-dick2['fiz_armor'])/100, self.__rd),
-                     round(self.__max_sec - ((self.__max_sec-self.__min_sec) * i[1] / self.__max_as), self.__rd), 0]
-                    for i in dick1['fiz_tuple']]
-        mag_dmg1 = [[round(i[0] * ((100 - dick2['mag_armor'])/100), self.__rd), i[1], 0] for i in dick1['mag_tuple']]
 
+        def num(n):
+            if n >= self.__max_as:
+                return self.__min_sec
+            return round(self.__max_sec - ((self.__max_sec - self.__min_sec) * n / self.__max_as), self.__rd)
+
+        fiz_dmg1 = [[round(i[0] * (100 - dick2['fiz_armor']) / 100 * dick1['fiz_buf'], self.__rd), num(i[1]), 0]
+                    for i in dick1['fiz_tuple']]
+        mag_dmg1 = [[round(i[0] * ((100 - dick2['mag_armor']) / 100 * dick1['mag_buf']), self.__rd), i[1], 0]
+                    for i in dick1['mag_tuple']]
         """второй"""
-        fiz_dmg2 = [[round(dick1['fiz_tuple'][0][0] * (100-dick1['fiz_armor'])/100, self.__rd),
-                     round(self.__max_sec - ((self.__max_sec-self.__min_sec) * i[1]/self.__max_as), self.__rd), 0]
+        fiz_dmg2 = [[round(i[0] * (100 - dick1['fiz_armor']) / 100 * dick2['fiz_buf'], self.__rd), num(i[1]), 0]
                     for i in dick2['fiz_tuple']]
-        mag_dmg2 = [[round(i[0] * ((100 - dick1['mag_armor'])/100), self.__rd), i[1], 0] for i in dick2['mag_tuple']]
-        print(fiz_dmg1, fiz_dmg2)
+        mag_dmg2 = [[round(i[0] * (100 - dick1['mag_armor']) / 100 * dick2['mag_buf'], self.__rd), i[1], 0]
+                    for i in dick2['mag_tuple']]
+        print(fiz_dmg1, 'пудж', fiz_dmg2, 'негр')
+        print(mag_dmg1, mag_dmg2)
         seconds1 = self.die_second1(dick2['hp'], fiz_dmg1 + mag_dmg1)  # + mag_dmg1)
         seconds2 = self.die_second1(dick1['hp'], fiz_dmg2 + mag_dmg2)  # + mag_dmg2)
-        return seconds1, seconds2
+        seconds1_1 = self.die_second2(dick2['hp'], fiz_dmg1 + mag_dmg1)
+        seconds1_2 = self.die_second2(dick1['hp'], fiz_dmg2 + mag_dmg2)
+        return seconds1, seconds2, seconds1_1, seconds1_2
 
     def die_second1(self, hp: int, timers: list) -> int and float:
         """[[dmg, time, count],[10, 0.47, 0]]"""
@@ -201,7 +210,7 @@ class ShopItem(BaseItem):
                  main_stat: int or None,
                  hp: int or None, fiz_armor: float or None, mag_armor: float or None,
                  fiz_tuple: tuple or None, mag_tuple: tuple or None, mag_buf: float or None,
-                 farm_speed: int or None, total_farm: int or None,):
+                 farm_speed: int or None, total_farm: int or None, ):
         super().__init__(hp, fiz_armor, mag_armor, fiz_tuple, mag_tuple, mag_buf, farm_speed, total_farm)
         self.main_stat = main_stat
         self.price = price

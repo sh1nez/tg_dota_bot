@@ -1,22 +1,24 @@
-from dota import NewHero, ShopItem, LocalHero
+from dota import NewHero, ShopItem
 
-
-sf_dick = {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
-           'fiz_tuple': ((10, 2),), 'mag_tuple': ((10, 0.21), (10, 0.21), (10, 0.21)),
-           'total_farm': 5, 'farm_speed': 1, }
+sf_dick = {'exp': 300, 'hp': 25, 'fiz_armor': 0.5, 'mag_armor': 0.5,
+           'fiz_tuple': ((10, 10),), 'mag_tuple': ((10, 0.21), (10, 0.21), (10, 0.21)),
+           'total_farm': 5, 'farm_speed': 0, }
 sf_urls = (r'https://dota2ok.ru/wp-content/uploads/2021/01/SF-1024x576.jpg',
            )
 sf = NewHero(name='негр', price=80000, description=None, img1=sf_urls[0], img2=None, img3=None,
-             hp=500, fiz_armor=5, mag_armor=5,
+             hp=750, fiz_armor=5, mag_armor=5,
              farm_speed=250, total_farm=150, kef_farm=1.2, fiz_tuple=((50, 100),),
              mag_tuple=((100, 10,), (100, 10,), (100, 10,)),
-             fiz_buf=0.7, mag_buf=1.4, exp=1000, lvl_up=sf_dick)
-pudge_dick = {}
-pudge_urls = ('https://cq.ru/storage/uploads/images/1530144/cri/1___media_library_original_1018_636.jpg', )
+             fiz_buf=1.7, mag_buf=1.5, exp=1000, lvl_up=sf_dick)
+
+pudge_dick = {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
+              'fiz_tuple': ((5, 2),), 'mag_tuple': ((1, 0),),
+              'total_farm': 5, 'farm_speed': 0, }
+pudge_urls = ('https://cq.ru/storage/uploads/images/1530144/cri/1___media_library_original_1018_636.jpg',)
 pudge = NewHero(name='пудж', price=0, description=None, img1=pudge_urls[0], img2=None, img3=None,
-                hp=1000, fiz_armor=20, mag_armor=25,
-                farm_speed=280, total_farm=200, kef_farm=1.5, fiz_tuple=((10, 30),), mag_tuple=((20, 0.2,),),
-                fiz_buf=0.5, mag_buf=1.7, exp=1000, lvl_up=sf_dick)
+                hp=1000, fiz_armor=20, mag_armor=26,
+                farm_speed=280, total_farm=200, kef_farm=1.5, fiz_tuple=((50, 50),), mag_tuple=((10, 0.5,),),
+                fiz_buf=0.7, mag_buf=1.5, exp=1000, lvl_up=pudge_dick)
 
 '''
 (def __init__(self, price: int, description: str or None, img1: str, img2: str or None,
@@ -42,32 +44,16 @@ midas = ShopItem(price=2250, name='мидас', description=None, img1=midas_url
                mag_buf=None, farm_speed=None, total_farm=None"""
 mom_urls = (
     'https://steamuserimages-a.akamaihd.net/ugc/5114431931285788573/9D8C5A31B5B184ECA192F18D172B1F3EFE28697A/',
-            )
+)
 mom = ShopItem(price=2000, name='мом', description=None, img1=mom_urls[0], img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
                mag_buf=None, farm_speed=None, total_farm=None)
-
-
-hp, farm, fiz_dmg, mag_dmg, mag_buf = sf.lvlup_hero(5)
-# print(hp, farm, fiz_dmg, mag_dmg, mag_buf, sep='\n')
-local_hero1 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf)
-local_hero2 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf)
-hero_dick1 = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, mag_buf).__dict__
-hero_dick1 *= midas
-hero_dick1 *= midas
-hero_dick2 = local_hero2.no_items()
-# сейчас у меня есть
-# print(hero_dick1, hero_dick2)
-a = local_hero1.battle(hero_dick1, hero_dick2)
-b = local_hero2.battle(hero_dick1, hero_dick2)
-print(a, b)
-
-"""
+# print(pudge.__dict__)
+# print(sf.__dict__)
 hero_dick = {
     0: pudge,
     1: sf
 }
-
 
 item_dick = {
     'farm': {0: midas,
@@ -94,7 +80,15 @@ images = {
     'woman': r'https://indota2.ru/wp-content/uploads/2019/02/87.jpg'
 
 }
+enemy_click = [
+    'пидор по своим кнопкам кликай',
+    'это не твоя кнопка',
+    'ээ потише',
+]
 
+new_reg_text = f'Также тебе выдан бонусный герой - пудж, не забудь заглянуть в профиль /profile '
+
+"""
 next_text =  ты зарегистрирован 
 доступные команды:
 /profile
@@ -105,13 +99,6 @@ gold_user = 'голда выдана, итого сейчас'
 
 reg_text = 'ты уже зарегистрирован\n'
 
-enemy_click = [
-    'пидор по своим кнопкам кликай',
-    'это не твоя кнопка',
-    'ээ потише',
-]
-
-new_reg_text = f'Также тебе выдан бонусный герой - пудж, не забудь заглянуть в профиль /profile '
 
 
 hero_dick = {

@@ -38,6 +38,7 @@ CREATE TABLE `test_bot`.`players` (
  `status` INT NULL DEFAULT NULL , 
  `nick` CHAR(20) NULL DEFAULT NULL , 
  `bg` TINYINT NULL DEFAULT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;  
+ ALTER TABLE `players` ADD `bonus` BOOLEAN NOT NULL AFTER `bg`;
 """
 
 
@@ -140,12 +141,6 @@ def find_id_name_all_heroes(tg_id):
     return connection.select_all(sql_code)
 
 
-def f_s_hero_farm(tg_id, hero_id):
-    t = datetime.datetime.today().replace(microsecond=0)
-    sql_code = f"UPDATE heroes SET last_time = '{t}' WHERE tg_id = {tg_id} AND hero_name ={hero_id}"
-    connection.update_insert_del(sql_code)
-
-
 def check_time_farm(tg_id, hero_id):  # тру равно свободен
     sql_code = f"SELECT farm_time, fight_time, FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     t1 = connection.select_one(sql_code)[0]
@@ -208,11 +203,25 @@ def create_hero(tg_id, hero_id):
     connection.insert_id(sql_code)
 
 
-def send_hero_fight(hero_id):
+def send_hero_fight(tg_id, hero_id,):
+    t = datetime.datetime.today().replace(microsecond=0)
+    sql_code = f"SELECT id, tg_id, hero_name FROM heroes WHERE fight_time IS NOT NULL"
+    tup = connection.select_one(sql_code)
+    print(tup)
+    if not tup:
+        sql_code = f"UPDATE heroes SET fight_time = '{t}' WHERE tg_id = {tg_id} AND hero_name ={hero_id}"
+        connection.update_insert_del(sql_code)
+        return False  # значит нет врагов герой отправлен искать fight
+    sql_code = f"UPDATE heroes SET fight_time = NULL WHERE id = {tup[0]}"
+    connection.update_insert_del(sql_code)
+    return True  # значит герой нашёл противника
+
+
+def check_fight():  # hero_id
     pass
 
 
-def send_hero_farm(hero_id):
+def send_hero_farm():  # hero_id
     pass
 
 
@@ -276,6 +285,23 @@ def chek_bp(tg_id):
     return a if a else False
 
 
+def check_bonus(tg_id) -> bool:
+    sql_code = f"SELECT bonus FROM players WHERE tg_id = {tg_id}"
+    a = connection.select_one(sql_code)[0]
+    print(a)
+    if not a:
+        sql_code1 = f"UPDATE players SET bonus = 1 WHERE tg_id = {tg_id}"
+        sql_code2 = f"UPDATE players SET money = money+100 WHERE tg_id = {tg_id}"
+        connection.make_many(sql_code1, sql_code2)
+        return True
+    return False
+
+
 def reg_user(tg_id):
     sql_code = f"SELECT tg_id from players WHERE tg_id = {tg_id}"
     return True if connection.select_one(sql_code) else False
+
+
+def clean_bonus():
+    sql_code = f"UPDATE players SET bonus = NULL"
+    connection.update_insert_del(sql_code)
