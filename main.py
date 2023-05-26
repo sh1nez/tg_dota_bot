@@ -208,12 +208,16 @@ async def shfight(callback):
         fst_inf, scd_inf = pvp(hero_name1, lvl1, items1, hero_name2, lvl2, items2)
         print(fst_inf, 'первый')
         print(scd_inf, 'второй')
-        text1 = f"твой {hero_dick[hero_name1].name} сражался с {hero_dick[hero_name2].name}. \nПобедил " \
-                f"{f'твой {hero_dick[hero_name1].name} тебе +30 рейтинга' if fst_inf[1] < scd_inf[1] else f'вражеский {hero_dick[hero_name2].name}, тебе -30 рейтинга'}"
-        text2 = f"твой {hero_dick[hero_name2].name} сражался с {hero_dick[not hero_name1].name}.\nПобедил " \
-                f"{f'твой {hero_dick[hero_name1].name}, тебе +30 рейтинга' if fst_inf[1] > scd_inf[1] else f'вражеский {hero_dick[hero_name2].name}, тебе -30 рейтинга'}"
-        await bot.send_message(tg_id, text1)
-        await bot.send_message(enemy[1], text2)
+        winner = 1 if fst_inf[1] < scd_inf[1] else 0  # 1 если первый 0 если второй
+        winner_name = hero_dick[hero_name1].name if winner else hero_dick[hero_name2].name
+        text1_1 = f"твой {hero_dick[hero_name1].name} сражался с {hero_dick[hero_name2].name}.\n"
+        text1_2 = f" \nПобедил {f'твой ' if winner else 'вражеский '} {winner_name}\n{'+'if winner else'-'}30 рейтинга"
+        absolute_text = f"файт длился {max(fst_inf[1], scd_inf[1])} секунд. "
+        text2_1 = f"твой {hero_dick[hero_name2].name} сражался с {hero_dick[hero_name1].name}.\n"
+        text2_2 = f"\nПобедил {f'твой 'if not winner else'вражеский '} {winner_name}\n{'+' if not winner else '-'}30 рейтинга "
+
+        await bot.send_message(tg_id, text1_1+absolute_text+text1_2)
+        await bot.send_message(enemy[1], text2_1+absolute_text+text2_2)
 
         await bot.answer_callback_query(callback.id)
 
