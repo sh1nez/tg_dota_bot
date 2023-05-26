@@ -225,7 +225,7 @@ def pvp(hero_id1: int, lvl1: int, items1: tuple or None, hero_id2: int, lvl2: in
     else:
         local_hero1 = hero1.__dict__
         for i in items1:
-            local_hero1 *= all_items[i]
+            local_hero1 *= all_items[i[1]]
 
     hp2, farm2, fiz_dmg2, mag_dmg2, buffs2 = hero_dick[hero_id2].lvlup_hero(lvl2)
     hero2 = LocalHero(*hp2, *farm2, fiz_dmg2, mag_dmg2, *buffs2)
@@ -234,7 +234,9 @@ def pvp(hero_id1: int, lvl1: int, items1: tuple or None, hero_id2: int, lvl2: in
     else:
         local_hero2 = hero2.__dict__
         for i in items2:
-            local_hero2 *= all_items[i]
+            local_hero2 *= all_items[i[1]]
+    print(local_hero1)
+    print(local_hero2)
     return hero1.battle(local_hero1, local_hero2)
 
 

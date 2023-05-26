@@ -112,12 +112,12 @@ async def show_main_menu(chat_id, message_id, tg_id, *args):
 
 
 async def rshower_hero_i_i(tg_id, hero_id, chat_id, mesage_id):
-    buttons = (('фармить', send_hero_farm_callback, (tg_id, hero_id,)), ('драться', send_hero_fight_callback, (tg_id, hero_id,)),
-               ('шмотки', items_hero_inventory, (tg_id, hero_id,)), ('back', my_heroes, (tg_id,)))
+    buttons = (
+    ('фармить', send_hero_farm_callback, (tg_id, hero_id,)), ('драться', send_hero_fight_callback, (tg_id, hero_id,)),
+    ('шмотки', items_hero_inventory, (tg_id, hero_id,)), ('back', my_heroes, (tg_id,)))
     ikm = make_inline_keyboard(*buttons, row=3)
     img = InputMediaPhoto(media=hero_dick[hero_id].img1, caption=f"вот твой {hero_dick[hero_id].name}")
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=mesage_id, chat_id=chat_id)
-
 
 
 '''#############################################----PROFILE-----############################################'''
@@ -175,9 +175,10 @@ async def shfarm(callback):
     if check_time_farm(tg_id, hero_id):
         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} отправлен фармить")
         await all_heroes_local_user(tg_id, callback.message.message_id, callback.message.chat.id, callback.id)
-        end_time = (datetime.datetime.now()+datetime.timedelta(seconds=6)).replace(microsecond=0)
+        end_time = (datetime.datetime.now() + datetime.timedelta(seconds=6)).replace(microsecond=0)
         send_hero_farm_func(tg_id, hero_id, end_time)
-        sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time, args=(tg_id, hero_id, callback.message.chat.id, 100))
+        sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
+                         args=(tg_id, hero_id, callback.message.chat.id, 100))
 
     else:
         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")
@@ -192,7 +193,7 @@ async def shfight(callback):
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-    if enemy := send_hero_fight(tg_id, hero_id,):  # tuple, в формате id, tg_id, name_id
+    if enemy := send_hero_fight(tg_id, hero_id, ):  # tuple, в формате id, tg_id, name_id
         """Вот такое пвп"""
         table_hero_id = find_hero_id_by_name_tg(tg_id, hero_id)
         items1 = find_wear_items(table_hero_id)
@@ -201,11 +202,19 @@ async def shfight(callback):
         lvl2 = select_lvl(enemy[0])
         hero_name1 = hero_id
         hero_name2 = enemy[2]
-        print(hero_name1, hero_name2)
-        result = pvp(hero_name1, lvl1, items1, hero_name2, lvl2, items2)
-        await bot.send_message(enemy[1], f"твой {hero_name2} сражался с {hero_name1}.\nПобедил {h}")
-        await bot.send_message(tg_id, 'пвп')
-        print(result)
+        print(items1, 'первый')
+        print(items2, 'второй')
+        # везде 1 - это тот, кто кликнул, 2- тот, кто уже искал врага
+        fst_inf, scd_inf = pvp(hero_name1, lvl1, items1, hero_name2, lvl2, items2)
+        print(fst_inf, 'первый')
+        print(scd_inf, 'второй')
+        text1 = f"твой {hero_dick[hero_name1].name} сражался с {hero_dick[hero_name2].name}. \nПобедил " \
+                f"{f'твой {hero_dick[hero_name1].name} тебе +30 рейтинга' if fst_inf[1] < scd_inf[1] else f'вражеский {hero_dick[hero_name2].name}, тебе -30 рейтинга'}"
+        text2 = f"твой {hero_dick[hero_name2].name} сражался с {hero_dick[not hero_name1].name}.\nПобедил " \
+                f"{f'твой {hero_dick[hero_name1].name}, тебе +30 рейтинга' if fst_inf[1] > scd_inf[1] else f'вражеский {hero_dick[hero_name2].name}, тебе -30 рейтинга'}"
+        await bot.send_message(tg_id, text1)
+        await bot.send_message(enemy[1], text2)
+
         await bot.answer_callback_query(callback.id)
 
     else:
@@ -569,6 +578,6 @@ async def rbhis(callback):
 '''##############################################----WORK-----#############################################'''
 if __name__ == '__main__':
     sheduler = AsyncIOScheduler(timezone='Europe/Moscow')
-    sheduler.add_job(func=clean_bonus, trigger='cron', hour=0,)
+    sheduler.add_job(func=clean_bonus, trigger='cron', hour=0, )
     sheduler.start()
     aiogram.executor.start_polling(dis, )  # skip_updates=True

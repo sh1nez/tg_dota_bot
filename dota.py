@@ -206,6 +206,7 @@ class BaseItem:
 
 
 class ShopItem(BaseItem):
+    __rd = 5
     def __init__(self, price: int, name: str, description: str or None, img1: str or None, img2: str or None,
                  main_stat: int or None,
                  hp: int or None, fiz_armor: float or None, mag_armor: float or None,
@@ -226,8 +227,8 @@ class ShopItem(BaseItem):
         end_fiz_tup = ()
         """Вернёт изменённую в зависимости от героя информацию для создания FightItem"""
         for i in other['fiz_tuple']:
-            fiz_damage = i[0] + self.fiz_tuple[0] if self.fiz_tuple[0] else i[0]
-            fiz_speed = i[1] - self.fiz_tuple[1] if self.fiz_tuple[1] else i[1]
+            fiz_damage = round(i[0] + self.fiz_tuple[0] if self.fiz_tuple[0] else i[0], self.__rd)
+            fiz_speed = round(i[1] - self.fiz_tuple[1] if self.fiz_tuple[1] else i[1])
             end_fiz_tup += ((fiz_damage, fiz_speed),)
 
         end_mag_tup = ()
@@ -245,6 +246,7 @@ class ShopItem(BaseItem):
             'fiz_tuple': end_fiz_tup,
             'mag_tuple': end_mag_tup,
             'mag_buf': self.mag_buf + other['mag_buf'] if self.mag_buf else other['mag_buf'],
+            'fiz_buf': other['fiz_buf'],
             'mag_armor': round(other['mag_armor'] + (self.mag_armor * (100 - other['fiz_armor']) / 100), self.__rd)
             if self.mag_armor else other['mag_armor'],
             'fiz_armor': round(self.fiz_armor + (other['fiz_armor'] * (100 - other['fiz_armor']) / 100), self.__rd)
