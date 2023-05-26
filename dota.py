@@ -153,15 +153,15 @@ class LocalHero(BaseHero):
                     for i in dick2['fiz_tuple']]
         mag_dmg2 = [[round(i[0] * (100 - dick1['mag_armor']) / 100 * dick2['mag_buf'], self.__rd), i[1], 0]
                     for i in dick2['mag_tuple']]
-        print(fiz_dmg1, 'пудж', fiz_dmg2, 'негр')
-        print(mag_dmg1, mag_dmg2)
+        # print(fiz_dmg1, 'пудж', fiz_dmg2, 'негр')
+        # print(mag_dmg1, mag_dmg2)
         seconds1 = self.die_second1(dick2['hp'], fiz_dmg1 + mag_dmg1)  # + mag_dmg1)
         seconds2 = self.die_second1(dick1['hp'], fiz_dmg2 + mag_dmg2)  # + mag_dmg2)
-        seconds1_1 = self.die_second2(dick2['hp'], fiz_dmg1 + mag_dmg1)
-        seconds1_2 = self.die_second2(dick1['hp'], fiz_dmg2 + mag_dmg2)
-        return seconds1, seconds2, seconds1_1, seconds1_2
+        # seconds1_1 = self.die_second2(dick2['hp'], fiz_dmg1 + mag_dmg1)
+        # seconds1_2 = self.die_second2(dick1['hp'], fiz_dmg2 + mag_dmg2)
+        return seconds1, seconds2
 
-    def die_second1(self, hp: int, timers: list) -> int and float:
+    def die_second1(self, hp: int, timers: list) -> tuple:
         """[[dmg, time, count],[10, 0.47, 0]]"""
         dmg = sum([i[0] for i in timers])
         seconds = 0
