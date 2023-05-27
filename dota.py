@@ -103,6 +103,10 @@ class NewHero(BaseHero):
         buffs = self.mag_buf, self.fiz_buf
         return tup_hp, tup_farm, fiz, mag, buffs
 
+    def description(self) -> str:
+        text = ''
+        return str
+
 
 class LocalHero(BaseHero):
     __rd = 5

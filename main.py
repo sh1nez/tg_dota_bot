@@ -1,5 +1,3 @@
-import datetime
-
 from database import *
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InputMediaPhoto
@@ -91,7 +89,7 @@ async def starter(tg_id, chat_id):
             return
         sql_code1 = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_id}', '0')"
         hero_id = 0  # это типо пуджа выдаёт бесплатно
-        sql_code2 = f"INSERT INTO heroes (`tg_id`, `hero_name`, `hero_lvl`, `exp` ) VALUES " \
+        sql_code2 = f"INSERT INTO heroes (`tg_id`, `hero_name`, `lvl`, `exp` ) VALUES " \
                     f"('{tg_id}', '{hero_id}', '1', '0');"
         connection.make_many(sql_code1, sql_code2)
         await bot.send_message(text=f'теперь ты зареган,\n{new_reg_text}', chat_id=chat_id)
@@ -131,7 +129,6 @@ async def profile_funk(message):
 
 @dis.message_handler(commands=['bonus'])
 async def bonus_funk(message):
-    # clean_bonus()
     if check_bonus(tg_id=message.from_user.id):
         await message.answer('бонус получен')
         return
@@ -327,7 +324,7 @@ async def rsuif(callback):
     ikm = None
     if item_text:
         item_text = make_text_inventory(item_text)  #
-        ikm = make_inline_keyboard(('одеть итемы', menu_work_items, (tg_id,)), ).add
+        ikm = make_inline_keyboard(('одеть итемы', menu_work_items, (tg_id,)), )
     else:
         item_text = 'у тебя нет предметов'
     buttons = ('назад в профиль', back_to_profile, (tg_id,)), ('в магазин', go_back_all_shop, (tg_id,))

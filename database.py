@@ -10,7 +10,7 @@ from dota import LocalHero
 heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`farm_time` DATETIME NULL ,`fight_time` DATETIME NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,`hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 '''##############################################---BASE---################################################'''
 
@@ -124,10 +124,15 @@ def wear_item_on_hero(tg_id, hero_id, item_name,):
     connection.make_many(sql_code1, sql_code2)
 
 
-def snat_s_geroya_v_invantar(item_id, tg_id, hero_id):
-    sql_code = f'UPDATE profile_items SET hero_id = NULL WHERE item_name = {item_id} AND tg_id = {tg_id} ' \
-               f'AND hero_id = {hero_id}'
-    connection.update_insert_del(sql_code)
+# def snat_s_geroya_v_invantar(item_id, tg_id, hero_id):
+#     sql_code = f'UPDATE profile_items SET hero_id = NULL WHERE item_name = {item_id} AND tg_id = {tg_id} ' \
+#                f'AND hero_id = {hero_id}'
+#     connection.update_insert_del(sql_code)
+
+def snat_s_geroya_v_invantar(item_name, tg_id, hero_id):
+    sql_code1 = f"DELETE FROM hero_items WHERE item_name = {item_name} AND tg_id = {tg_id}"
+    sql_code2 = f"UPDATE profile_items SET count = count+1 WHERE tg_id = {tg_id} AND item_name = {item_name}"
+    connection.make_many(sql_code1, sql_code2)
 
 
 """###############################################---SHOP---###############################################"""
@@ -150,7 +155,7 @@ def buy_item_user(tg_id, item_id, price: int, count=1):
     if value:
         sql_code2 = f'UPDATE profile_items SET count = {value[0]+count} WHERE tg_id = {tg_id} and item_name = {item_id}'
     else:
-        sql_code2 = f"INSERT INTO profile_items (tg_id, item_name, count) VALUES ('{tg_id}', {item_id}, '{count}')"
+        sql_code2 = f"INSERT INTO profile_items (tg_id, item_name, count) VALUES ('{tg_id}', '{item_id}', '{count}')"
     connection.make_many(sql_code1, sql_code2)
 
 
@@ -164,7 +169,7 @@ def send_hero_fight(tg_id, hero_id,):
     t = datetime.datetime.today().replace(microsecond=0)
     sql_code = f"SELECT id, tg_id, hero_name FROM heroes WHERE fight_time IS NOT NULL"
     tup = connection.select_one(sql_code)
-    print(tup) # id, tg_id, type
+    print(tup)  # id, tg_id, type
     if not tup:
         sql_code = f"UPDATE heroes SET fight_time = '{t}' WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
         # print(sql_code)
@@ -197,6 +202,7 @@ def hero_back_farm_func(tg_id, hero_id):
 def hero_back_fight_funk(tg_id, hero_id):  # hero_id
     sql_code = f"UPDATE heroes SET fight_time = NULL WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     connection.update_insert_del(sql_code)
+
 
 '''#############################################---menu's---###############################################'''
 
@@ -286,7 +292,15 @@ def select_lvl(hero_id):
     return connection.select_one(sql_code)[0]
 
 
-def chek_bp(tg_id):
+def mmr_update(tg_id, mmr):
+    if mmr >= 0:
+        sql_code = f"UPDATE players SET mmr = mmr + {mmr} WHERE tg_id = {tg_id}"
+    else:
+        sql_code = f"UPDATE players SET mmr = mmr - {abs(mmr)} WHERE tg_id = {tg_id}"
+    connection.update_insert_del(sql_code)
+
+
+def check_bp(tg_id):
     sql_code = f"SELECT status FROM players WHERE tg_id = {tg_id}"
     a = connection.select_one(sql_code)[0]
     return a if a else False
