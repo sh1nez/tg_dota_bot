@@ -1,12 +1,12 @@
+import aiogram
 from answers import *
 from database import *
-from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InputMediaPhoto
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
+from objects import *
+from config import bot, dis, sheduler
 
 @dis.message_handler(commands=['start'])
-async def start_funk(message: aiogram.types):
+async def start_funk(message):
     await starter(tg_id=message.from_user.id, chat_id=message.chat.id)
 
 
@@ -58,26 +58,12 @@ async def shfarm(callback):
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-    if check_time_farm(tg_id, hero_id):
-        await all_heroes_local_user(tg_id, callback.message.message_id, callback.message.chat.id, callback.id)
-        items = find_wear_items(hero_id)
-        sec = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
-        end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
-        send_hero_farm_func(tg_id, hero_id, end_time)
-        sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
-                         args=(tg_id, hero_id, callback.message.chat.id, 100))
 
-        cherez = text_from_seconds(sec)
-        username = callback.from_user.first_name
-        await callback.message.answer(f"[{username}](tg://user?id={tg_id}),"
-                                      f" {hero_dick[hero_id].name} отправлен фармить\n"
-                                      f" вернётся через {cherez}", parse_mode='MarkdownV2')
-        await bot.answer_callback_query(callback.id,)
+    await bot.answer_callback_query(callback.id,)
 
 
 
-    else:
-        await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")
+
 
 
 # send_hero_fight_callback = CallbackData('shtfight', 'tg_id', 'hero_id')
@@ -133,10 +119,6 @@ async def rihi(callback):
     await show_items_hero(tg_id, hero_id, callback.message.chat.id, callback.message.message_id, callback.id)
 
 
-
-
-
-
 # wear_more_items = CallbackData('wmi', 'tg_id', 'hero_id')
 @dis.callback_query_handler(wear_more_items.filter())
 async def rifhp(callback):
@@ -144,7 +126,7 @@ async def rifhp(callback):
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-    await a1234(tg_id, hero_id, callback.message.message_id, callback.message.chat.id)
+    #await a1234(tg_id, hero_id, callback.message.message_id, callback.message.chat.id)
     await bot.answer_callback_query(callback.id)
 
 
@@ -475,7 +457,6 @@ async def rbhis(callback):
 
 '''##############################################----WORK-----#############################################'''
 if __name__ == '__main__':
-    sheduler = AsyncIOScheduler(timezone='Europe/Moscow')
     sheduler.add_job(func=clean_bonus, trigger='cron', hour=0, )
     sheduler.start()
     aiogram.executor.start_polling(dis, )  # skip_updates=True

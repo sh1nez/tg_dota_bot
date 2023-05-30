@@ -1,34 +1,7 @@
 from database import *
-from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InputMediaPhoto
-
-
-my_heroes = CallbackData('spmh', 'tg_id')
-show_hero_in_inventory = CallbackData('shiip', 'tg_id', 'hero_id')
-send_hero_farm_callback = CallbackData('shtfarm', 'tg_id', 'hero_id')
-send_hero_fight_callback = CallbackData('shtfight', 'tg_id', 'hero_id')
-items_hero_inventory = CallbackData('sliii', 'tg_id', 'hero_id')
-wear_more_items = CallbackData('wmi', 'tg_id', 'hero_id')
-wear_n_shmot_on_hero = CallbackData('wnsoh', 'tg_id', 'hero_id', 'item_id')
-q_remove_item_from_hero = CallbackData('rifh', 'tg_id', 'hero_id', 'item_id')
-snat_shmotku_inventory = CallbackData('ssivi', 'tg_id', 'hero_id', 'item_id')
-back_to_profile = CallbackData('pbtp', 'tg_id')
-users_inventory = CallbackData('suic', 'tg_id')
-menu_work_items = CallbackData('mwis', 'tg_id')
-go_back_all_shop = CallbackData('gbtms', 'tg_id')
-tradeheroes = CallbackData('trher', 'tg_id')
-tradeitems = CallbackData('tritm', 'tg_id')
-callback_farm_item = CallbackData('cfarmis', 'tg_id')
-callback_fight_item = CallbackData('cfightis', 'tg_id')
-show_item_in_shop = CallbackData('rsiis', 'tg_id', 'item_id', 'fl')  # фл должен означать вернёмся в файт или фарм
-buy_item_shop_callback = CallbackData('biscq', 'tg_id', 'item_id', 'fl', 'count')
-del_callback = CallbackData('delcs', 'tg_id')
-show_hero_in_shop = CallbackData('shns', 'tg_id', 'hero_id', )
-wanna_d7e_hero = CallbackData('diwd', 'tg_id', 'hero_id')
-buy_hero_shop = CallbackData('bhs', 'tg_id', 'hero_id')
-snat_shmotku_inventory = CallbackData('ssivi', 'tg_id', 'hero_id', 'item_id')
-
-
+from objects import *
+from config import bot
 
 async def hero_come_local_user(tg_id, hero_id, chat_id, money):
     username = 'эй, '
@@ -133,3 +106,20 @@ async def rshower_hero_i_i(tg_id, hero_id, chat_id, mesage_id):
     ikm = make_inline_keyboard(*buttons, row=3)
     img = InputMediaPhoto(media=hero_dick[hero_id].img1, caption=f"вот твой {hero_dick[hero_id].name}")
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=mesage_id, chat_id=chat_id)
+
+# async def send_farm_funk(tg_id, hero_id, message_id, chat_id, callback_id):
+#     if check_time_farm(tg_id, hero_id):
+#         await all_heroes_local_user(tg_id, message_id, chat_id, callback-id)
+#         items = find_wear_items(hero_id)
+#         sec = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
+#         end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
+#         send_hero_farm_func(tg_id, hero_id, end_time)
+#         sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
+#                          args=(tg_id, hero_id, chat_id, 100))
+#         cherez = text_from_seconds(sec)
+#         username = callback.from_user.first_name
+#         await callback.message.answer(f"[{username}](tg://user?id={tg_id}),"
+#                                       f" {hero_dick[hero_id].name} отправлен фармить\n"
+#                                       f" вернётся через {cherez}", parse_mode='MarkdownV2')
+#     else:
+#         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")

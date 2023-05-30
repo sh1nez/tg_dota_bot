@@ -1,19 +1,10 @@
 import datetime
 import pymysql
-from config import *
-import aiogram
+from config import host, user, password, db_name
 from texts import *
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 from dota import LocalHero
-
-heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`farm_time` DATETIME NULL ,`fight_time` DATETIME NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,`hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-'''##############################################---BASE---################################################'''
-
 
 class Connect:
     def __init__(self):
@@ -60,11 +51,15 @@ class Connect:
 
 
 connection = Connect()
+heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`farm_time` DATETIME NULL ,`fight_time` DATETIME NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,`hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+'''##############################################---BASE---################################################'''
 connection.make_many(heroes_sql, items_sql, profile_items_sql, hero_items_sql, players_sql)
-print('я начал')
+print('Подключился к бд')
 
-bot = aiogram.Bot(token)
-dis = aiogram.Dispatcher(bot)
 
 
 '''##############################################---PROFILE---###############################################'''

@@ -1,1 +1,5 @@
-print(0/100)
+class Pisapopa:
+    pass
+asd = Pisapopa()
+def qwe(): return asd
+print(qwe())
