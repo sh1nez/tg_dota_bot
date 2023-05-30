@@ -216,12 +216,14 @@ class BaseItem:
 
 class ShopItem(BaseItem):
     __rd = 5
-    def __init__(self, price: int, name: str, description: str or None, img1: str or None, img2: str or None,
-                 main_stat: int or None,
+    """индекс нужен для того чтобы при разделении предметов всёравно иметь возможность обращаться к общему словарю"""
+    def __init__(self, index: int,  price: int, name: str, description: str or None, img1: str or None,
+                 img2: str or None, main_stat: int or None,
                  hp: int or None, fiz_armor: float or None, mag_armor: float or None,
                  fiz_tuple: tuple or None, mag_tuple: tuple or None, mag_buf: float or None,
                  farm_speed: int or None, total_farm: int or None, ):
         super().__init__(hp, fiz_armor, mag_armor, fiz_tuple, mag_tuple, mag_buf, farm_speed, total_farm)
+        self.index = index
         self.main_stat = main_stat
         self.price = price
         self.description = description

@@ -2,7 +2,7 @@ from dota import NewHero, ShopItem
 
 pudge_dick = {'exp': 300, 'hp': 50, 'fiz_armor': 1, 'mag_armor': 1,
               'fiz_tuple': ((5, 2),), 'mag_tuple': ((1, 0),),
-              'total_farm': 3, 'farm_speed': 0, }
+              'total_farm': 3, 'farm_speed': 1, }
 pudge_urls = ('https://cq.ru/storage/uploads/images/1530144/cri/1___media_library_original_1018_636.jpg',)
 pudge_disc = 'тут и говорить нечего, имба'
 pudge = NewHero(name='пудж', price=0, description=pudge_disc, img1=pudge_urls[0], img2=None, img3=None,
@@ -60,8 +60,8 @@ hero_dick = {
 midas_urls = (
     'https://avatars.dzeninfra.ru/get-zen_doc/3126430/pub_604f9ae70a7d51654a5834d3_604f9b59011181447bd702d5/scale_1200',
 )
-midas = ShopItem(price=2250, name='мидас', description=None, img1=midas_urls[0], img2=None, main_stat=None, hp=None,
-                 fiz_armor=None, mag_armor=None, fiz_tuple=(None, 0.2), mag_tuple=(None, None),
+midas = ShopItem(index=0, price=2250, name='мидас', description=None, img1=midas_urls[0], img2=None, main_stat=None, hp=None,
+                 fiz_armor=None, mag_armor=None, fiz_tuple=(None, 2), mag_tuple=(None, None),
                  mag_buf=None, farm_speed=None, total_farm=150)
 """price=0, name=None, description=None, img1=None, img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
@@ -69,13 +69,13 @@ midas = ShopItem(price=2250, name='мидас', description=None, img1=midas_url
 mom_urls = (
     'https://steamuserimages-a.akamaihd.net/ugc/5114431931285788573/9D8C5A31B5B184ECA192F18D172B1F3EFE28697A/',
 )
-mom = ShopItem(price=2000, name='мом', description=None, img1=mom_urls[0], img2=None, main_stat=None, hp=None,
+mom = ShopItem(index=1, price=2000, name='мом', description=None, img1=mom_urls[0], img2=None, main_stat=None, hp=None,
                fiz_armor=-5, mag_armor=None, fiz_tuple=(None, 100), mag_tuple=(None, None),
                mag_buf=None, farm_speed=10, total_farm=None)
 phylactery_urls = (
     r'https://i.pinimg.com/236x/a2/ce/ec/a2ceec4098c409a58b8e4a48e30f9157.jpg',
 )
-phylactery = ShopItem(price=1000, name='филактерия', description=None, img1=phylactery_urls[0], img2=None,
+phylactery = ShopItem(index=2, price=1000, name='филактерия', description=None, img1=phylactery_urls[0], img2=None,
                       main_stat=None, hp=150,
                       fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(100, 8),
                       mag_buf=0.1, farm_speed=None, total_farm=None)
@@ -83,14 +83,14 @@ phylactery = ShopItem(price=1000, name='филактерия', description=None,
 dagon_urls = (
     r'https://pin.it/6XzkJ9I'
 )
-dagon = ShopItem(price=3000, name='дагон', description=None, img1=dagon_urls[0], img2=None,
+dagon = ShopItem(index=3, price=3000, name='дагон', description=None, img1=dagon_urls[0], img2=None,
                  main_stat=None, hp=150,
                  fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(500, 15),
                  mag_buf=0.3, farm_speed=None, total_farm=None)
 travel_boots_urls = (
     r'https://img1.etsystatic.com/069/0/10284703/il_570xN.818415665_6k6i.jpg',
 )
-travel_boots = ShopItem(price=1800, name='тревела', description=None, img1=travel_boots_urls[0], img2=None,
+travel_boots = ShopItem(index=4, price=1800, name='тревела', description=None, img1=travel_boots_urls[0], img2=None,
                         main_stat=None, hp=None,
                         fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
                         mag_buf=None, farm_speed=100, total_farm=None)
@@ -102,6 +102,7 @@ item_dick = {
     'fight': {0: phylactery,
               1: dagon,}
 }
+
 all_items = {
     0: midas,
     1: mom,
