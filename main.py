@@ -1,3 +1,5 @@
+import datetime
+
 from database import *
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InputMediaPhoto
@@ -170,12 +172,21 @@ async def shfarm(callback):
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
     if check_time_farm(tg_id, hero_id):
-        await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} отправлен фармить")
         await all_heroes_local_user(tg_id, callback.message.message_id, callback.message.chat.id, callback.id)
-        end_time = (datetime.datetime.now() + datetime.timedelta(seconds=6)).replace(microsecond=0)
+        sec = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
+        end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
         send_hero_farm_func(tg_id, hero_id, end_time)
         sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
                          args=(tg_id, hero_id, callback.message.chat.id, 100))
+
+        cherez = text_from_seconds(sec)
+        username = callback.from_user.first_name
+        await callback.message.answer(f"[{username}](tg://user?id={tg_id}),"
+                                      f" {hero_dick[hero_id].name} отправлен фармить\n"
+                                      f" вернётся через {cherez}", parse_mode='MarkdownV2')
+        await bot.answer_callback_query(callback.id,)
+
+
 
     else:
         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")
@@ -244,10 +255,16 @@ async def rifhp(callback):
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
     items = find_nowear_items(tg_id)
-    buttons = ((all_items[i[1]].name, wear_n_shmot_on_hero, (tg_id, hero_id, i[1]),) for i in items)
-    ikm = make_inline_keyboard(*buttons, row=3).add(
-        InlineKeyboardButton(text='back', callback_data=show_hero_in_inventory.new(tg_id, hero_id)))
-    img = InputMediaPhoto(media=images['salesman'], caption='выбери чё одеть')
+    if items:
+        buttons = ((all_items[i[1]].name, wear_n_shmot_on_hero, (tg_id, hero_id, i[1]),) for i in items)
+        ikm = make_inline_keyboard(*buttons, row=3).add(
+            InlineKeyboardButton(text='back', callback_data=show_hero_in_inventory.new(tg_id, hero_id)))
+        caption = 'выбери чё одеть'
+    else:
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='back',
+                                                              callback_data=show_hero_in_inventory.new(tg_id, hero_id)))
+        caption = 'у тебя нет итемов'
+    img = InputMediaPhoto(media=images['salesman'], caption=caption)
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
                                  chat_id=callback.message.chat.id)
     await bot.answer_callback_query(callback.id)

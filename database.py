@@ -246,6 +246,26 @@ def pvp(hero_id1: int, lvl1: int, items1: tuple or None, hero_id2: int, lvl2: in
     return hero1.battle(local_hero1, local_hero2)
 
 
+def farm_time_sec(hero_name, lvl, *args: ShopItem):
+    """args это предметы"""
+    # герой должен ходиь от 0.5 до 4 часов
+    speed, total_farm = hero_dick[hero_name].lvlup_hero(lvl)[1]
+    #  тут 2 показателя фарма вернёт
+    #speed_items = sum(i.farm_speed for i in args)
+    #farm_speed =
+    """чем больше скорость фарма, тем быстрее должен прийти герой. Что сделать для этого...
+    Для начала нужно убавить всё от макс скорости фарма
+    мы убивалеям из макс скорости фарма мин скорость и умножаем это на скорость фарма"""
+    max_speed = hero_dick[hero_name].max_farm_speed()
+    print(speed)
+    if speed >= max_speed: speed = max_speed
+    max_time, min_time = hero_dick[hero_name].max_min_time()
+    timee = (max_time-min_time)*((max_speed-speed)/max_speed)+min_time
+    return round(timee)
+    # время будет ассимптатически стремиться к нулю. Первый будет давать супер много, последующие меньше
+    # func = lambda i: max_time - max_time()
+    #if not args
+
 def rnum():
     return random.randint(0, len(enemy_click)-1)
 
@@ -286,11 +306,24 @@ def text_time(t: datetime.datetime):
     text += f"{int(s)} сек\n"
     return text
 
+def text_from_seconds(sec:int):
+    text = ''
+    if sec >= 3600:
+        text += f'{int(sec // 3600)} часов '
+        sec %= 3600
+    if sec >= 60:
+        text += f"{int(sec // 60)} мин "
+        sec %= 60
+    text += f"{int(sec)} сек\n"
+    return text
+
 
 def select_lvl(hero_id):
     sql_code = f"SELECT lvl FROM heroes WHERE id = {hero_id}"
     return connection.select_one(sql_code)[0]
-
+def select_lvl_by_tg_id(tg_id, hero_name):
+    sql_code = f"SELECT lvl FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_name}"
+    return connection.select_one(sql_code)[0]
 
 def mmr_update(tg_id, mmr):
     if mmr >= 0:

@@ -51,6 +51,9 @@ class BaseHero:
 
 class NewHero(BaseHero):
     __rd = 5
+    __min_farm_time = 1800
+    __max_farm_time = 3600 * 4
+    __max_farm_speed = 550
 
     def __init__(self, name: str, price: int, description: str or None, img1, img2, img3,  # интерфейс
                  hp: int, fiz_armor: float, mag_armor: float,  # базовые хп
@@ -78,6 +81,8 @@ class NewHero(BaseHero):
         self.exp = exp  # ~300-500
         self.lvl_up = lvl_up  # tuple buffs
 
+    def max_min_time(self): return self.__max_farm_time, self.__min_farm_time
+    def max_farm_speed(self): return self.__max_farm_speed
     def lvlup_hero(self, lvl) -> tuple:
         """Прибавки за уровень локального героя"""
         """ exp, hp, fiz_armor, mag_armor, fiz_damage, attack_speed, (mag_damage, mag_speed)"""
@@ -105,7 +110,7 @@ class NewHero(BaseHero):
 
     def description(self) -> str:
         text = ''
-        return str
+        return str('a')
 
 
 class LocalHero(BaseHero):
