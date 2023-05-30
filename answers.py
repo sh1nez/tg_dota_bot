@@ -1,7 +1,7 @@
 from database import *
 from aiogram.types import InputMediaPhoto
 from objects import *
-from config import bot
+from config import bot, sheduler
 
 async def hero_come_local_user(tg_id, hero_id, chat_id, money):
     username = 'эй, '
@@ -98,28 +98,30 @@ async def starter(tg_id, chat_id):
         await bot.send_message(text=f'ты уже зареган', chat_id=chat_id)
 
 
-
-async def rshower_hero_i_i(tg_id, hero_id, chat_id, mesage_id):
+async def rshower_hero_i_i(callback, hero_id):
+    tg_id = callback.from_user.id
     buttons = (
     ('фармить', send_hero_farm_callback, (tg_id, hero_id,)), ('драться', send_hero_fight_callback, (tg_id, hero_id,)),
     ('шмотки', items_hero_inventory, (tg_id, hero_id,)), ('back', my_heroes, (tg_id,)))
     ikm = make_inline_keyboard(*buttons, row=3)
     img = InputMediaPhoto(media=hero_dick[hero_id].img1, caption=f"вот твой {hero_dick[hero_id].name}")
-    await bot.edit_message_media(media=img, reply_markup=ikm, message_id=mesage_id, chat_id=chat_id)
+    await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
+                                 chat_id=callback.message.chat.id)
 
-# async def send_farm_funk(tg_id, hero_id, message_id, chat_id, callback_id):
-#     if check_time_farm(tg_id, hero_id):
-#         await all_heroes_local_user(tg_id, message_id, chat_id, callback-id)
-#         items = find_wear_items(hero_id)
-#         sec = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
-#         end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
-#         send_hero_farm_func(tg_id, hero_id, end_time)
-#         sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
-#                          args=(tg_id, hero_id, chat_id, 100))
-#         cherez = text_from_seconds(sec)
-#         username = callback.from_user.first_name
-#         await callback.message.answer(f"[{username}](tg://user?id={tg_id}),"
-#                                       f" {hero_dick[hero_id].name} отправлен фармить\n"
-#                                       f" вернётся через {cherez}", parse_mode='MarkdownV2')
-#     else:
-#         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")
+
+async def send_farm_funk(callback, tg_id, hero_id):
+    if check_time_farm(tg_id, hero_id):
+        await all_heroes_local_user(tg_id, callback.message.message_id, callback.message.chat.id, callback.id)
+        items = find_wear_items(hero_id)
+        sec = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
+        end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
+        send_hero_farm_func(tg_id, hero_id, end_time)
+        sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
+                         args=(tg_id, hero_id, callback.message.chat.id, 100))
+        cherez = text_from_seconds(sec)
+        username = callback.from_user.first_name
+        await callback.message.answer(f"[{username}](tg://user?id={tg_id}),"
+                                      f" {hero_dick[hero_id].name} отправлен фармить\n"
+                                      f" вернётся через {cherez}", parse_mode='MarkdownV2')
+    else:
+        await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")

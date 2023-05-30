@@ -5,6 +5,7 @@ from aiogram.types import InputMediaPhoto
 from objects import *
 from config import bot, dis, sheduler
 
+
 @dis.message_handler(commands=['start'])
 async def start_funk(message):
     await starter(tg_id=message.from_user.id, chat_id=message.chat.id)
@@ -25,8 +26,6 @@ async def bonus_funk(message):
 
 
 # my_heroes = CallbackData('spmh', 'tg_id')
-
-
 @dis.callback_query_handler(my_heroes.filter())
 async def rsmhip(callback):
     tg_id = r_cbd(callback.data)
@@ -37,38 +36,28 @@ async def rsmhip(callback):
 
 
 # show_hero_in_inventory = CallbackData('shiip', 'tg_id', 'hero_id')
-
-
 @dis.callback_query_handler(show_hero_in_inventory.filter())
 async def dshii(callback):
     tg_id, hero_id = r_cbd(callback.data)
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-    await rshower_hero_i_i(tg_id, hero_id, callback.message.chat.id, callback.message.message_id, )
+    await rshower_hero_i_i(callback, hero_id)
     await bot.answer_callback_query(callback.id)
 
 
 # send_hero_farm_callback = CallbackData('shtfarm', 'tg_id', 'hero_id')
-
-
 @dis.callback_query_handler(send_hero_farm_callback.filter())
 async def shfarm(callback):
     tg_id, hero_id = r_cbd(callback.data)
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-
+    await send_farm_funk(callback, tg_id, hero_id)
     await bot.answer_callback_query(callback.id,)
 
 
-
-
-
-
 # send_hero_fight_callback = CallbackData('shtfight', 'tg_id', 'hero_id')
-
-
 @dis.callback_query_handler(send_hero_fight_callback.filter())
 async def shfight(callback):
     tg_id, hero_id = r_cbd(callback.data)
@@ -451,7 +440,7 @@ async def rbhis(callback):
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
     buy_hero(tg_id, hero_id, hero_dick[hero_id].price)
-    await rshower_hero_i_i(tg_id, hero_id, callback.message.chat.id, callback.message.message_id, )
+    await rshower_hero_i_i(callback, hero_id)
     await bot.answer_callback_query(callback.id, f"ура ура ты купил {hero_dick[hero_id].name}а")
 
 
