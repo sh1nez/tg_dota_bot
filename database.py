@@ -53,7 +53,7 @@ class Connect:
 connection = Connect()
 heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`farm_time` DATETIME NULL ,`fight_time` DATETIME NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(10) NOT NULL, `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT , `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 # items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 '''##############################################---BASE---################################################'''
@@ -73,6 +73,7 @@ def find_nowear_items(tg_id):
 
 def find_wear_items(hero_id):
     sql_code = f"SELECT id, item_name FROM hero_items WHERE hero_id = {hero_id}"
+    print(sql_code)
     return connection.select_all(sql_code)
 
 
@@ -107,14 +108,16 @@ def check_time_farm(tg_id, hero_id):  # тру равно свободен
 
 def wear_item_on_hero(tg_id, hero_id, item_name,):
     # нужно отнять 1 от count и создать новый слот
+    print(item_name, tg_id)
     sql_code = f"SELECT count, id FROM profile_items WHERE item_name = {item_name} AND tg_id = {tg_id}"
+    print(connection.select_one(sql_code))
     count, item_id = connection.select_one(sql_code)
     if not count:
         return Exception
     if count == 1:
-        sql_code1 = f"DELETE FROM profile_items WHERE id = {item_id}"
+        sql_code1 = f"DELETE FROM profile_items WHERE id = {item_id} AND tg_id = {tg_id} limit 1"
     else:
-        sql_code1 = f"UPDATE profile_items SET count = {count-1} WHERE id = {item_id}"
+        sql_code1 = f"UPDATE profile_items SET count = {count-1} WHERE id = {item_id} AND tg_id = {tg_id}"
     sql_code2 = f"INSERT INTO hero_items (hero_id, item_name) VALUES ('{hero_id}', '{item_name}')"
     connection.make_many(sql_code1, sql_code2)
 
@@ -123,10 +126,9 @@ def wear_item_on_hero(tg_id, hero_id, item_name,):
 #     sql_code = f'UPDATE profile_items SET hero_id = NULL WHERE item_name = {item_id} AND tg_id = {tg_id} ' \
 #                f'AND hero_id = {hero_id}'
 #     connection.update_insert_del(sql_code)
-
 def snat_s_geroya_v_invantar(item_name, tg_id, hero_id):
-    sql_code1 = f"DELETE FROM hero_items WHERE item_name = {item_name} AND tg_id = {tg_id} AND hero_id = {hero_id}"
-    print(sql_code1)
+    sql_code1 = f"DELETE FROM hero_items WHERE hero_id = {hero_id} AND item_name = {item_name} LIMIT 1"
+    print(sql_code1, 123123)
     count = connection.select_one(f'SELECT count FROM profile_items WHERE item_name = {item_name} AND tg_id = {tg_id}')
     if not count:
         sql_code2 = f"INSERT INTO profile_items (tg_id, item_name, count) VALUES ('{tg_id}', '{item_name}', '1')"
@@ -135,8 +137,9 @@ def snat_s_geroya_v_invantar(item_name, tg_id, hero_id):
     connection.make_many(sql_code1, sql_code2)
 
 
-"""###############################################---SHOP---###############################################"""
-
+def slomat_shmotki(hero_id, item_name):
+    sql_code = f"DELETE FROM hero_items WHERE hero_id = {hero_id} AND item_name = {item_name}) LIMIT 1"
+    connection.update_insert_del(sql_code)
 
 """###############################################---BUY/SELL---#############################################"""
 
@@ -262,9 +265,8 @@ def farm_time_sec(hero_name, lvl, *args: ShopItem):
     max_time, min_time = hero_dick[hero_name].max_min_time()
     timee = (max_time-min_time)*((max_speed-speed)/max_speed)+min_time
     return round(timee)
-    # время будет ассимптатически стремиться к нулю. Первый будет давать супер много, последующие меньше
-    # func = lambda i: max_time - max_time()
-    #if not args
+    # время будет асимптотически стремиться к нулю. Первый будет давать супер много, последующие меньше
+
 
 def rnum():
     return random.randint(0, len(enemy_click)-1)
