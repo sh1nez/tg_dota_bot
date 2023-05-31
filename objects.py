@@ -1,7 +1,7 @@
 from aiogram.utils.callback_data import CallbackData
 
 my_heroes = CallbackData('spmh', 'tg_id')
-show_hero_in_inventory = CallbackData('shiip', 'tg_id', 'hero_id')
+show_hero_in_inventory = CallbackData('shiip', 'tg_id', 'hero_id',)
 send_hero_farm_callback = CallbackData('shtfarm', 'tg_id', 'hero_id')
 send_hero_fight_callback = CallbackData('shtfight', 'tg_id', 'hero_id')
 items_hero_inventory = CallbackData('sliii', 'tg_id', 'hero_id')

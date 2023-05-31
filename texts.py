@@ -81,7 +81,7 @@ phylactery = ShopItem(index=2, price=1000, name='филактерия', descript
                       mag_buf=0.1, farm_speed=None, total_farm=None)
 
 dagon_urls = (
-    r'https://pin.it/6XzkJ9I'
+    r'https://pin.it/6XzkJ9I',
 )
 dagon = ShopItem(index=3, price=3000, name='дагон', description=None, img1=dagon_urls[0], img2=None,
                  main_stat=None, hp=150,
