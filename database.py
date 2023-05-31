@@ -51,7 +51,7 @@ class Connect:
 
 
 connection = Connect()
-heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`farm_time` DATETIME NULL ,`fight_time` DATETIME NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`time` DATETIME NULL ,`fight` BOOLEAN NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT , `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
@@ -85,10 +85,10 @@ def make_text_inventory(items: tuple, *args):  # итемы в формате (�
 
 
 def find_info_all_heroes(tg_id):
-    sql_code = f"SELECT lvl, hero_name, farm_time, fight_time FROM heroes WHERE tg_id = {tg_id}"
+    sql_code = f"SELECT lvl, hero_name, time FROM heroes WHERE tg_id = {tg_id}"
     # мейби ещё ввести чтобы было видно кулдаун на фарм и другие вещи
-    heroes = connection.select_all(sql_code)
-    return heroes
+    print(sql_code)
+    return connection.select_all(sql_code)
 
 
 def find_id_name_all_heroes(tg_id):
@@ -97,7 +97,7 @@ def find_id_name_all_heroes(tg_id):
 
 
 def check_time_farm(tg_id, hero_id):  # тру равно свободен
-    sql_code = f"SELECT farm_time, fight_time FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
+    sql_code = f"SELECT time FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     t1 = connection.select_one(sql_code)[0]
     if not t1:
         return True
@@ -170,31 +170,24 @@ def create_hero(tg_id, hero_id):
 
 def send_hero_fight(tg_id, hero_id,):
     t = datetime.datetime.today().replace(microsecond=0)
-    sql_code = f"SELECT id, tg_id, hero_name FROM heroes WHERE fight_time IS NOT NULL"
+    sql_code = f"SELECT id, tg_id, hero_name FROM heroes WHERE fight IS NOT NULL"
     tup = connection.select_one(sql_code)
     print(tup)  # id, tg_id, type
     if not tup:
-        sql_code = f"UPDATE heroes SET fight_time = '{t}' WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
+        sql_code = f"UPDATE heroes SET fight = 1 WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
         # print(sql_code)
         connection.update_insert_del(sql_code)
         return False  # значит нет врагов герой отправлен искать fight
-    sql_code = f"UPDATE heroes SET fight_time = NULL WHERE id = {tup[0]}"
+    sql_code = f"UPDATE heroes SET fight = NULL WHERE id = {tup[0]}"
     connection.update_insert_del(sql_code)
     return tup  # значит герой нашёл противника
 
 
-def check_fight():  # hero_id
-    pass
-
-
 def send_hero_farm_func(tg_id, hero_id, time):  # hero_id
-    sql_code = f"UPDATE heroes SET farm_time = '{time}' WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
+    sql_code = f"UPDATE heroes SET time = '{time}' WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     connection.update_insert_del(sql_code)
 
 
-def send_hero_fight_func(tg_id, hero_id, time):  # hero_id
-    sql_code = f"UPDATE heroes SET fight_time = '{time}' WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
-    connection.update_insert_del(sql_code)
 
 
 def hero_back_farm_func(tg_id, hero_id):
@@ -203,7 +196,7 @@ def hero_back_farm_func(tg_id, hero_id):
 
 
 def hero_back_fight_funk(tg_id, hero_id):  # hero_id
-    sql_code = f"UPDATE heroes SET fight_time = NULL WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
+    sql_code = f"UPDATE heroes SET time = NULL WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     connection.update_insert_del(sql_code)
 
 
@@ -234,8 +227,7 @@ def pvp(hero_id1: int, lvl1: int, items1: tuple or None, hero_id2: int, lvl2: in
     else:
         local_hero1 = hero1.__dict__
         for i in items1:
-            local_hero1 *= all_items[i[1]]
-
+            local_hero1 *= all_items[i]
     hp2, farm2, fiz_dmg2, mag_dmg2, buffs2 = hero_dick[hero_id2].lvlup_hero(lvl2)
     hero2 = LocalHero(*hp2, *farm2, fiz_dmg2, mag_dmg2, *buffs2)
     if not items2:
@@ -243,28 +235,40 @@ def pvp(hero_id1: int, lvl1: int, items1: tuple or None, hero_id2: int, lvl2: in
     else:
         local_hero2 = hero2.__dict__
         for i in items2:
-            local_hero2 *= all_items[i[1]]
-    print(local_hero1)
-    print(local_hero2)
-    return hero1.battle(local_hero1, local_hero2)
+            local_hero2 *= all_items[i]
+    if items1:
+        time1 = farm_time_sec(hero_id1, lvl1, *items1)
+    else:
+        time1 = farm_time_sec(hero_id1, lvl1,)
+    if items2:
+        time2 = farm_time_sec(hero_id2, lvl2, *items2)
+    else:
+        time2 = farm_time_sec(hero_id2, lvl2,)
+
+    return *hero1.battle(local_hero1, local_hero2), time1, time2
 
 
-def farm_time_sec(hero_name, lvl, *args: ShopItem):
+def farm_time_sec(hero_name, lvl, *args: tuple):
     """args это предметы"""
-    # герой должен ходиь от 0.5 до 4 часов
-    speed, total_farm = hero_dick[hero_name].lvlup_hero(lvl)[1]
-    #  тут 2 показателя фарма вернёт
-    #speed_items = sum(i.farm_speed for i in args)
-    #farm_speed =
+    hp, farm, fiz_dmg, mag_dmg, buffs = hero_dick[hero_name].lvlup_hero(lvl)
+    hero = LocalHero(*hp, *farm, fiz_dmg, mag_dmg, *buffs)
+    if not args:
+        local_hero = hero.no_items()
+    else:
+        print(args)
+        local_hero = hero.__dict__
+        for i in args:
+            local_hero *= all_items[i]
     """чем больше скорость фарма, тем быстрее должен прийти герой. Что сделать для этого...
     Для начала нужно убавить всё от макс скорости фарма
     мы убивалеям из макс скорости фарма мин скорость и умножаем это на скорость фарма"""
+    speed = local_hero['farm_speed']
+    gold = local_hero['total_farm']
     max_speed = hero_dick[hero_name].max_farm_speed()
-    print(speed)
     if speed >= max_speed: speed = max_speed
     max_time, min_time = hero_dick[hero_name].max_min_time()
     timee = (max_time-min_time)*((max_speed-speed)/max_speed)+min_time
-    return round(timee)
+    return round(timee), gold,
     # время будет асимптотически стремиться к нулю. Первый будет давать супер много, последующие меньше
 
 
@@ -296,7 +300,7 @@ def update_money(tg_id, money):
 def text_time(t: datetime.datetime):
     if not t:
         return '- готов\n'
-    s = 3600-(datetime.datetime.today().replace(microsecond=0) - t).total_seconds()
+    s = (t-datetime.datetime.today().replace(microsecond=0)).total_seconds()
     if s <= 0:
         return ' - готов\n'
     text = '- '
@@ -333,10 +337,17 @@ def select_lvl_by_tg_id(tg_id, hero_name):
 
 
 def mmr_update(tg_id, mmr):
-    if mmr >= 0:
-        sql_code = f"UPDATE players SET mmr = mmr + {mmr} WHERE tg_id = {tg_id}"
+    sql_code = f"SELECT mmr FROM players WHERE tg_id = {tg_id}"
+    a = connection.select_one(sql_code)[0]
+    print(a)
+    if not a:
+        sql_code = f"UPDATE players SET mmr = 0 WHERE tg_id = {tg_id}"
+        connection.update_insert_del(sql_code)
+        return
+    elif a <= 30:
+        sql_code = f"UPDATE players SET mmr = 0 WHERE tg_id = {tg_id}"
     else:
-        sql_code = f"UPDATE players SET mmr = mmr - {abs(mmr)} WHERE tg_id = {tg_id}"
+        sql_code = f"UPDATE players SET mmr = mmr + {mmr} WHERE tg_id = {tg_id}"
     connection.update_insert_del(sql_code)
 
 

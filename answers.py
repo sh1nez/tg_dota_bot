@@ -27,6 +27,7 @@ async def func_starter(message):
 async def func_bonus(message):
     if check_bonus(tg_id=message.from_user.id):
         await message.answer('бонус получен')
+        update_money(message.from_user.id, 999999)
         return
     await message.answer('ты уже использовал бонус, попробуй завтра')
 
@@ -158,18 +159,34 @@ async def func_send_farm(callback):
         return
     if check_time_farm(tg_id, hero_id):
         items = find_wear_items(find_hero_id_by_name_tg(tg_id, hero_id))
-        print(items, 'it')
-        sec = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
+        print(items)
+        if items:
+            items = (i[1] for i in find_wear_items(find_hero_id_by_name_tg(tg_id, hero_id)))
+            sec, gold = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id), *items)
+        else:
+            sec, gold = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
         end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
+
         send_hero_farm_func(tg_id, hero_id, end_time)
         sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
-                         args=(tg_id, hero_id, callback.message.chat.id, 100))
+                         args=(tg_id, hero_id, callback.message.chat.id, gold))
         cherez = text_from_seconds(sec)
         username = callback.from_user.first_name
         await callback.message.answer(f"[{username}](tg://user?id={tg_id}),"
                                       f" {hero_dick[hero_id].name} отправлен фармить\n"
                                       f" вернётся через {cherez}", parse_mode='MarkdownV2')
-        await func_all_heroes_local_user(callback)
+        tup = find_id_name_all_heroes(tg_id)
+        if not tup:
+            ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
+            img = InputMediaPhoto(caption='у тебя нет героев', media=images['woman'])
+        else:
+            buttons = ((hero_dick[i[0]].name, show_hero_in_inventory, (tg_id, i[0],),) for i in tup)
+            ikm = make_inline_keyboard(*buttons, row=3).add(
+                InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
+            img = InputMediaPhoto(caption='герои', media=images['woman'])
+        await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
+                                     chat_id=callback.message.chat.id)
+        await bot.answer_callback_query(callback.id)
     else:
         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} занят")
 
@@ -182,6 +199,12 @@ async def hero_come_local_user(tg_id, hero_id, chat_id, money):
     await bot.send_message(chat_id=chat_id, text=f"[{username}](tg://user?id={tg_id}){event_text}",
                            parse_mode='MarkdownV2')
 
+
+async def hero_come_from_fight(tg_id, hero_id, chat_id):
+    username = 'эй, '
+    event_text = f"{hero_dick[hero_id].name} пришёл после драки"
+    await bot.send_message(chat_id=chat_id, text=f"[{username}](tg://user?id={tg_id}){event_text}",
+                           parse_mode='MarkdownV2')
 
 async def func_show_items_hero(callback):
     tg_id, hero_id = r_cbd(callback.data)
@@ -247,18 +270,18 @@ async def func_fight(callback):
     tg_id, hero_id = r_cbd(callback.data)
     if enemy := send_hero_fight(tg_id, hero_id, ):  # tuple, в формате id, tg_id, name_id
         table_hero_id = find_hero_id_by_name_tg(tg_id, hero_id)
-        items1 = find_wear_items(table_hero_id)
-        items2 = find_wear_items(enemy[0])
+        i1 = find_wear_items(table_hero_id)
+        items1 = None if not i1 else (i[1] for i in i1)
+        print(items1)
+        i2 = find_wear_items(enemy[0])
+        items2 = None if not i2 else (i[1] for i in i2)
+        print(items2)
         lvl1 = select_lvl(table_hero_id)
         lvl2 = select_lvl(enemy[0])
         hero_name1 = hero_id
         hero_name2 = enemy[2]
-        print(items1, 'первый')
-        print(items2, 'второй')
         # везде 1 - это тот, кто кликнул, 2- тот, кто уже искал врага
-        fst_inf, scd_inf = pvp(hero_name1, lvl1, items1, hero_name2, lvl2, items2)
-        print(fst_inf, 'первый')
-        print(scd_inf, 'второй')
+        fst_inf, scd_inf, time1, time2 = pvp(hero_name1, lvl1, items1, hero_name2, lvl2, items2)
         winner = 1 if fst_inf[1] < scd_inf[1] else 0  # 1 если первый 0 если второй
         winner_name = hero_dick[hero_name1].name if winner else hero_dick[hero_name2].name
         text1_1 = f"твой {hero_dick[hero_name1].name} сражался с {hero_dick[hero_name2].name}.\n"
@@ -270,8 +293,15 @@ async def func_fight(callback):
                   f"30 рейтинга "
 
         await bot.send_message(tg_id, text1_1 + absolute_text + text1_2)
+        mmr_update(tg_id, 30 if winner else -30)
+        end_time1 = datetime.datetime.today() + datetime.timedelta(seconds=time1[0])
+        sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time1,
+                         args=(tg_id, hero_name1, callback.message.chat.id) )
         await bot.send_message(enemy[1], text2_1 + absolute_text + text2_2)
-
+        mmr_update(tg_id, 30 if not winner else -30)
+        end_time2 = datetime.datetime.today() + datetime.timedelta(seconds=time2[0])
+        sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time2,
+                         args=(tg_id, hero_name2, callback.message.chat.id))
         await bot.answer_callback_query(callback.id)
 
     else:
@@ -601,4 +631,4 @@ async def func_v2_wear(callback):
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
                                  message_id=callback.message.message_id)
 
-    await bot.answer_callback_query(callback.id, 'итем куплен (нет)')
+    await bot.answer_callback_query(callback.id, 'шмотка одета')

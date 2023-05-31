@@ -70,14 +70,14 @@ mom_urls = (
     'https://steamuserimages-a.akamaihd.net/ugc/5114431931285788573/9D8C5A31B5B184ECA192F18D172B1F3EFE28697A/',
 )
 mom = ShopItem(index=1, price=2000, name='мом', description=None, img1=mom_urls[0], img2=None, main_stat=None, hp=None,
-               fiz_armor=-5, mag_armor=None, fiz_tuple=(None, 100), mag_tuple=(None, None),
+               fiz_armor=-5, mag_armor=None, fiz_tuple=(None, 100), mag_tuple=((None, None),),
                mag_buf=None, farm_speed=10, total_farm=None)
 phylactery_urls = (
     r'https://i.pinimg.com/236x/a2/ce/ec/a2ceec4098c409a58b8e4a48e30f9157.jpg',
 )
 phylactery = ShopItem(index=2, price=1000, name='филактерия', description=None, img1=phylactery_urls[0], img2=None,
                       main_stat=None, hp=150,
-                      fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(100, 8),
+                      fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=((100, 8),),
                       mag_buf=0.1, farm_speed=None, total_farm=None)
 
 dagon_urls = (
@@ -85,8 +85,8 @@ dagon_urls = (
 )
 dagon = ShopItem(index=3, price=3000, name='дагон', description=None, img1=dagon_urls[0], img2=None,
                  main_stat=None, hp=150,
-                 fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(500, 15),
-                 mag_buf=0.3, farm_speed=None, total_farm=None)
+                 fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=((500, 15),),
+                 mag_buf=0.2, farm_speed=None, total_farm=None)
 travel_boots_urls = (
     r'https://img1.etsystatic.com/069/0/10284703/il_570xN.818415665_6k6i.jpg',
 )

@@ -184,7 +184,7 @@ class LocalHero(BaseHero):
                 else:
                     break
             seconds = round(seconds + small, self.__rd)
-        return dmg, round(seconds, self.__rd)
+        return round(dmg), round(seconds, self.__rd)
 
     def die_second2(self, hp: int, timers: list) -> float:
         """test_arr = [[22, 0.47123, 0], [10, 0.3331212, 0], [100, 12.123123,  0], [321, 10.81283, 0]]"""
@@ -235,20 +235,17 @@ class ShopItem(BaseItem):
         return self.__mul__(other)
 
     def __mul__(self, other: dict) -> dict:
+        """Вернёт изменённую в зависимости от героя информацию для создания FightItem"""
         end_fiz_tup = ()
         """Вернёт изменённую в зависимости от героя информацию для создания FightItem"""
         for i in other['fiz_tuple']:
             fiz_damage = round(i[0] + self.fiz_tuple[0] if self.fiz_tuple[0] else i[0], self.__rd)
-            fiz_speed = round(i[1] - self.fiz_tuple[1] if self.fiz_tuple[1] else i[1])
+            fiz_speed = round(i[1] + self.fiz_tuple[1] if self.fiz_tuple[1] else i[1])
             end_fiz_tup += ((fiz_damage, fiz_speed),)
-
-        end_mag_tup = ()
         """тут нельзя нечего умножать иначе когда будет 6 предметов будет *6 kef главного атрибута"""
-        for i in other['mag_tuple']:
-            mag_damage = (self.mag_tuple[0] + other['mag_tuple'][0]) \
-                if self.mag_tuple[0] else i[0]
-            mag_speed = self.mag_tuple[0] - other['mag_tuple'][0] if self.mag_tuple[1] else i[1]
-            end_mag_tup += ((mag_damage, mag_speed),)
+        end_mag_tup = other['mag_tuple']
+        if self.mag_tuple[0]:
+            end_mag_tup += self.mag_tuple
 
         dick = {
             'hp': other['hp'] + self.hp if self.hp else other['hp'],
