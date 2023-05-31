@@ -125,6 +125,8 @@ images = {
            r'dota-krasivo-16.jpg',
     'woman': r'https://indota2.ru/wp-content/uploads/2019/02/87.jpg',
     'jungle': r'https://img2.goodfon.ru/wallpaper/nbig/2/4e/dota-2-nature-s-prophet.jpg',
+    'itemen': r'https://steamuserimages-a.akamaihd.net/ugc/796490276301749233/6A9F2FF5798F43E8848E47FC8A169245B0C9F1C8'
+              r'/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
 
 
 }

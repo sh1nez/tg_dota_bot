@@ -28,8 +28,16 @@ dis.register_callback_query_handler(func_buy_in_shop, buy_item_shop_callback.fil
 dis.register_callback_query_handler(func_show_hero_in_shop, show_hero_in_shop.filter())
 dis.register_callback_query_handler(func_ask_for_buy, wanna_d7e_hero.filter())
 dis.register_callback_query_handler(func_buy_hero, buy_hero_shop.filter())
-"""
+dis.register_callback_query_handler(func_profile_items, user_items_callback.filter())
+dis.register_callback_query_handler(func_nowear_items_to_wear, start_wear_item.filter())
+dis.register_callback_query_handler(func_wear_item, wear_n_shmot_on_hero.filter())
+dis.register_callback_query_handler(func_wear_more_items,  wear_more_items.filter())
+dis.register_callback_query_handler(func_remove_item, q_remove_item_from_hero.filter())
+dis.register_callback_query_handler(func_snat_item, snat_shmotku_inventory.filter())
+dis.register_callback_query_handler(func_srazu_vear, srazu_odet.filter())
+dis.register_callback_query_handler(func_v2_wear, odet_v2.filter())
 
+"""
 async def shmot_on_hero_func(callback, tg_id, hero_id, item_id):
     wear_item_on_hero(tg_id, hero_id, item_id)
     await bot.edit_message_media()
@@ -66,28 +74,7 @@ async def wear_on_func(callback, tg_id):
 
 '''
 
-#
-# # items_hero_inventory = CallbackData('sliii', 'tg_id', 'hero_id')
-#
-#
-# @dis.callback_query_handler(items_hero_inventory.filter())
-# async def rihi(callback):
-#     tg_id, hero_id = r_cbd(callback.data)
-#     if tg_id != callback.from_user.id:
-#         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
-#         return
-#     await show_items_hero(tg_id, hero_id, callback.message.chat.id, callback.message.message_id, callback.id)
-#
-#
-# # wear_more_items = CallbackData('wmi', 'tg_id', 'hero_id')
-# @dis.callback_query_handler(wear_more_items.filter())
-# async def rifhp(callback):
-#     tg_id, hero_id = r_cbd(callback.data)
-#     if tg_id != callback.from_user.id:
-#         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
-#         return
-#     await send_farm_func(callback, tg_id, hero_id)
-#     await bot.answer_callback_query(callback.id)
+
 #
 #
 # # wear_n_shmot_on_hero = CallbackData('wnsoh', 'tg_id', 'hero_id', 'item_id')
@@ -114,7 +101,7 @@ async def wear_on_func(callback, tg_id):
 #     await remove_item_func(callback, tg_id, hero_id, item_id)
 #
 #
-# # snat_shmotku_inventory = CallbackData('ssivi', 'tg_id', 'hero_id', 'item_id')
+# snat_shmotku_inventory = CallbackData('ssivi', 'tg_id', 'hero_id', 'item_id')
 # @dis.callback_query_handler(snat_shmotku_inventory.filter())
 # async def rtshsg(callback):
 #     tg_id, hero_id, item_id = r_cbd(callback.data)
@@ -123,47 +110,9 @@ async def wear_on_func(callback, tg_id):
 #         return
 #     await shmot_on_hero_func(callback, tg_id, hero_id, item_id)
 #
-#
-# # back_to_profile = CallbackData('pbtp', 'tg_id')
-#
-# # users_inventory = CallbackData('suic', 'tg_id')
-# @dis.callback_query_handler(users_inventory.filter())
-# async def rsuif(callback):
-#     tg_id = r_cbd(callback.data)
-#     if tg_id != callback.from_user.id:
-#         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
-#         return
-#     await local_user_profile_fukc(callback, tg_id)
-#
-#
-# # menu_work_items = CallbackData('mwis', 'tg_id')
-# @dis.callback_query_handler(menu_work_items.filter())
-# async def rmwwi(callback):
-#     tg_id = r_cbd(callback.data)
-#     if tg_id != callback.from_user.id:
-#         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
-#         return
-#     await wear_on_func(callback, tg_id)
-#
-#
-# '''############################################----SHOP-----############################################'''
 
-#
-# # callback_farm_item = CallbackData('cfarmis', 'tg_id')
-
-
-# 
-#
-#
-
-#
-#
 # '''###########################################----BUY_ITEMS-----############################################'''
-#
 
-#
-
-#
 #
 # # del_callback = CallbackData('delcs', 'tg_id')
 #
@@ -180,18 +129,8 @@ async def wear_on_func(callback, tg_id):
 #     # №except: await bot.send_message(chat_id=callback.message.chat.id, text=
 #     # 'дайте админку чтобы я мог удалять сообщения (сейчас нужно удалить сообщение которым вызвали меню)')
 #
-#
-# """###########################################----BUY_HERO-----#############################################"""
-#
 
-#
-#
-
-#
-
-
-
-'''##############################################----WORK-----#############################################'''
+"""
 if __name__ == '__main__':
     sheduler.add_job(func=clean_bonus, trigger='cron', hour=0, )
     sheduler.start()

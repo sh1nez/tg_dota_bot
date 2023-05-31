@@ -1,5 +1,2 @@
-class Pisapopa:
-    pass
-asd = Pisapopa()
-def qwe(): return asd
-print(qwe())
+import random
+print(random.randint(0,1))

@@ -53,11 +53,11 @@ class Connect:
 connection = Connect()
 heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`farm_time` DATETIME NULL ,`fight_time` DATETIME NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,`hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(10) NOT NULL, `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+# items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
 '''##############################################---BASE---################################################'''
-connection.make_many(heroes_sql, items_sql, profile_items_sql, hero_items_sql, players_sql)
+connection.make_many(heroes_sql, profile_items_sql, hero_items_sql, players_sql)
 print('Подключился к бд')
 
 
@@ -125,8 +125,13 @@ def wear_item_on_hero(tg_id, hero_id, item_name,):
 #     connection.update_insert_del(sql_code)
 
 def snat_s_geroya_v_invantar(item_name, tg_id, hero_id):
-    sql_code1 = f"DELETE FROM hero_items WHERE item_name = {item_name} AND tg_id = {tg_id}"
-    sql_code2 = f"UPDATE profile_items SET count = count+1 WHERE tg_id = {tg_id} AND item_name = {item_name}"
+    sql_code1 = f"DELETE FROM hero_items WHERE item_name = {item_name} AND tg_id = {tg_id} AND hero_id = {hero_id}"
+    print(sql_code1)
+    count = connection.select_one(f'SELECT count FROM profile_items WHERE item_name = {item_name} AND tg_id = {tg_id}')
+    if not count:
+        sql_code2 = f"INSERT INTO profile_items (tg_id, item_name, count) VALUES ('{tg_id}', '{item_name}', '1')"
+    else:
+        sql_code2 = f"UPDATE profile_items SET count = count+1 WHERE tg_id = {tg_id} AND item_name = {item_name}"
     connection.make_many(sql_code1, sql_code2)
 
 
@@ -302,6 +307,7 @@ def text_time(t: datetime.datetime):
     text += f"{int(s)} сек\n"
     return text
 
+
 def text_from_seconds(sec:int):
     text = ''
     if sec >= 3600:
@@ -317,9 +323,12 @@ def text_from_seconds(sec:int):
 def select_lvl(hero_id):
     sql_code = f"SELECT lvl FROM heroes WHERE id = {hero_id}"
     return connection.select_one(sql_code)[0]
+
+
 def select_lvl_by_tg_id(tg_id, hero_name):
     sql_code = f"SELECT lvl FROM heroes WHERE tg_id = {tg_id} AND hero_name = {hero_name}"
     return connection.select_one(sql_code)[0]
+
 
 def mmr_update(tg_id, mmr):
     if mmr >= 0:

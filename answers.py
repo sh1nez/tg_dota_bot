@@ -3,6 +3,7 @@ from aiogram.types import InputMediaPhoto
 import aiogram
 from objects import *
 from config import bot, sheduler
+import random
 
 
 async def func_starter(message):
@@ -20,6 +21,7 @@ async def func_starter(message):
         return
     else:
         await bot.send_message(text=f'ты уже зареган', chat_id=message.chat.id)
+    await bot.delete_message(message_id=message.id)
 
 
 async def func_bonus(message):
@@ -63,11 +65,10 @@ async def func_make_profile(something):
         tg_id = something.from_user.id
         chat_id = something.message.chat.id
     money = money_of_user(tg_id)
-    print(money)
     if money is False:
         await bot.send_message(chat_id, 'ты не зарегистрирован, используй /start в личных сообщениях боту')
         return
-    ikm = make_inline_keyboard(('мои герои', my_heroes, (tg_id,)), ('инвентарь', users_inventory, (tg_id,)),
+    ikm = make_inline_keyboard(('мои герои', my_heroes, (tg_id,)), ('предметы', user_items_callback, (tg_id,)),
                                ('магазин', go_back_all_shop, (tg_id,)), row=2)
     text = 'состояние фарма\n'
     asd = find_info_all_heroes(tg_id)
@@ -183,25 +184,60 @@ async def hero_come_local_user(tg_id, hero_id, chat_id, money):
 
 
 async def func_show_items_hero(callback):
-        #tg_id, hero_id, chat_id, message_id, callback_id):
     tg_id, hero_id = r_cbd(callback.data)
     text = ''
     aa = find_wear_items(hero_id)
     if not aa:
         text = 'у твоего героя нет предметов'
-        ikm = make_inline_keyboard(('одеть ещё', wear_more_items, (tg_id, hero_id,)), row=3)
+        ikm = make_inline_keyboard(('одеть ещё', srazu_odet, (tg_id, hero_id,)), row=3)
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
                                    ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
         items = find_wear_items(hero_id)
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[0])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(
-            InlineKeyboardButton(text='одеть ещё', callback_data=wear_more_items.new(tg_id, hero_id))).add(
+            InlineKeyboardButton(text='одеть ещё', callback_data=srazu_odet.new(tg_id, hero_id))).add(
             InlineKeyboardButton(text='назад к герою', callback_data=show_hero_in_inventory.new(tg_id, hero_id, )))
     img = InputMediaPhoto(media=images['items'], caption=text)
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
                                  message_id=callback.message.message_id)
     await bot.answer_callback_query(callback.id)
+
+
+async def func_wear_more_items(callback):
+    tg_id, hero_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    text = 'выбери предмет, который будет одет на твоего героя\n'
+    items = find_nowear_items(tg_id)  # это неодетые
+    already = find_wear_items(hero_id)  # это одетые
+    le = 0
+    if not already:
+        le = 0
+    else:
+        le =len(already)
+    if le >= 6:
+        await bot.answer_callback_query(callback.id, 'у героя уже 6 слотов')
+        return
+    if not items: # мб магаз добавить
+        img = InputMediaPhoto(media=images['itemen'], caption='у тебя нет предметов')
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад',
+                                                              callback_data=items_hero_inventory.new(tg_id, hero_id)))
+        await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
+                                     message_id=callback.message.message_id)
+
+    else:
+        le = min(len(items), 9)
+        for i in range(le):
+            text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
+        buttons = ((all_items[items[i][1]].name, wear_n_shmot_on_hero, (tg_id, hero_id, items[i][1],))
+                   for i in range(le))
+        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
+                                                                  callback_data=items_hero_inventory.new(tg_id, hero_id)))
+        img = InputMediaPhoto(media=images['bg2'], caption=text)
+        await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
+                                 message_id=callback.message.message_id)
 
 
 async def func_fight(callback):
@@ -259,7 +295,7 @@ async def func_shop_fight_item(callback):
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-    print(item_dick['fight'][1].index)
+
     buttons = ((item_dick['fight'][i].name, show_item_in_shop, (tg_id, item_dick['fight'][i].index, 0))
                for i in item_dick['fight'])
     ikm = make_inline_keyboard(*buttons, row=3).add(InlineKeyboardButton(text='бек',
@@ -369,3 +405,164 @@ async def func_buy_hero(callback):
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
                                  chat_id=callback.message.chat.id)
     await bot.answer_callback_query(callback.id, f"ура ура ты купил {hero_dick[hero_id].name}а")
+
+
+# # wear_more_items = CallbackData('wmi', 'tg_id', 'hero_id')
+async def func_profile_items(callback):
+    """это локально для уже полученного героя"""
+    tg_id = r_cbd(callback.data)
+    print(callback.data)
+    if callback.from_user.id != tg_id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    items = find_nowear_items(tg_id)
+    text = ''
+    if not items:
+        text ='У тебя нет предметов'
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад',  callback_data=back_to_profile.new(tg_id)))
+    else:
+        le = min(len(items), 9)
+        for i in range(le):
+            text+=f"{all_items[items[i][1]].name} - {items[i][2]}\n"
+        buttons = ((all_items[items[i][1]].name, start_wear_item, (tg_id, items[i][1],)) for i in range(le))
+        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
+                                                                  callback_data=back_to_profile.new(tg_id)))
+        text += 'Нажми на название предмета, чтобы одеть его'
+    img = InputMediaPhoto(media=images['itemen'], caption=text)
+    await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                 reply_markup=ikm)
+
+
+async def func_nowear_items_to_wear(callback):
+    tg_id, item_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    heroes = find_id_name_all_heroes(tg_id)
+    buttons = ((hero_dick[i[0]].name, wear_n_shmot_on_hero, (tg_id, i[0], item_id)) for i in heroes)
+    ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
+                                                                  callback_data=user_items_callback.new(tg_id,)))
+
+    img = InputMediaPhoto(media=all_items[item_id].img1 , caption='выбери героя на которого одеть шмотку')
+    await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                 reply_markup=ikm)
+    await bot.answer_callback_query(callback.id)
+
+
+async def func_wear_item(callback):
+    """это из профиля"""
+    tg_id, hero_id, item_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    items = find_nowear_items(tg_id)
+    asd = find_wear_items(hero_id)
+    already = find_wear_items(hero_id)
+    if not already:
+        already = ''
+    if len(already) >= 6:
+        await bot.answer_callback_query(callback.id, 'у этого героя уже 6 слотов')
+        return
+    text = ''
+    if not items:
+        text = 'У тебя нет предметов'
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад', callback_data=back_to_profile.new(tg_id)))
+    else:
+        le = min(len(items), 9)
+        for i in range(le):
+            text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
+        buttons = ((all_items[items[i][1]].name, start_wear_item, (tg_id, items[i][1],)) for i in range(le))
+        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
+                                                                  callback_data=back_to_profile.new(tg_id)))
+    text += 'Нажми на название предмета, чтобы одеть его'
+    img = InputMediaPhoto(media=images['itemen'], caption=text)
+    await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                 reply_markup=ikm)
+    wear_item_on_hero(tg_id, hero_id, item_id)
+    await bot.answer_callback_query(callback.id, 'Предмет одет')
+
+async def func_remove_item(callback):
+    tg_id, hero_id, item_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    buttons = (('Снять', snat_shmotku_inventory, (tg_id, hero_id, item_id)),
+               ('отмена', items_hero_inventory, (tg_id, hero_id)))
+    ikm = make_inline_keyboard(*buttons, row=1)
+    text = 'с 10% вероятностью шмотка при снятии разобьётся'
+    img = InputMediaPhoto(media=images['items'], caption=text)
+    await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
+                                 chat_id=callback.message.chat.id)
+
+
+async def func_snat_item(callback):
+    tg_id, hero_id, item_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    num = random.randint(0, 9)
+    if not num:
+        await bot.answer_callback_query(callback.id, 'ты чё дибил зачем ты шмотки сломал')
+    else:
+        snat_s_geroya_v_invantar(item_id, tg_id, hero_id)
+        await bot.answer_callback_query(callback.id, 'шмотка успешно снята')
+
+
+async def func_srazu_vear(callback):
+    tg_id, hero_id= r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    text = 'выбери предмет, который будет одет на твоего героя\n'
+    items = find_nowear_items(tg_id)  # это неодетые
+    already = find_wear_items(hero_id)  # это одетые
+    le = 0
+    if not already:
+        le = 0
+    else:
+        le = len(already)
+    if le >= 6:
+        await bot.answer_callback_query(callback.id, 'у героя уже 6 слотов')
+        return
+    if not items:  # мб магаз добавить
+        img = InputMediaPhoto(media=images['itemen'], caption='у тебя нет предметов')
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад',
+                                                              callback_data=items_hero_inventory.new(tg_id, hero_id)))
+        await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
+                                     message_id=callback.message.message_id)
+    else:
+        le = min(len(items), 9)
+        for i in range(le):
+            text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
+        buttons = ((all_items[items[i][1]].name, odet_v2, (tg_id, hero_id, items[i][1],))
+                   for i in range(le))
+        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
+                                                                      callback_data=items_hero_inventory.new(tg_id,
+                                                                                                             hero_id)))
+        img = InputMediaPhoto(media=images['bg2'], caption=text)
+        await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
+                                     message_id=callback.message.message_id)
+
+
+async def func_v2_wear(callback):
+    tg_id, hero_id, item_id = r_cbd(callback.data)
+    if tg_id != callback.from_user.id:
+        await bot.answer_callback_query(callback.id, enemy_click[rnum()])
+        return
+    text = ''
+    aa = find_wear_items(hero_id)
+    if not aa:
+        text = 'у твоего героя нет предметов'
+        ikm = make_inline_keyboard(('одеть ещё', srazu_odet, (tg_id, hero_id,)), row=3)
+        ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
+                                   ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
+    else:
+        items = find_wear_items(hero_id)
+        buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[0])) for i in items)
+        ikm = make_inline_keyboard(*buttons).add(
+            InlineKeyboardButton(text='одеть ещё', callback_data=srazu_odet.new(tg_id, hero_id))).add(
+            InlineKeyboardButton(text='назад к герою', callback_data=show_hero_in_inventory.new(tg_id, hero_id, )))
+    img = InputMediaPhoto(media=images['items'], caption=text)
+    await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
+                                 message_id=callback.message.message_id)
+    await bot.answer_callback_query(callback.id, 'итем куплен (нет)')
