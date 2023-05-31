@@ -276,6 +276,7 @@ def check_hero_user(tg_id, hero_id):
 
 def money_of_user(tg_id):
     sql_code = f"SELECT money FROM players WHERE tg_id = {tg_id}"
+    print(sql_code)
     a = connection.select_one(sql_code)
     return False if a is False else a[0]
 
