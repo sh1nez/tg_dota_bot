@@ -4,24 +4,41 @@ import aiogram
 from objects import *
 from config import bot, sheduler
 import random
+import asyncio
+
+
+async def func_helper(message):
+    tg_id = message.from_user.id
+    if message.chat.id != tg_id:
+        asd = await bot.send_message(message.chat.id, 'команды:\n1. /bonus - Получить ежедневный бонус\n'
+                                     '2. /profile - посмотреть свой профиль.\n3. /shop - Заглянуть в 🛒Магазин🛒')
+        await asyncio.sleep(10)
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        await asd.delete()
+        return
+    asd = await bot.send_message(message.chat.id, 'команды:\n1. /bonus - Получить ежедневный бонус\n'
+                                 '2. /profile - посмотреть свой профиль.\n3. /shop - Заглянуть в 🛒Магазин🛒')
 
 
 async def func_starter(message):
     tg_id = message.from_user.id
     if not reg_user(tg_id):
         if message.chat.id != tg_id:
-            await bot.send_message(message.chat.id, 'регистрироваться можно только в личных сообщениях')
+            asd = await bot.send_message(message.chat.id, 'регистрироваться можно только в личных сообщениях')
+            await asyncio.sleep(4)
+            await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+            await asd.delete()
             return
         sql_code1 = f"INSERT INTO `players` (`tg_id`, `money`) VALUES ('{tg_id}', '0')"
         hero_id = 0  # это типо пуджа выдаёт бесплатно
         sql_code2 = f"INSERT INTO heroes (`tg_id`, `hero_name`, `lvl`, `exp` ) VALUES " \
                     f"('{tg_id}', '{hero_id}', '1', '0');"
         connection.make_many(sql_code1, sql_code2)
-        await bot.send_message(text=f'теперь ты зареган,\n{new_reg_text}', chat_id=message.chat.id)
+        await bot.send_message(text=f'Ты успешно зарегистрирован,\nиспользуй /help', chat_id=message.chat.id)
         return
     else:
-        await bot.send_message(text=f'ты уже зареган', chat_id=message.chat.id)
-    await bot.delete_message(message_id=message.id)
+        await bot.send_message(text=f'Ты уже зарегистрирован\nИспользуй /help', chat_id=message.chat.id)
+
 
 
 async def func_bonus(message):
@@ -42,7 +59,7 @@ async def func_all_shop(something):
     if money is False:
         await bot.send_message(something.chat.id, 'ты не зарегистрирован, используй /start в личных сообщениях боту')
         return
-    ikm = make_inline_keyboard(*(('герои', tradeheroes, (tg_id,)), ('предметы', tradeitems, (tg_id,)),
+    ikm = make_inline_keyboard(*(('👤Герои👤', tradeheroes, (tg_id,)), ('🛍предметы🛍', tradeitems, (tg_id,)),
                                  ('в профиль', back_to_profile, (tg_id,))), row=2)
     if isinstance(something, aiogram.types.message.Message):
         await bot.send_photo(something.chat.id, caption='магаз у наташки', reply_markup=ikm, photo=images['salesman'])
@@ -55,7 +72,7 @@ async def func_all_shop(something):
         await bot.edit_message_media(reply_markup=ikm, media=img, message_id=something.message.message_id,
                                      chat_id=something.message.chat.id)
     else:
-        return Exception('Не сообщение и не колбек, это не отработает никогда нахуй я это пишу')
+        return Exception('Не сообщение и не кол◀️Наза▶️️️, это не отработает никогда нахуй я это пишу')
 
 
 async def func_make_profile(something):
@@ -73,16 +90,20 @@ async def func_make_profile(something):
     if money is False:
         await bot.send_message(chat_id, 'ты не зарегистрирован, используй /start в личных сообщениях боту')
         return
-    ikm = make_inline_keyboard(('мои герои', my_heroes, (tg_id,)), ('предметы', user_items_callback, (tg_id,)),
-                               ('магазин', go_back_all_shop, (tg_id,)), row=2)
-    text = 'состояние фарма\n'
+    ikm = make_inline_keyboard(('👤Герои👤', my_heroes, (tg_id,)), ('🛍Предметы🛍', user_items_callback, (tg_id,)),
+                               ('🛒Магазин🛒', go_back_all_shop, (tg_id,)), row=2)
+    text = '⚠️Состояние фарма⚠️\n'
     asd = find_info_all_heroes(tg_id)
     if not asd:
         text += 'у тебя пока нет героев'
     else:
         for i in asd:
-            text += f"{hero_dick[i[1]].name} {i[0]} LVL {text_time(i[2])}"
-    caption_text = f'рейтинг - {select_mmr(tg_id)} ммр\nденег - {money}\n{text}\n'
+            a = text_time(i[2])
+            print(a)
+            #b = f'{a}\n' if a == 'Готов' else f'{a}🕒\n'
+            smile = "✅" if a == 'Готов' else '🕒'
+            text += f"{smile}{hero_dick[i[1]].name} {i[0]} LVL - {a}\n"
+    caption_text = f'📊Рейтинг - {select_mmr(tg_id)} ммр\n💰Денег - {money}\n\n{text}\n'
     if isinstance(something, aiogram.types.Message):
         await bot.send_photo(chat_id=chat_id, reply_markup=ikm, photo=images['anime1'], caption=caption_text)
     else:
@@ -100,7 +121,7 @@ async def func_shop_heroes(callback):
     ikm = make_inline_keyboard(*buttons, row=3)
     ikm.add(InlineKeyboardButton(text=f'назад',
                                  callback_data=go_back_all_shop.new(tg_id)))  # go_to_shop_menu.new()))
-    img = InputMediaPhoto(caption='ураура', type='photo', media=images['bg1'])
+    img = InputMediaPhoto(type='photo', media=images['bg1'])
     await bot.edit_message_media(reply_markup=ikm, media=img, message_id=callback.message.message_id,
                                  chat_id=callback.message.chat.id)
     await bot.answer_callback_query(callback.id)
@@ -127,13 +148,13 @@ async def func_all_heroes_local_user(callback):
         return
     tup = find_id_name_all_heroes(tg_id)
     if not tup:
-        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='◀️Наза▶️️️', callback_data=back_to_profile.new(tg_id)))
         img = InputMediaPhoto(caption='у тебя нет героев', media=images['woman'])
     else:
         buttons = ((hero_dick[i[0]].name, show_hero_in_inventory, (tg_id, i[0],),) for i in tup)
         ikm = make_inline_keyboard(*buttons, row=2).add(
-            InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
-        img = InputMediaPhoto(caption='герои', media=images['woman'])
+            InlineKeyboardButton(text='◀️Наза▶️️️', callback_data=back_to_profile.new(tg_id)))
+        img = InputMediaPhoto(media=images['woman'])
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
                                  chat_id=callback.message.chat.id)
     await bot.answer_callback_query(callback.id)
@@ -172,7 +193,6 @@ async def func_send_farm(callback):
         else:
             sec, gold = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
         end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
-
         send_hero_time(tg_id, hero_id, end_time)
         sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
                          args=(tg_id, hero_id, callback.message.chat.id, gold))
@@ -183,13 +203,13 @@ async def func_send_farm(callback):
                                       f" вернётся через {cherez}", parse_mode='MarkdownV2')
         tup = find_id_name_all_heroes(tg_id)
         if not tup:
-            ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
+            ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='◀️Наза▶️️️', callback_data=back_to_profile.new(tg_id)))
             img = InputMediaPhoto(caption='у тебя нет героев', media=images['woman'])
         else:
             buttons = ((hero_dick[i[0]].name, show_hero_in_inventory, (tg_id, i[0],),) for i in tup)
             ikm = make_inline_keyboard(*buttons, row=3).add(
-                InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
-            img = InputMediaPhoto(caption='герои', media=images['woman'])
+                InlineKeyboardButton(text='◀️Наза▶️️️', callback_data=back_to_profile.new(tg_id)))
+            img = InputMediaPhoto(media=images['woman'])
         await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
                                      chat_id=callback.message.chat.id)
         await bot.answer_callback_query(callback.id)
@@ -222,7 +242,7 @@ async def func_show_items_hero(callback):
         text = 'у твоего героя нет предметов'
         ikm = make_inline_keyboard(('одеть ещё', srazu_odet, (tg_id, hero_id,)), row=3)
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
-                                   ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
+                                   ('🛒Магазин🛒', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[1])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(
@@ -252,7 +272,7 @@ async def func_wear_more_items(callback):
     if not items:
         img = InputMediaPhoto(media=images['itemen'], caption='у тебя нет предметов')
         ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад', callback_data=items_hero_inventory.new(
-            tg_id, hero_id)), InlineKeyboardButton(text='магазин', callback_data=go_back_all_shop.new(tg_id)))
+            tg_id, hero_id)), InlineKeyboardButton(text='🛒Магазин🛒', callback_data=go_back_all_shop.new(tg_id)))
         await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
                                      message_id=callback.message.message_id)
 
@@ -302,18 +322,30 @@ async def func_fight(callback):
         send_hero_time(enemy[1], hero_name2, end_time2)
         await bot.send_message(tg_id, text1_1 + absolute_text + text1_2)
         mmr_update(tg_id, 30 if winner else -30)
-
+        print(end_time1)
         sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time1,
                          args=(tg_id, hero_name1, callback.message.chat.id))
         await bot.send_message(enemy[1], text2_1 + absolute_text + text2_2)
         mmr_update(enemy[1], 30 if not winner else -30)
-
+        print(end_time2)
         sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time2,
                          args=(enemy[1], hero_name2, callback.message.chat.id))
         await bot.answer_callback_query(callback.id)
 
     else:
         await bot.answer_callback_query(callback.id, text=f"{hero_dick[hero_id].name} отправлен искать файт")
+    tup = find_id_name_all_heroes(tg_id)
+    if not tup:
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='◀️Наза▶️️️', callback_data=back_to_profile.new(tg_id)))
+        img = InputMediaPhoto(caption='у тебя нет героев', media=images['woman'])
+    else:
+        buttons = ((hero_dick[i[0]].name, show_hero_in_inventory, (tg_id, i[0],),) for i in tup)
+        ikm = make_inline_keyboard(*buttons, row=3).add(
+            InlineKeyboardButton(text='◀️Наза▶️️️', callback_data=back_to_profile.new(tg_id)))
+        img = InputMediaPhoto(media=images['woman'])
+    await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
+                                 chat_id=callback.message.chat.id)
+    await bot.answer_callback_query(callback.id)
 
 
 async def func_shop_farm_item(callback):
@@ -323,7 +355,7 @@ async def func_shop_farm_item(callback):
         return
     buttons = ((item_dick['farm'][i].name, show_item_in_shop, (tg_id, item_dick['farm'][i].index, 1))
                for i in item_dick['farm'])
-    ikm = make_inline_keyboard(*buttons, row=3).add(InlineKeyboardButton(text='бек',
+    ikm = make_inline_keyboard(*buttons, row=3).add(InlineKeyboardButton(text='◀️Наза▶️️️',
                                                                          callback_data=tradeitems.new(tg_id)))
     img = InputMediaPhoto(media=images['items'], caption='фармила')
     await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
@@ -339,7 +371,7 @@ async def func_shop_fight_item(callback):
 
     buttons = ((item_dick['fight'][i].name, show_item_in_shop, (tg_id, item_dick['fight'][i].index, 0))
                for i in item_dick['fight'])
-    ikm = make_inline_keyboard(*buttons, row=3).add(InlineKeyboardButton(text='бек',
+    ikm = make_inline_keyboard(*buttons, row=3).add(InlineKeyboardButton(text='◀️Наза▶️️️',
                                                                          callback_data=tradeitems.new(tg_id)))
     img = InputMediaPhoto(media=images['items'], caption='дрочун')
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
@@ -353,7 +385,7 @@ async def func_show_n_item_in_shop(callback):
         return
     back = callback_farm_item if fl else callback_fight_item
     ikm = make_inline_keyboard(('купить', buy_item_shop_callback, (tg_id, item_id, fl, 0)),
-                               ('бек', back, (tg_id,)), row=1)
+                               ('◀️Наза▶️️️', back, (tg_id,)), row=1)
     img = InputMediaPhoto(media=all_items[item_id].img1, caption=all_items[item_id].name)
     await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
                                  message_id=callback.message.message_id)
@@ -557,7 +589,7 @@ async def func_snat_item(callback):
         text = 'у твоего героя нет предметов'
         ikm = make_inline_keyboard(('одеть ещё', srazu_odet, (tg_id, hero_id,)), row=3)
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
-                                   ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
+                                   ('в 🛒Магазин🛒', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[1])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(
@@ -617,7 +649,7 @@ async def func_v2_wear(callback):
         text = 'у твоего героя нет предметов'
         ikm = make_inline_keyboard(('одеть ещё', srazu_odet, (tg_id, hero_id,)), row=3)
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
-                                   ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
+                                   ('в 🛒Магазин🛒', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[1])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(

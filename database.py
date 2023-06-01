@@ -52,19 +52,20 @@ class Connect:
 
 
 connection = Connect()
-heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , 
+'''
+heroes_sql = """CREATE TABLE IF NOT EXISTS `yuralehl_dota`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11), 
 `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`time` DATETIME NULL ,
 `fight` BOOLEAN NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT ,
+profile_items_sql = """CREATE TABLE IF NOT EXISTS `yuralehl_dota`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT ,
 `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,
+hero_items_sql = """CREATE TABLE IF NOT EXISTS `yuralehl_dota`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,
  `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , 
+players_sql = """CREATE TABLE IF NOT EXISTS `yuralehl_dota`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , 
 `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NOT NULL DEFAULT '0', `status` INT NULL DEFAULT NULL ,
- `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NULL DEFAULT NULL , PRIMARY KEY (`id`))
+`nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NULL DEFAULT NULL , PRIMARY KEY (`id`))
   ENGINE = InnoDB;"""
-'''##############################################---BASE---################################################'''
 connection.make_many(heroes_sql, profile_items_sql, hero_items_sql, players_sql)
+'''
 print('Подключился к бд')
 
 '''##############################################---PROFILE---###############################################'''
@@ -286,18 +287,18 @@ def update_money(tg_id, money):
 
 def text_time(t: datetime.datetime):
     if not t:
-        return '- готов\n'
+        return 'Готов'
     s = (t - datetime.datetime.today().replace(microsecond=0)).total_seconds()
     if s <= 0:
-        return ' - готов\n'
-    text = '- '
+        return 'Готов'
+    text = ''
     if s >= 3600:
         text += f'{int(s // 3600)} часов '
         s %= 3600
     if s >= 60:
         text += f"{int(s // 60)} мин "
         s %= 60
-    text += f"{int(s)} сек\n"
+    text += f"{int(s)} сек"
     return text
 
 
