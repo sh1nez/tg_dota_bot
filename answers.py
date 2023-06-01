@@ -25,9 +25,13 @@ async def func_starter(message):
 
 
 async def func_bonus(message):
+    print(reg_user(message.from_user.id))
+    if not reg_user(message.from_user.id):
+        await bot.send_message(message.chat.id, 'для начала зарегайся в лс к боту /start')
+        return
     if check_bonus(tg_id=message.from_user.id):
         await message.answer('бонус получен')
-        update_money(message.from_user.id, 999999)
+        take_bonus(message.from_user.id, 999999)
         return
     await message.answer('ты уже использовал бонус, попробуй завтра')
 
@@ -78,7 +82,7 @@ async def func_make_profile(something):
     else:
         for i in asd:
             text += f"{hero_dick[i[1]].name} {i[0]} LVL {text_time(i[2])}"
-    caption_text = f'денег - {money}\n{text}\n'
+    caption_text = f'рейтинг - {select_mmr(tg_id)} ммр\nденег - {money}\n{text}\n'
     if isinstance(something, aiogram.types.Message):
         await bot.send_photo(chat_id=chat_id, reply_markup=ikm, photo=images['anime1'], caption=caption_text)
     else:
@@ -127,7 +131,7 @@ async def func_all_heroes_local_user(callback):
         img = InputMediaPhoto(caption='у тебя нет героев', media=images['woman'])
     else:
         buttons = ((hero_dick[i[0]].name, show_hero_in_inventory, (tg_id, i[0],),) for i in tup)
-        ikm = make_inline_keyboard(*buttons, row=3).add(
+        ikm = make_inline_keyboard(*buttons, row=2).add(
             InlineKeyboardButton(text='бек', callback_data=back_to_profile.new(tg_id)))
         img = InputMediaPhoto(caption='герои', media=images['woman'])
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
@@ -146,7 +150,10 @@ async def func_inventory_hero(callback):
                                                                                                         hero_id,)),
         ('шмотки', items_hero_inventory, (tg_id, hero_id,)), ('back', my_heroes, (tg_id,)))
     ikm = make_inline_keyboard(*buttons, row=3)
-    img = InputMediaPhoto(media=hero_dick[hero_id].img1, caption=f"вот твой {hero_dick[hero_id].name}")
+    last_time = (check_time(tg_id, hero_id))
+    text_timer = 'Готов' if 0 < last_time else f"Вернётся через {text_from_seconds(abs(last_time))}"
+    img = InputMediaPhoto(media=hero_dick[hero_id].img1, caption=f"вот твой {hero_dick[hero_id].name}\n"
+                          f"Состояние - {text_timer}")
     await bot.edit_message_media(media=img, reply_markup=ikm, message_id=callback.message.message_id,
                                  chat_id=callback.message.chat.id)
     await bot.answer_callback_query(callback.id)
@@ -157,9 +164,8 @@ async def func_send_farm(callback):
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
-    if check_time_farm(tg_id, hero_id):
+    if check_time(tg_id, hero_id) is True:
         items = find_wear_items(find_hero_id_by_name_tg(tg_id, hero_id))
-        print(items)
         if items:
             items = (i[1] for i in find_wear_items(find_hero_id_by_name_tg(tg_id, hero_id)))
             sec, gold = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id), *items)
@@ -167,7 +173,7 @@ async def func_send_farm(callback):
             sec, gold = farm_time_sec(hero_id, select_lvl_by_tg_id(tg_id, hero_id))
         end_time = (datetime.datetime.now() + datetime.timedelta(seconds=sec)).replace(microsecond=0)
 
-        send_hero_farm_func(tg_id, hero_id, end_time)
+        send_hero_time(tg_id, hero_id, end_time)
         sheduler.add_job(func=hero_come_local_user, trigger='date', run_date=end_time,
                          args=(tg_id, hero_id, callback.message.chat.id, gold))
         cherez = text_from_seconds(sec)
@@ -195,7 +201,7 @@ async def hero_come_local_user(tg_id, hero_id, chat_id, money):
     username = 'эй, '
     event_text = f"{hero_dick[hero_id].name} пришёл, принеся с собой {money} деняк"
     update_money(tg_id, money)
-    hero_back_farm_func(tg_id, hero_id)
+    hero_back_funk(tg_id, hero_id)
     await bot.send_message(chat_id=chat_id, text=f"[{username}](tg://user?id={tg_id}){event_text}",
                            parse_mode='MarkdownV2')
 
@@ -218,7 +224,6 @@ async def func_show_items_hero(callback):
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
                                    ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
-        print(items)
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[1])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(
             InlineKeyboardButton(text='одеть ещё', callback_data=srazu_odet.new(tg_id, hero_id))).add(
@@ -255,8 +260,6 @@ async def func_wear_more_items(callback):
         le = min(len(items), 9)
         for i in range(le):
             text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
-        print(items)
-        print(items[1])
         buttons = ((all_items[items[i][1]].name, wear_n_shmot_on_hero, (tg_id, hero_id, items[i][1],))
                    for i in range(le))
         ikm = make_inline_keyboard(*buttons).add(
@@ -268,14 +271,16 @@ async def func_wear_more_items(callback):
 
 async def func_fight(callback):
     tg_id, hero_id = r_cbd(callback.data)
+    if check_time(tg_id, hero_id) is not True:
+        await bot.answer_callback_query(callback.id, f"{hero_dick[hero_id].name} занят")
+        return
     if enemy := send_hero_fight(tg_id, hero_id, ):  # tuple, в формате id, tg_id, name_id
         table_hero_id = find_hero_id_by_name_tg(tg_id, hero_id)
+        print(enemy)
         i1 = find_wear_items(table_hero_id)
         items1 = None if not i1 else (i[1] for i in i1)
-        print(items1)
         i2 = find_wear_items(enemy[0])
         items2 = None if not i2 else (i[1] for i in i2)
-        print(items2)
         lvl1 = select_lvl(table_hero_id)
         lvl2 = select_lvl(enemy[0])
         hero_name1 = hero_id
@@ -284,24 +289,27 @@ async def func_fight(callback):
         fst_inf, scd_inf, time1, time2 = pvp(hero_name1, lvl1, items1, hero_name2, lvl2, items2)
         winner = 1 if fst_inf[1] < scd_inf[1] else 0  # 1 если первый 0 если второй
         winner_name = hero_dick[hero_name1].name if winner else hero_dick[hero_name2].name
+        end_time1 = datetime.datetime.today() + datetime.timedelta(seconds=time1[0])
+        send_hero_time(tg_id, hero_name1, end_time1)
         text1_1 = f"твой {hero_dick[hero_name1].name} сражался с {hero_dick[hero_name2].name}.\n"
         text1_2 = f" \nПобедил {f'твой ' if winner else 'вражеский '} {winner_name}\n{'+' if winner else '-'}" \
-                  f"30 рейтинга"
+                  f"30 рейтинга\n герой отправляется домой, вернётся через\n{text_from_seconds(time1[0])}"
+        end_time2 = datetime.datetime.today() + datetime.timedelta(seconds=time2[0])
         absolute_text = f"файт длился {max(fst_inf[1], scd_inf[1])} секунд. "
         text2_1 = f"твой {hero_dick[hero_name2].name} сражался с {hero_dick[hero_name1].name}.\n"
         text2_2 = f"\nПобедил {f'твой ' if not winner else 'вражеский '} {winner_name}\n{'+' if not winner else '-'}" \
-                  f"30 рейтинга "
-
+                  f"30 рейтинга\n герой отправляется домой, вернётся через\n{text_from_seconds(time2[0])}"
+        send_hero_time(enemy[1], hero_name2, end_time2)
         await bot.send_message(tg_id, text1_1 + absolute_text + text1_2)
         mmr_update(tg_id, 30 if winner else -30)
-        end_time1 = datetime.datetime.today() + datetime.timedelta(seconds=time1[0])
+
         sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time1,
                          args=(tg_id, hero_name1, callback.message.chat.id))
         await bot.send_message(enemy[1], text2_1 + absolute_text + text2_2)
-        mmr_update(tg_id, 30 if not winner else -30)
-        end_time2 = datetime.datetime.today() + datetime.timedelta(seconds=time2[0])
+        mmr_update(enemy[1], 30 if not winner else -30)
+
         sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time2,
-                         args=(tg_id, hero_name2, callback.message.chat.id))
+                         args=(enemy[1], hero_name2, callback.message.chat.id))
         await bot.answer_callback_query(callback.id)
 
     else:
@@ -454,9 +462,6 @@ async def func_profile_items(callback):
         ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад',  callback_data=back_to_profile.new(tg_id)))
     else:
         le = min(len(items), 9)
-        print(le)
-        print(items, 'ite,s')
-        print(all_items[items[0][1]].name)
         for i in range(le):
             text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
         buttons = ((all_items[items[i][1]].name, start_wear_item, (tg_id, items[i][1],)) for i in range(le))
@@ -474,7 +479,6 @@ async def func_nowear_items_to_wear(callback):
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
     heroes = find_id_name_all_heroes(tg_id)
-    print(heroes, 'heroes')
     buttons = ((hero_dick[i[0]].name, wear_n_shmot_on_hero, (tg_id, i[0], item_id)) for i in heroes)
     ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
                                                                   callback_data=user_items_callback.new(tg_id,)))
@@ -497,7 +501,6 @@ async def func_wear_item(callback):
     if already >= 6:
         await bot.answer_callback_query(callback.id, 'у этого героя уже 6 слотов')
         return
-    print(item_id, 123123)
     wear_item_on_hero(tg_id, primary, item_id)
     items = find_nowear_items(tg_id)
     text = ''
@@ -507,7 +510,6 @@ async def func_wear_item(callback):
     else:
         le = min(len(items), 9)
         for i in range(le):
-            print(i)
             text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
         buttons = ((all_items[items[i][1]].name, start_wear_item, (tg_id, items[i][1],)) for i in range(le))
         ikm = make_inline_keyboard(*buttons).add(
@@ -549,7 +551,6 @@ async def func_snat_item(callback):
         snat_s_geroya_v_invantar(item_id, tg_id, primaty)
         await bot.answer_callback_query(callback.id, 'шмотка успешно снята')
     # итем айди настоящий айди гпредмета
-    print(item_id)
     primary_id = find_hero_id_by_name_tg(tg_id, hero_id)
     items = find_wear_items(primary_id)
     if not items:
@@ -558,7 +559,6 @@ async def func_snat_item(callback):
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
                                    ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
-        print(items, 'nelast')
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[1])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(
             InlineKeyboardButton(text='одеть ещё', callback_data=srazu_odet.new(tg_id, hero_id))).add(
@@ -591,7 +591,6 @@ async def func_srazu_vear(callback):
                                      message_id=callback.message.message_id)
     else:
         le = min(len(items), 9)
-        print(items)
         for i in range(le):
             text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
         buttons = ((all_items[items[i][1]].name, odet_v2, (tg_id, hero_id, items[i][1],))
@@ -612,7 +611,6 @@ async def func_v2_wear(callback):
     text = ''
 
     primary = find_hero_id_by_name_tg(tg_id, hero_id)
-    print(item_id, 123123)
     wear_item_on_hero(tg_id, primary, item_id)
     items = find_wear_items(primary)
     if not items:
@@ -621,7 +619,6 @@ async def func_v2_wear(callback):
         ikm = make_inline_keyboard(('назад к герою', show_hero_in_inventory, (tg_id, hero_id,)),
                                    ('в магазин', go_back_all_shop, (tg_id,)), ikm=ikm)
     else:
-        print(items, 'last')
         buttons = ((all_items[i[1]].name, q_remove_item_from_hero, (tg_id, hero_id, i[1])) for i in items)
         ikm = make_inline_keyboard(*buttons).add(
             InlineKeyboardButton(text='одеть ещё', callback_data=srazu_odet.new(tg_id, hero_id))).add(

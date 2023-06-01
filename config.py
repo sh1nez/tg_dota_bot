@@ -4,7 +4,7 @@ host = 'localhost'
 user = 'root'
 password = ''
 db_name = 'test_bot'
-token = '6241515938:AAHRAYFoUP7oWDMqJ4pEynnB0OWp6CBlq8k'
+token = '6065685536:AAHs04SSURkkRE74FdATgUzrudOlq6k_LX8'
 sheduler = AsyncIOScheduler(timezone='Europe/Moscow')
 print('Я создал шедулер')
 bot = aiogram.Bot(token)
