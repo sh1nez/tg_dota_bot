@@ -6,6 +6,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 from dota import LocalHero
 
+
 class Connect:
     def __init__(self):
         self.conn = pymysql.connect(host=host, port=3306, user=user, password=password, database=db_name,)
@@ -51,16 +52,20 @@ class Connect:
 
 
 connection = Connect()
-heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , `hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`time` DATETIME NULL ,`fight` BOOLEAN NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT , `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , `tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL , `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
-# items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`items` ( `id` MEDIUMINT NOT NULL AUTO_INCREMENT , `hero_id` MEDIUMINT NULL DEFAULT NULL , `tg_user_id` VARCHAR(15) NOT NULL , `item_name` TINYINT NOT NULL , `count` TINYINT(4) NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+heroes_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`heroes` (`id` INT NOT NULL AUTO_INCREMENT ,`tg_id` CHAR(11) , 
+`hero_name` INT NOT NULL ,`lvl` INT NOT NULL ,`exp` INT NOT NULL ,`time` DATETIME NULL ,
+`fight` BOOLEAN NULL DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+profile_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`profile_items` ( `id` INT NOT NULL AUTO_INCREMENT ,
+`tg_id` VARCHAR(11) NOT NULL , `item_name` INT NOT NULL , `count` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+hero_items_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`hero_items` (`id` INT NOT NULL AUTO_INCREMENT ,
+ `hero_id` INT NOT NULL ,`item_name` INT NOT NULL ,PRIMARY KEY (`id`)) ENGINE = InnoDB;"""
+players_sql = """CREATE TABLE IF NOT EXISTS `test_bot`.`players` ( `id` INT NOT NULL AUTO_INCREMENT , 
+`tg_id` CHAR(11) NOT NULL , `money` INT NOT NULL , `mmr` INT NULL DEFAULT NULL , `status` INT NULL DEFAULT NULL ,
+ `nick` CHAR(20) NULL DEFAULT NULL , `bg` TINYINT NULL DEFAULT NULL , `bonus` BOOLEAN NOT NULL, PRIMARY KEY (`id`))
+  ENGINE = InnoDB;"""
 '''##############################################---BASE---################################################'''
 connection.make_many(heroes_sql, profile_items_sql, hero_items_sql, players_sql)
 print('Подключился к бд')
-
-
 
 '''##############################################---PROFILE---###############################################'''
 
@@ -141,6 +146,7 @@ def slomat_shmotki(hero_id, item_name):
     sql_code = f"DELETE FROM hero_items WHERE hero_id = {hero_id} AND item_name = {item_name}) LIMIT 1"
     connection.update_insert_del(sql_code)
 
+
 """###############################################---BUY/SELL---#############################################"""
 
 
@@ -169,7 +175,6 @@ def create_hero(tg_id, hero_id):
 
 
 def send_hero_fight(tg_id, hero_id,):
-    t = datetime.datetime.today().replace(microsecond=0)
     sql_code = f"SELECT id, tg_id, hero_name FROM heroes WHERE fight IS NOT NULL"
     tup = connection.select_one(sql_code)
     print(tup)  # id, tg_id, type
@@ -186,8 +191,6 @@ def send_hero_fight(tg_id, hero_id,):
 def send_hero_farm_func(tg_id, hero_id, time):  # hero_id
     sql_code = f"UPDATE heroes SET time = '{time}' WHERE tg_id = {tg_id} AND hero_name = {hero_id}"
     connection.update_insert_del(sql_code)
-
-
 
 
 def hero_back_farm_func(tg_id, hero_id):
@@ -265,7 +268,8 @@ def farm_time_sec(hero_name, lvl, *args: tuple):
     speed = local_hero['farm_speed']
     gold = local_hero['total_farm']
     max_speed = hero_dick[hero_name].max_farm_speed()
-    if speed >= max_speed: speed = max_speed
+    if speed >= max_speed:
+        speed = max_speed
     max_time, min_time = hero_dick[hero_name].max_min_time()
     timee = (max_time-min_time)*((max_speed-speed)/max_speed)+min_time
     return round(timee), gold,
@@ -314,7 +318,7 @@ def text_time(t: datetime.datetime):
     return text
 
 
-def text_from_seconds(sec:int):
+def text_from_seconds(sec: int):
     text = ''
     if sec >= 3600:
         text += f'{int(sec // 3600)} часов '

@@ -290,8 +290,4 @@ midas = ShopItem(index=0, price=2250, name='мидас', description=None, img1=
                  fiz_armor=None, mag_armor=None, fiz_tuple=(50, 30), mag_tuple=(None, None),
                  mag_buf=None, farm_speed=None, total_farm=150)
 
-hp1, farm1, fiz_dmg1, mag_dmg1, buffs1 = pudge.lvlup_hero(10)
-hero1 = LocalHero(*hp1, *farm1, fiz_dmg1, mag_dmg1, *buffs1)
-print(hero1.__dict__)
-print(a := hero1.__dict__*dagon)
-print(a*midas)
+print(eval('10+260+400+630+30+30+150'))

@@ -206,6 +206,7 @@ async def hero_come_from_fight(tg_id, hero_id, chat_id):
     await bot.send_message(chat_id=chat_id, text=f"[{username}](tg://user?id={tg_id}){event_text}",
                            parse_mode='MarkdownV2')
 
+
 async def func_show_items_hero(callback):
     tg_id, hero_id = r_cbd(callback.data)
     text = ''
@@ -236,17 +237,16 @@ async def func_wear_more_items(callback):
     text = 'выбери предмет, который будет одет на твоего героя\n'
     items = find_nowear_items(tg_id)  # это неодетые
     already = find_wear_items(hero_id)  # это одетые
-    le = 0
     if not already:
         le = 0
     else:
-        le =len(already)
+        le = len(already)
     if le >= 6:
         await bot.answer_callback_query(callback.id, 'у героя уже 6 слотов')
         return
-    if not items: # мб магаз добавить
+    if not items:
         img = InputMediaPhoto(media=images['itemen'], caption='у тебя нет предметов')
-        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад',callback_data=items_hero_inventory.new(
+        ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад', callback_data=items_hero_inventory.new(
             tg_id, hero_id)), InlineKeyboardButton(text='магазин', callback_data=go_back_all_shop.new(tg_id)))
         await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
                                      message_id=callback.message.message_id)
@@ -259,11 +259,11 @@ async def func_wear_more_items(callback):
         print(items[1])
         buttons = ((all_items[items[i][1]].name, wear_n_shmot_on_hero, (tg_id, hero_id, items[i][1],))
                    for i in range(le))
-        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
-                                                                  callback_data=items_hero_inventory.new(tg_id, hero_id)))
+        ikm = make_inline_keyboard(*buttons).add(
+            InlineKeyboardButton(text='назад', callback_data=items_hero_inventory.new(tg_id, hero_id)))
         img = InputMediaPhoto(media=images['bg2'], caption=text)
         await bot.edit_message_media(media=img, reply_markup=ikm, chat_id=callback.message.chat.id,
-                                 message_id=callback.message.message_id)
+                                     message_id=callback.message.message_id)
 
 
 async def func_fight(callback):
@@ -296,7 +296,7 @@ async def func_fight(callback):
         mmr_update(tg_id, 30 if winner else -30)
         end_time1 = datetime.datetime.today() + datetime.timedelta(seconds=time1[0])
         sheduler.add_job(func=hero_come_from_fight, trigger='date', run_date=end_time1,
-                         args=(tg_id, hero_name1, callback.message.chat.id) )
+                         args=(tg_id, hero_name1, callback.message.chat.id))
         await bot.send_message(enemy[1], text2_1 + absolute_text + text2_2)
         mmr_update(tg_id, 30 if not winner else -30)
         end_time2 = datetime.datetime.today() + datetime.timedelta(seconds=time2[0])
@@ -450,7 +450,7 @@ async def func_profile_items(callback):
     items = find_nowear_items(tg_id)
     text = ''
     if not items:
-        text ='У тебя нет предметов'
+        text = 'У тебя нет предметов'
         ikm = InlineKeyboardMarkup().add(InlineKeyboardButton(text='назад',  callback_data=back_to_profile.new(tg_id)))
     else:
         le = min(len(items), 9)
@@ -458,10 +458,10 @@ async def func_profile_items(callback):
         print(items, 'ite,s')
         print(all_items[items[0][1]].name)
         for i in range(le):
-            text+=f"{all_items[items[i][1]].name} - {items[i][2]}\n"
+            text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
         buttons = ((all_items[items[i][1]].name, start_wear_item, (tg_id, items[i][1],)) for i in range(le))
-        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
-                                                                  callback_data=back_to_profile.new(tg_id)))
+        ikm = make_inline_keyboard(*buttons).add(
+            InlineKeyboardButton(text='назад', callback_data=back_to_profile.new(tg_id)))
         text += 'Нажми на название предмета, чтобы одеть его'
     img = InputMediaPhoto(media=images['itemen'], caption=text)
     await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
@@ -479,7 +479,7 @@ async def func_nowear_items_to_wear(callback):
     ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
                                                                   callback_data=user_items_callback.new(tg_id,)))
 
-    img = InputMediaPhoto(media=all_items[item_id].img1 , caption='выбери героя на которого одеть шмотку')
+    img = InputMediaPhoto(media=all_items[item_id].img1, caption='выбери героя на которого одеть шмотку')
     await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                  reply_markup=ikm)
     await bot.answer_callback_query(callback.id)
@@ -510,8 +510,8 @@ async def func_wear_item(callback):
             print(i)
             text += f"{all_items[items[i][1]].name} - {items[i][2]}\n"
         buttons = ((all_items[items[i][1]].name, start_wear_item, (tg_id, items[i][1],)) for i in range(le))
-        ikm = make_inline_keyboard(*buttons).add(InlineKeyboardButton(text='назад',
-                                                                  callback_data=back_to_profile.new(tg_id)))
+        ikm = make_inline_keyboard(*buttons).add(
+            InlineKeyboardButton(text='назад', callback_data=back_to_profile.new(tg_id)))
     text += 'Нажми на название предмета, чтобы одеть его'
     img = InputMediaPhoto(media=images['itemen'], caption=text)
     await bot.edit_message_media(media=img, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
@@ -569,14 +569,13 @@ async def func_snat_item(callback):
 
 
 async def func_srazu_vear(callback):
-    tg_id, hero_id= r_cbd(callback.data)
+    tg_id, hero_id = r_cbd(callback.data)
     if tg_id != callback.from_user.id:
         await bot.answer_callback_query(callback.id, enemy_click[rnum()])
         return
     text = 'выбери предмет, который будет одет на твоего героя\n'
     items = find_nowear_items(tg_id)  # это неодетые
     already = find_wear_items(find_hero_id_by_name_tg(tg_id, hero_id))  # это одетые
-    le = 0
     if not already:
         le = 0
     else:

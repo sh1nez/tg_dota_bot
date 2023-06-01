@@ -28,5 +28,3 @@ del_callback = CallbackData('delcs', 'tg_id')
 show_hero_in_shop = CallbackData('shns', 'tg_id', 'hero_id', )
 wanna_d7e_hero = CallbackData('diwd', 'tg_id', 'hero_id')
 buy_hero_shop = CallbackData('bhs', 'tg_id', 'hero_id')
-
-

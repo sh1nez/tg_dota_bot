@@ -28,25 +28,26 @@ alch_urls = (
 )
 
 alch_dick = {'exp': 250, 'hp': 50, 'fiz_armor': 2.5, 'mag_armor': 2.5,
-              'fiz_tuple': ((9, 9),), 'mag_tuple': ((1, 0),),
-              'total_farm': 8, 'farm_speed': 3, }
+             'fiz_tuple': ((9, 9),), 'mag_tuple': ((1, 0),),
+             'total_farm': 8, 'farm_speed': 3, }
 alch_desc = 'герой предназначен исключительно для фарма. Драться может только ближе к поздним стадиям игры'
 alchemist = NewHero(name='алхимик', price=0, description=alch_desc, img1=alch_urls[0], img2=None, img3=None,
-                hp=300, fiz_armor=7, mag_armor=0,
-                farm_speed=300, total_farm=150, kef_farm=2, fiz_tuple=((35, 10),), mag_tuple=((100, 15,),),
-                fiz_buf=1.7, mag_buf=0.5, exp=800, lvl_up=alch_dick)
+                    hp=300, fiz_armor=7, mag_armor=0,
+                    farm_speed=300, total_farm=150, kef_farm=2, fiz_tuple=((35, 10),), mag_tuple=((100, 15,),),
+                    fiz_buf=1.7, mag_buf=0.5, exp=800, lvl_up=alch_dick)
 
 void_spirit_ursl = (
     r'https://damion.club/uploads/posts/2022-09/1663907425_11-damion-club-p-void-spirit-oboi-pinterest-12.jpg',
 )
 void_spirit_dick = {'exp': 400, 'hp': 20, 'fiz_armor': 1, 'mag_armor': 1,
-              'fiz_tuple': ((9, 9),), 'mag_tuple': ((8, 0,),(8, 0,), (5, 0,),),
-              'total_farm': 0, 'farm_speed': 0, }
+                    'fiz_tuple': ((9, 9),), 'mag_tuple': ((8, 0,), (8, 0,), (5, 0,),),
+                    'total_farm': 0, 'farm_speed': 0, }
 void_spirit_desc = 'герой предрасположен к ранним дракам'
-void_spirit = NewHero(name='войд спирит', price=0, description=void_spirit_desc, img1=void_spirit_ursl[0], img2=None, img3=None,
-                hp=700, fiz_armor=15, mag_armor=15,
-                farm_speed=100, total_farm=100, kef_farm=0.5, fiz_tuple=((80,100),), mag_tuple=((200, 10,),(200, 10,), (30, 3,),),
-                fiz_buf=1, mag_buf=1, exp=1200, lvl_up=void_spirit_dick)
+void_spirit = NewHero(name='войд спирит', price=0, description=void_spirit_desc, img1=void_spirit_ursl[0], img2=None,
+                      img3=None, hp=700, fiz_armor=15, mag_armor=15,
+                      farm_speed=100, total_farm=100, kef_farm=0.5, fiz_tuple=((80, 100),),
+                      mag_tuple=((200, 10,), (200, 10,), (30, 3,),),
+                      fiz_buf=1, mag_buf=1, exp=1200, lvl_up=void_spirit_dick)
 
 
 hero_dick = {
@@ -60,8 +61,8 @@ hero_dick = {
 midas_urls = (
     'https://avatars.dzeninfra.ru/get-zen_doc/3126430/pub_604f9ae70a7d51654a5834d3_604f9b59011181447bd702d5/scale_1200',
 )
-midas = ShopItem(index=0, price=2250, name='мидас', description=None, img1=midas_urls[0], img2=None, main_stat=None, hp=None,
-                 fiz_armor=None, mag_armor=None, fiz_tuple=(None, 2), mag_tuple=(None, None),
+midas = ShopItem(index=0, price=2250, name='мидас', description=None, img1=midas_urls[0], img2=None, main_stat=None,
+                 hp=None, fiz_armor=None, mag_armor=None, fiz_tuple=(None, 2), mag_tuple=(None, None),
                  mag_buf=None, farm_speed=None, total_farm=150)
 """price=0, name=None, description=None, img1=None, img2=None, main_stat=None, hp=None,
                fiz_armor=None, mag_armor=None, fiz_tuple=(None, None), mag_tuple=(None, None),
@@ -100,7 +101,7 @@ item_dick = {
              1: mom,
              2: travel_boots},
     'fight': {0: phylactery,
-              1: dagon,}
+              1: dagon}
 }
 
 all_items = {
