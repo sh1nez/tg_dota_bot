@@ -290,4 +290,7 @@ midas = ShopItem(index=0, price=2250, name='мидас', description=None, img1=
                  fiz_armor=None, mag_armor=None, fiz_tuple=(50, 30), mag_tuple=(None, None),
                  mag_buf=None, farm_speed=None, total_farm=150)
 
-print(eval('10+260+400+630+30+30+150'))
+def fuck_life():
+    try: return True
+    finally: return False
+print(fuck_life())

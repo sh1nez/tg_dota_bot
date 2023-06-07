@@ -234,7 +234,6 @@ class ShopItem(BaseItem):
     def __mul__(self, other: dict) -> dict:
         """Вернёт изменённую в зависимости от героя информацию для создания FightItem"""
         end_fiz_tup = ()
-        """Вернёт изменённую в зависимости от героя информацию для создания FightItem"""
         for i in other['fiz_tuple']:
             fiz_damage = round(i[0] + self.fiz_tuple[0] if self.fiz_tuple[0] else i[0], self.__rd)
             fiz_speed = round(i[1] + self.fiz_tuple[1] if self.fiz_tuple[1] else i[1])

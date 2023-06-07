@@ -11,13 +11,13 @@ async def func_helper(message):
     tg_id = message.from_user.id
     if message.chat.id != tg_id:
         asd = await bot.send_message(message.chat.id, 'команды:\n1. /bonus - Получить ежедневный бонус\n'
-                                     '2. /profile - посмотреть свой профиль.\n3. /shop - Заглянуть в 🛒Магазин🛒')
+                                     '2. /profile - посмотреть свой профиль.\n3. /shop - Заглянуть в Магазин')
         await asyncio.sleep(10)
         await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
         await asd.delete()
         return
     asd = await bot.send_message(message.chat.id, 'команды:\n1. /bonus - Получить ежедневный бонус\n'
-                                 '2. /profile - посмотреть свой профиль.\n3. /shop - Заглянуть в 🛒Магазин🛒')
+                                 '2. /profile - посмотреть свой профиль.\n3. /shop - Заглянуть в Магазин')
 
 
 async def func_starter(message):
