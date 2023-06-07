@@ -2,7 +2,7 @@ from answers import *
 from database import *
 from objects import *
 from config import dis, sheduler
-''''''
+'''asd'''
 dis.register_message_handler(func_helper, commands=['help'])
 dis.register_message_handler(func_starter, commands=['start'])
 dis.register_message_handler(func_make_profile, commands=['profile'])
