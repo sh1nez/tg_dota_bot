@@ -5,10 +5,29 @@ import meat.texts as txt
 async def start(message: Message):
     """проверка базы данных"""
     ans = txt.true_start_text if True else txt.false_start_text
-    await message.answer(f'{ans}\nДоступные команды:{txt.txt_commands()}')
+    description = txt.start_desc if True else ''
+    await message.answer(f'{ans}\n{description}')
 
 
-async def start1(message: Message):
-    """проверка базы данных"""
-    ans = txt.true_start_text if True else txt.false_start_text
-    await message.answer(f'{ans}\nДоступные команды(тест):{txt.txt_commands()}')
+async def helper(message: Message):
+    await message.answer(f"Все доступные на данный момент команды:\n{txt.txt_commands()}")
+
+
+async def profile(message: Message):
+    pass
+
+
+async def shop(message: Message):
+    pass
+
+
+async def bonus(message: Message):
+    pass
+
+
+async def farm(message: Message):
+    pass
+
+
+async def fight(message: Message):
+    pass
