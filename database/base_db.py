@@ -23,29 +23,35 @@ players_sql = """CREATE TABLE IF NOT EXISTS `yuralehl_dota`.`players` ( `id` INT
 
 com = (
     """CREATE TABLE IF NOT EXISTS players(
-    id integer serial PRIMARY KEY,
     "time" timestamp without time zone
     );
     """,
 )
 print(com[0])
-
+conn = psycopg2.connect(database='postgres', user='postgres', password='pisapopa', host='localhost', port=5432)
+asd = conn.cursor()
+asd.execute('''CREATE TABLE weather (
+    city            varchar(80),
+    temp_lo         int,           z`-- low temperature
+    temp_hi         int,           -- high temperature
+    prcp            real,          -- precipitation
+    date            date
+);''')
+conn.commit()
+"""
 class Database:
-    def __init__(self):
-        self.__conn = psycopg2.connect(database='test', user='127.0.0.1', password='pisapopa', host='5432')
+    def __init__(self):  # pisapopa
+        self.__conn = 
         with self.__conn.cursor() as cur:
-
             cur.execute(com[0])
-            #for i in com:
-            #    cur.execute(i)
+            print('execute')
 
 
     #@classmethod
     #def select_lvl(cls)
     #    with cls.__conn.cursor()
-
-
-
 asd = Database()
+"""
+print('end')
 
 

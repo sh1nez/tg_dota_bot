@@ -1,5 +1,7 @@
+import asyncio
+
 from aiogram import Dispatcher, Bot, Router, F
-from config import token
+from config import token, group1_id
 from aiogram.filters.command import Command, CommandStart
 from messages.func_messages import start, helper, profile, shop, bonus, farm, fight
 from messages.m_middleware import PrivateMessage, CheckTime, CheckReg
@@ -11,6 +13,10 @@ message_looker = Router()
 message_time = Router()
 callback_router = Router()
 
+
+async def check():
+    count = await bot.get_chat_member()
+    print(count)
 message_private.message.register(start, CommandStart(), flags={'private': True})
 dp.message.register(helper, Command(commands=['help']))
 dp.message.register(helper, F.text == 'помргите')
@@ -25,6 +31,7 @@ message_time.message.register(fight, Command(commands=['fight']), flags={'time':
 
 if __name__ == '__main__':
     print('run')
+    asyncio.run(check())
     message_private.message.middleware(PrivateMessage())
     message_looker.message.middleware(CheckReg())
     message_time.message.middleware(CheckReg())
