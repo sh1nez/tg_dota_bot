@@ -22,22 +22,40 @@ players_sql = """CREATE TABLE IF NOT EXISTS `yuralehl_dota`.`players` ( `id` INT
   ENGINE = InnoDB;"""
 
 com = (
-    """CREATE TABLE IF NOT EXISTS players(
-    "time" timestamp without time zone
+    """CREATE TABLE IF NOT EXISTS cool_test(
+    "time" timestamp without time zone,
+    "num1" 
+    "num1"
     );
     """,
 )
-print(com[0])
 conn = psycopg2.connect(database='postgres', user='postgres', password='pisapopa', host='localhost', port=5432)
-asd = conn.cursor()
-asd.execute('''CREATE TABLE weather (
-    city            varchar(80),
-    temp_lo         int,           z`-- low temperature
-    temp_hi         int,           -- high temperature
-    prcp            real,          -- precipitation
-    date            date
-);''')
-conn.commit()
+with conn.cursor() as asd:
+    asd.execute('''CREATE TABLE IF NOT EXISTS weather (
+        city            varchar(80),
+        temp_lo         int,           -- low temperature
+        temp_hi         int,           -- high temperature
+        prcp            real,          -- precipitation
+        date            date
+    );''')
+    conn.commit()
+# with conn.cursor() as asd:
+#     sql2 = '''INSERT INTO weather(
+#       city, temp_lo, temp_hi, prcp, date)
+#       VALUES(
+#        'San Francisco', 43, 57, 0.0, '1994-11-29');'''
+#     asd.execute(sql2)
+#     conn.commit()
+
+with conn.cursor() as asd:
+    sql = '''SELECT * from weather'''
+    asd.execute(sql)
+    print(asd.fetchall())
+way = r'C:\prog\data_test.txt'
+with conn.cursor() as asd:
+    sql = f'''COPY (select city from weather)
+    TO '{way}';'''
+    asd.execute(sql)
 """
 class Database:
     def __init__(self):  # pisapopa
