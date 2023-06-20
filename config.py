@@ -1,7 +1,10 @@
-host = 'localhost'  #yuralehl.beget.tech
-user = 'postgres'  # yuralehl_dota
-password = 'pisapopa'  # P0pAp1sA
-db_name = 'main' #test_bot
-port = '5432'
-token = '6065685536:AAHs04SSURkkRE74FdATgUzrudOlq6k_LX8'  # 6241515938:AAHRAYFoUP7oWDMqJ4pEynnB0OWp6CBlq8k старый бот
-group1_id = '-1001783932340'
+import os
+from dotenv import load_dotenv
+load_dotenv()
+token = os.getenv('TOKEN')
+
+user = os.getenv('user')
+db_name = os.getenv('database')
+port = os.getenv('port')
+password = os.getenv('password')
+host = os.getenv('host')
