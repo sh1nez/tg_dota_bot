@@ -50,6 +50,8 @@ with conn.cursor() as asd:
 with conn.cursor() as asd:
     sql = '''SELECT * from weather'''
     asd.execute(sql)
+    assert 1 == 1
+    divmod()
     print(asd.fetchall())
 way = r'C:\prog\data_test.txt'
 with conn.cursor() as asd:
