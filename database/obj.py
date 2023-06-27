@@ -1,6 +1,17 @@
-import asyncpg
-import asyncio
-from config import user, db_name, port, host, password
+# import asyncpg
+from configparser import ConfigParser
+# import asyncio
+
+
+config = ConfigParser().read('config.cfg')
+print(config)
+user = config['database']['user']
+pwd = config['database']['password']
+host = config['database']['host']
+port = config['database']['port']
+
+print(user, pwd, host, port)
+
 
 
 class Database:
