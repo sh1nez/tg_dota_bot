@@ -1,10 +1,16 @@
 # import asyncpg
+
 from configparser import ConfigParser
 # import asyncio
 
 
-config = ConfigParser().read('config.cfg')
-print(config)
+# settings 
+# pwd pisapopa
+# user aivan
+
+
+config = ConfigParser()
+config.read('config.cfg')
 user = config['database']['user']
 pwd = config['database']['password']
 host = config['database']['host']
