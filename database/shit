@@ -1,0 +1,44 @@
+"""LIMIT 1,2
+ORDER BY
+SUM
+COUNT
+GROUP BY
+ALERT
+JOIN
+BETWEEN
+IN
+LIKE
+COPY
+INDEX
+ """
+
+"""
+BIGINT - 8 bit # 89999999999999999
+BOOLEAN # True False
+DATE
+DOUBLE PRECISION (.12345678)
+INTEGER (4)
+INTERVAL # time interval
+MONEY # bigint
+REAL (.1234)
+SMALLINT (2bit) # 31_***
+TIME [without time zone]
+TIMEEZ [with time zone]
+TIMESTAMP [without time zone]
+TIMESTAMPTZ [without time zone]
+"""
+'''ALTER TABLE users ADD COLUMN guild SMALLSERIAL;
+ALTER TABLE users ALTER COLUMN guild SET DEFAULT NULL; 
+'''
+''' 
+user all info
+puser - profile, visual info
+duser - die vinvhik all info
+money (user)
+trans (user x2)
+heroes (user)
+free items (user)
+uacrions (user)
+hactions (hero)
+fight stat (herox2 userx2)
+'''

@@ -94,8 +94,7 @@ guild = '''CREATE TABLE IF NOT EXISTS guild
 
 log = {
     'fight': """CREATE TABLE IF NOT EXISTS fight (
-    id SERIAL NOT NULL PRIMATY KEY
-    , time TIMESTAMPTZ NOT NULL DEFAULT now()
+    time TIMESTAMPTZ NOT NULL DEFAULT now()
     , fuser BIGINT NOT NULL
         REFERENSEC users(tg)
             ON UPDATE CASCADE 
