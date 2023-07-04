@@ -1,0 +1,94 @@
+
+fight = """CREATE TABLE IF NOT EXISTS fight 
+(
+    time TIMESTAMPTZ NOT NULL DEFAULT now()
+    , fuser BIGINT NOT NULL
+        REFERENSEC users(tg)
+            ON UPDATE CASCADE 
+            ON DELETE RESTRICT
+        USING HASH
+    , fhero BIT NOT NULL
+    , flvl SMALLINT NOT NULL
+    , fitems BIT[] NOT NULL
+    , fgold SMALLINT NOT NULL DEFAULT 0
+    , fexp SMALLINT NOT NULL DEFAULT 0
+    , suser BIGINT NOT NULL
+        REFERENSEC users(tg)
+            ON UPDATE CASCADE 
+            ON DELETE RESTRICT
+    , shero BIT NOT NULL
+    , slvl SMALLINT NOT NULL
+    , sitems BIT[] NOT NULL
+    , sgold SMALLINT NOT NULL DEFAULT 0
+    , sexp SMALLINT NOT NULL DEFAULT 0
+    , result BOOLEAN NOT NULL
+);
+"""
+
+
+guild = """CREATE TABLE IF NOT EXISTS lguild (
+    id smallserial NOT NULL
+        REFERENCES guild(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+    tg BIGINT NULL DEFAULT NULL
+        REFERENCES users(tg)
+            ON DELETE CASCADE 
+            ON UPDATE CASCADE
+    live_join BOOLEAN NULL DEFAULT NULL
+); 
+"""
+p2p = """ CREATE TABLE IF NOT EXISTS p2p (
+);
+"""
+
+
+guild_log = """CREATE TABLE IF NOT EXISTS lguild 
+(
+    tg BIGINT NOT NULL
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT
+    , guild SMALLWRIAL 
+);
+"""
+
+guild_history = '''CREATE OR REPLACE PROCEDURE guild_log_procedure(
+    tg BIGINT
+    , old SMALLSERIAL
+    , new SMALLSERIAL
+    )
+AS $$
+BEGIN
+    INSERT INTO hmoney
+      ()
+      VALUES
+      ()
+    RETURN NEW;
+END
+$$LANGUAGE plpsql
+        )
+         '''
+
+ '''CREATE TABLE IF NOT EXISTS hmoney 
+    (
+        tg BIGINT NOT NULL
+            REFERENCES users(tg)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+        , start numeric(14,2) NOT NULL
+        , change numeric(14,2) NUT NULL
+        , time TIMESTAMPTZ NOT NULL DEFAULT now()
+        , comment VARCHAR NULL DEFAULT NULL
+    );
+    CREATE INDEX IF NOT EXISTS lmoney_telegram ON lmoney(tg) 
+    '''
+'''CREATE TABLE IF NOT EXISTS'''
+
+triger = '''CREATE TRIGER money_logger 
+AFTER UPDATE OF money ON users 
+
+FOR EACH ROW
+
+EXECUTE PROCEDURE lmoney()
+'''
