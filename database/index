@@ -1,3 +1,0 @@
-telegram = [
-    '''CREATE INDEX IF NOT EXISTS telegram ON guild(owner);'''
-    ]
