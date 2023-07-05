@@ -13,32 +13,48 @@ class SqlDataBase:
 
 
 users = SqlDataBase(
-    create=''''CREATE TABLE IF NOT EXISTS users(
+    create='''CREATE TABLE IF NOT EXISTS users(
     tg BIGINT NOT NULL PRIMARY KEY
-    , money NUMERIC(14,2) NOT NULL DEFAULT 0 --12 before 2 after
-    , mmr SMALLINT NOT NULL DEFAULT 0 
-    , bonus BOOLEAN NOT NULL DEFAULT false
-    , status BIT(3) NOT NULL DEFAULT b'000'
-    CONSTRAINT money_counter CHECK (money >= 0)
-    CONSTRAINT mmr_counter CHECK (mmr >= 0));
-    ''',
-    index='''CREATE INDEX IF NOT EXISTS users_guild;''',
+    , balance NUMERIC(14,2) NOT NULL DEFAULT 0 
+    , mmr SMALLINT NOT NULL DEFAULT 0  -- rating
+    , bonus BOOLEAN NOT NULL DEFAULT false -- daily bonus (got or no)
+    , status BIT(3) NOT NULL DEFAULT b'000' 
+    CONSTRAINT money_counter CHECK (balance >= 0)
+    CONSTRAINT mmr_counter CHECK (mmr >= 0));''',
+    index=''' ''',
     select={
         'one': '''SELECT {} FROM users WHERE tg = $1;''',
-        'rich': '''SELECT tg, money FROM users ORDER BY (money)LIMIT 10;''',
-        'all_money': '''SELECT sum(money) FROM users;''',
+        'rich': '''SELECT tg, balance FROM users ORDER BY (balance)LIMIT 10;''',
+        'total_balance': '''SELECT sum(balance) FROM users;''',
         'bonus': '''SELECT count(tg) FROM users group by (bonus);''',
-        'guild_balance': '''SELECT guild, sum(money) FROM USERS GROUP BY (guild);''',
+        'guild_balance': '''SELECT guild, sum(balance) FROM USERS GROUP BY (guild);''',
         },
     insert= '''INSERT INTO users (tg) VALUES ($1);''',
     
-    test='''INSERT INTO users VALUES (1234567890, 123456789012.34, 312, false, b'010', 12), 
-     (10987654321, 13, 30000, true, b'111', 12), (07123678123, 0, 0, false, b'000', 11),
-    (109231254321, 9999999.99, 0, false, b'101', 0); ''',
+    test='''INSERT INTO users VALUES (1234567890, 123456789012.34, 312, false, b'010'), 
+     (10987654321, 13, 30000, true, b'111'), (07123678123, 0, 0, false, b'000'),
+    (109231254321, 9999999.99, 0, false, b'101'); ''',
     update= {
         'one': '''UDPATE USERS SET {} WHERE tg = $1;''',
         'event_for_everyone': '''UDPATE users SET {};''',
             }
+    )
+
+guild = SqlDataBase(create='''CREATE TABLE IF NOT EXISTS guild (
+    id SMALLSERIAL NOT NULL PRIMARY KEY
+    , name varchar (25) NOT NULL UNIQUE
+    , status BIT(3) NOT NULL DEFAULT b'000'
+    , owner BIGINT NOT NULL 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT
+    , mmr SMALLINT NOT NULL CONSTRAINT CHECH(mmr>0) DEFAULT 0
+    , money NUMERIC(14,2) NOT NULL CHECK(money >= 0)
+    , black_list BIGINT[] NULL DEFAULT NULL);''',
+    insert='''INSERT INTO guild (%s) VALUES (%s)''',
+    index='''CREATE INDEX IF NOT EXISTS ON users (owner)''',
+    select={},
+    update={},
     )
 
 
@@ -68,24 +84,26 @@ users_info = SqlDataBase(
     select={}
 )
 
-guild = SqlDataBase(create='''CREATE TABLE IF NOT EXISTS guild (
-    id SMALLSERIAL NOT NULL PRIMARY KEY
-    , name varchar (25) NOT NULL UNIQUE
-    , status BIT(3) NOT NULL DEFAULT b'000'
-    , owner BIGINT NOT NULL 
+die_vinchik = SqlDataBase(
+    create='''CREATE TABLE IF NOT EXISTS die_vinchik(
+    tg BIGINT NOT NULL PRIMARY KEY 
         REFERENCES users(tg)
+            ON DELETE CASCADE
             ON UPDATE CASCADE
-            ON DELETE RESTRICT
-    , mmr SMALLINT NOT NULL CONSTRAINT CHECH(mmr>0) DEFAULT 0
-    , money NUMERIC(14,2) NOT NULL CHECK(money >= 0)
-    , black_list BIGINT[] NULL DEFAULT NULL
+    , die_image VARCHAR NOT NULL
+    , die_text TEXT(500) NOT NULL 
+    , die_status BIT(3) NOT NULL DEFAULT b'000' -- например есть ли возможность искать по тексту анкет
+    , last_profiles BIGINT[] -- последние люди, которых пользователь пролистал, чтобы не показывать по 10 раз одно и то же
+    , gender BOOLEAN NULL DEFAULT NULL -- мальчик девочка или NULL
+    , age SMALLINT NOT NULL
+    , quality SMALLINT NOT NULL D  -- тут я попытаюсь оценить насколько человек хороший
+    CONSTRAINT die_age_must_be_normal CHECK(age > 10 AND age < 100)
+    CONSTRAINT die_quality_must_be_normal CHECK(quality >= -10 AND quality <= 10)
     );''',
-    insert='''INSERT INTO guild (%s) VALUES (%s)''',
-    other_for_create='''CREATE INDEX IF NOT EXISTS ON users (owner)''',
-    select={},
-    update={},
-    )
+    select={}
+)
 
+print(10<=100)
 # bit (3)
 # 1 - destroy items 
 # 2 - make guild
@@ -177,17 +195,21 @@ fights = SqlDataBase(
         },
     test = ''' ''',
     )
-log_guild = SqlDataBase(
-    create='''CREATE TABLE IF NOT EXISTS lguild (
+guild_log = SqlDataBase(
+    create='''CREATE TABLE IF NOT EXISTS guild_log(
     id smallserial NOT NULL
         REFERENCES guild(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-    tg BIGINT NULL DEFAULT NULL
+    ,tg BIGINT NULL DEFAULT NULL
         REFERENCES users(tg)
             ON DELETE CASCADE 
             ON UPDATE CASCADE
-    live_join BOOLEAN NULL DEFAULT NULL); ''',
+    , join BOOLEAN NOT NULL
+    , kicked OOLEAN NOT NULL
+    , operation_time TIMESTAMPTZ NOT NULL DEFAULT now()
+    PRIMARY KEY (id, tg, operation_time)
+    ); ''',
     select = {},
     update=None,
     insert='',
@@ -195,17 +217,17 @@ log_guild = SqlDataBase(
 )
 
 money_log = SqlDataBase(
-    create='''CREATE TABLE IF NOT EXISTS hmoney (
+    create='''CREATE TABLE IF NOT EXISTS money_log (
     tg BIGINT NOT NULL
         REFERENCES users(tg)
                 ON DELETE CASCADE
                 ON UPDATE CASCADE
-    , start numeric(14,2) NOT NULL
-    , change numeric(14,2) NUT NULL
-    , time TIMESTAMPTZ NOT NULL DEFAULT now()
-    , comment VARCHAR NULL DEFAULT NULL
-    );''',
-    index='''CREATE INDEX IF NOT EXISTS'''
+    , change numeric(14,2) NOT NULL
+    , result numeric(14,2) NOT NULL
+    , transaction_time TIMESTAMPTZ NOT NULL DEFAULT now()
+    , description VARCHAR NULL DEFAULT NULL
+    , PRIMARY KEY (tg, transaction_time));''',
+    index='''CREATE INDEX IF NOT EXISTS''',
     select = {},
-    update=None 
+    update=None ,
 )

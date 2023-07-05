@@ -1,0 +1,34 @@
+CREATE OR REPLACE PROCEDURE money_updater(
+    tg_id  BIGINT
+    , plus NUMERIC
+    , obj VARCHAR
+    )
+LANGUAGE plpgsql
+AS $$
+
+DECLARE
+    new_balance NUMERIC;
+
+BEGIN
+    UPDATE users SET balance = money + plus WHERE tg = tg_id RETURNING money INTO new_balance;
+    INSERT INTO money_log (tg, change, result, description) VALUES (tg_id, plus, new_balance, obj);
+END;
+$$;
+
+-- call money_updater(1234567890, 333, 'buy pivo');
+
+CREATE OR REPLACE PROCEDURE join_leave_guild(
+    tg BIGINT
+    ,kicked BOOLEAN
+    , joined BOOLEAN
+    )
+
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO guild_log 
+END;
+$$;
+
+
+
