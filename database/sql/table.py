@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-
+# idiot
 @dataclass(slots=True, frozen=True, repr=False)
 class SqlDataBase:
     create: str
