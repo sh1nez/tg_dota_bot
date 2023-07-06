@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     , balance NUMERIC(14,2) NOT NULL DEFAULT 0 
     , mmr SMALLINT NOT NULL DEFAULT 0  -- его рейтинг
     , daily_bonus BOOLEAN NOT NULL DEFAULT false -- получил ли ежедневный бонус
-    , status BIT(9) NOT NULL DEFAULT b'000000000' -- привелегии есть/нет
+    , users_status BIT(9) NOT NULL DEFAULT b'000000000' -- привелегии есть/нет
     , img VARCHAR NULL DEFAULT NULL
     , nik VARCHAR(25) NOT NULL UNIQUE
     , referal BIGINT NOT NULL
@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT die_quality_not_normal CHECK(quality >= -10 AND quality <= 10)
     CONSTRAINT users_money_less_than_zero CHECK (balance >= 0)
     CONSTRAINT users_mmr_less_than_zero CHECK (mmr >= 0));
+
+CREATE INDEX IF NOT EXISTS referal_finder ON users(referal);
 
 CREATE TABLE IF NOT EXISTS guild (
     name varchar (25) NOT NULL PRIMARY KEY
@@ -41,7 +43,9 @@ ALTER TABLE users ADD COLUMN
             ON DELETE SET DEFAULT
             ON UPDATE CASCADE;
 
+CREATE INDEX IF NOT EXISTS guild_finder ON users(guild);
         
+
 CREATE TABLE IF NOT EXISTS last_profile (
     looker BIGINT 
         REFERENCES users(tg)
@@ -139,10 +143,16 @@ CREATE TABLE IF NOT EXISTS users_item(
 
 
 CREATE TABLE IF NOT EXISTS chat(
-    id BIGINT NOT NULL PRIMARY KEY
+    tg BIGINT NOT NULL PRIMARY KEY
     , own BOOLEAN NOT NULL -- админ ли бот в беседе
-    , name VARCHAR (25) NOT NULL
-    , status BIT NOT NULL DEFAULT b'000'
+    , chat_name VARCHAR (25) NOT NULL
+    , chat_status BIT NOT NULL DEFAULT b'000'
     , img VARCHAR NULL DEFAULT NULL);
-
 -- дальше идут журналы
+
+CREATE TABLE IF NOT EXISTS chat_members(
+    user_tg BIGINT NOT NULL
+        REFERENCES users(tg)
+    , chat_tg
+        REFERENCES chat(id)
+    , PRIMARY KEY (user_tg, chat_tg) );

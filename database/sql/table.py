@@ -15,12 +15,13 @@ class SqlDataBase:
 users = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS users(
     tg BIGINT NOT NULL PRIMARY KEY
-    , user_balance NUMERIC(14,2) NOT NULL DEFAULT 0 
-    , user_mmr SMALLINT NOT NULL DEFAULT 0  -- его рейтинг
+    , balance NUMERIC(14,2) NOT NULL DEFAULT 0 
+    , mmr SMALLINT NOT NULL DEFAULT 0  -- его рейтинг
     , daily_bonus BOOLEAN NOT NULL DEFAULT false -- получил ли ежедневный бонус
-    , main_status BIT(3) NOT NULL DEFAULT b'000' -- привелегии есть/нет
-    CONSTRAINT users_money_must_be_more_then_zero CHECK (user_balance >= 0)
-    CONSTRAINT users_mmr_must_be_more_then_zero CHECK (user_mmr >= 0));''',
+    , status BIT(3) NOT NULL DEFAULT b'000' -- привелегии есть/нет
+    CONSTRAINT users_money_must_be_more_then_zero CHECK (balance >= 0)
+    CONSTRAINT users_mmr_must_be_more_then_zero CHECK (mmr >= 0));
+''',
     index=''' ''',
     select={
         'one': '''SELECT {} FROM users WHERE tg = $1;''',
@@ -41,17 +42,17 @@ users = SqlDataBase(
     )
 
 guild = SqlDataBase(create='''CREATE TABLE IF NOT EXISTS guild (
-    id SMALLSERIAL NOT NULL PRIMARY KEY
-    , guild_name varchar (25) NOT NULL UNIQUE
-    , guild_status BIT(3) NOT NULL DEFAULT b'000' --  привлелегии
-    , guild_owner BIGINT NOT NULL 
+    name varchar (25) NOT NULL PRIMARY KEY
+    , status BIT(3) NOT NULL DEFAULT b'000' -- привелегии
+    , owner BIGINT NOT NULL 
         REFERENCES users(tg)
             ON UPDATE CASCADE
-            ON DELETE RESTRICT
-    , guild_mmr SMALLINT NOT NULL DEFAULT 0
-    , guild_balance NUMERIC(14,2) NOT NULL
-    , black_list BIGINT[] NULL DEFAULT NULL -- если игрока выгнали из гильдии, а не он вышел, то заносится сюда
-	 CONSTRAINT guild_mmr_must_be_more_then_zero CHECH(mmr>=0));''',
+            ON DELETE RESTRICT -- чтобы при удалении аккаунта владельца гильдия не удалилась
+    , mmr SMALLINT NOT NULL DEFAULT 0
+    , balance NUMERIC(14,2) NOT NULL
+    , black_list BIGINT[] NULL DEFAULT NULL -- если игрока выгнали из гильдии, а не он вышел по своей поле, то пользователь заносится в чёрный список чтобы он не зашёл ещё раз
+	, CONSTRAINT guild_mmr_must_be_more_then_zero CHECK(mmr >= 0));
+''',
     insert='''INSERT INTO guild (%s) VALUES (%s)''',
     index='''CREATE INDEX IF NOT EXISTS ON users (owner)''',
     select={},
@@ -72,10 +73,11 @@ users_info = SqlDataBase(
             ON DELETE CASCADE
             ON UPDATE SET NULL
     , visual_status BIT(3) NOT NULL DEFAULT b'000' 
-    , guild SMALLSERIAL NULL DEFAULT NULL -- клан, команда
-        REFERENCES guild(id)
+    , guild VARCHAR NULL DEFAULT NULL -- клан, команда
+        REFERENCES guild(name)
             ON DELETE CASCADE
-            ON UPDATE SET NULL);''',
+            ON UPDATE SET DEFAULT);
+            ''',
     index= '''CREATE INDEX IF NOT EXISTS info_users_referal_index ON info_users(referal);
               CREATE INDEX IF NOT EXISTS guild_info_users_index ON info_users(guild);''',
     insert='''INSERT INTO info_users (%s) VALUES (%s);''',
@@ -89,17 +91,17 @@ die_vinchik = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS die_vinchik(
     tg BIGINT NOT NULL PRIMARY KEY 
         REFERENCES users(tg)
-            ON DELETE CASCADE
+            ON DELETE CASCADE -- т.к. таблица полностью зависит от users (дополняет её)
             ON UPDATE CASCADE
-    , die_name VARCHAR(25) NOT NULL
-    , die_image VARCHAR NOT NULL
-    , die_text TEXT(500) NOT NULL 
-    , die_status BIT(3) NOT NULL DEFAULT b'000' -- например есть ли возможность искать по тексту анкет
+    , name VARCHAR(25) NOT NULL
+	, image VARCHAR NOT NULL
+    , about_text TEXT NOT NULL 
+    , status BIT(3) NOT NULL DEFAULT b'000' -- например есть ли возможность искать по тексту анкет
     , last_profiles BIGINT[] -- последние люди, которых пользователь пролистал, чтобы не показывать по 10 раз одно и то же
     , gender BOOLEAN NULL DEFAULT NULL -- мальчик девочка или NULL
     , age SMALLINT NOT NULL
-    , wish_gender BOOLEAN NULL DEFAULT NULL -- кто интересует, нулл - все
-    , quality SMALLINT NOT NULL   -- тут я попытаюсь оценить насколько человек хороший
+    , wish_gender BOOLEAN NULL DEFAULT NULL -- кто интересует (мальчик девочка), нулл - все
+    , quality SMALLINT NOT NULL  -- тут я попытаюсь оценить насколько человек хороший
     CONSTRAINT die_age_must_be_normal CHECK(age > 10 AND age < 100)
     CONSTRAINT die_quality_must_be_normal CHECK(quality >= -10 AND quality <= 10));''',
     index='''CREATE INDEX IF NOT EXISTS gender_finder ON die_vinchik(gender, age); -- потому что поиск всех анкет будет происходить по этим 2 параметрам, потом сортироваться по quality, но он будет достаточно часто менятья
@@ -119,30 +121,32 @@ print(10<=100)
 # 3 - longer nikname (25)
 info_hero = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS hero_info(
-    id SMALLSERIAL NOT NULL PRIMARY KEY-- в моей программе это "табельный номер"
-    , hero_name VARCHAR NOT NULL 
-    , hero_price NUMERIC(9, 2) NOT NULL -- максимум 9999,999.99
-    , hero_start_exp SMALLINT NOT NULL  -- сколько опыта у героя базово
-    , hero_exp_lvl SMALLINT NOT NULL -- на сколько опыта больше нужно
-    , CONSTRAINT hero_name_must_be_unique UNIQUE (hero_name)
+    id SMALLINT NOT NULL PRIMARY KEY -- в моей программе это "табельный номер", возможно поменяю на bit или чёто такое - всёранво обращаться по ключу и автозаполнение почти бессмысленно
+    , name SMALLINT NOT NULL
+    , price INT NOT NULL
+    , start_exp SMALLINT NOT NULL  -- сколько опыта у героя базово
+    , exp_by_lvl SMALLINT NOT NULL -- на сколько опыта больше за каждый уровень (для поднятия 2 лвл нужно +1000, для поднятия 3 +1100)
+	, CONSTRAINT hero_already_exists UNIQUE (name)
     -- тут могут быть ещё параметры героя, к которым может быть нужно обратиться в самой базе данных. 
-    -- Например с помощью hero_price можно посчитать сколько у пользователя капитала в героях
-    );''',
+    -- Например с помощью price можно посчитать сколько у пользователя капитала в героях
+    );
+    ''',
     select={}
     )
 
 info_items = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS item_info(
     id SMALLSERIAL PRIMARY KEY -- табельный номер, есть связь с прогой
-    , item_name VARCHAR() NOT NULL
-    , item_quantity SMALLINT NOT NULL -- максимум 999,999.99
-    , CONSTRAINT item_name_must_be_unique UNIQUE (item_name)
-    );''',
+    , name VARCHAR NOT NULL
+    , price NUMERIC(7, 2) NOT NULL -- максимум 99,999.99
+    , CONSTRAINT item_already_exists UNIQUE (name));
+      ''',
     select={}
 )
 hero = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS hero (
-    tg BIGINT NOT NULL PRIMARY KEY
+    id SERIAL PRIMARY KEY
+    , tg BIGINT NOT NULL 
         REFERENCES users(tg)
             ON UPDATE CASCADE
             ON DELETE CASCADE -- если пользователь, например забанен, то и герои у него существовать не должны
@@ -171,11 +175,11 @@ hero_items = SqlDataBase(
     , item_id SMALLINT NOT NULL 
         REFERENCES item_info(id)
             ON UPDATE CASCADE -- при обновлении предметы тоже обновляются
-            OD DELETE CASCADE -- при удалении предмет тоже удалиться, но будет тригер на удаление предметов, который выдаст компенсацию
+            ON DELETE CASCADE -- при удалении предмет тоже удалиться, но будет тригер на удаление предметов, который выдаст компенсацию
     , item_quantity SMALLINT -- количество дубликатов
     , CONSTRAINT quantity_is_ziro CHECK (item_quantity > 0)
-    PRIMARY KEY (owner_hero, item_id)
-    );''',
+    , PRIMARY KEY (owner_hero, item_id));
+    ''',
     select={}
 )
 
@@ -184,11 +188,16 @@ user_items = SqlDataBase(
     tg BIGINT NOT NULL
         REFERENCES users(tg)
             ON DELETE CASCADE
-            ON UDPATE CASCADE
-    , item_name BIT NOT NULL
-    , item_quantity SMALLINT NOT NULL DEFAULT 1
-    CONSTRAINT counter CHECK (item_quantity > 0) -- должна удаляться если равна нулю
-    PRIMARY KEY (tg, name));''', 
+            ON UPDATE CASCADE
+    -- то он останется крутым навсегда, даже после выхода обновления т.к. обновление будет - новая версия предмета,
+    , name VARCHAR NOT NULL
+        REFERENCES item_info (name)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+    , quantity SMALLINT NOT NULL DEFAULT 1
+    , CONSTRAINT counter CHECK (quantity > 0) -- должна удаляться если равна нулю
+    , PRIMARY KEY (tg, name));
+    ''', 
     select = {},
     index= '''CREATE INDEX IF NOT EXISTS telegrem ON uitems (tg)''',
 )
@@ -196,12 +205,12 @@ user_items = SqlDataBase(
 
 chats = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS chat(
-    id BIGINT NOT NULL PRIMARY KEY, 
-    , own BOOLEAN NOT NULL
-    , name VARCHAR (25) NOT NULL,
+    id BIGINT NOT NULL PRIMARY KEY
+    , own BOOLEAN NOT NULL -- админ ли бот в беседе
+    , name VARCHAR (25) NOT NULL
     , status BIT NOT NULL DEFAULT b'000'
-    , img VARCHAR NULL DEFAULT NULL, 
-    , users BIGINT[] NOT NULL);''',
+    , img VARCHAR NULL DEFAULT NULL);
+    ''',
     select={},
     update={},
     delete='''DROP FROM chat WHERE id=$1 LIMIT 1''',
@@ -211,7 +220,7 @@ chats = SqlDataBase(
 ### log
 fight_heroes = SqlDataBase(
     create='''
-    CREATE TABLE IF NOT EXISTS hero_figts
+    CREATE TABLE IF NOT EXISTS hero_fights
     fight_id INT NOT NULL 
     ''',
     select={}
@@ -225,11 +234,11 @@ fights = SqlDataBase(
     create='''CREATE TABLE IF NOT EXISTS fight (
     , fight_time TIMESTAMPTZ NOT NULL DEFAULT now()
     , first_user BIGINT NOT NULL
-        REFERENSEC users(tg)
-            ON UPDAT E CASCADE 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE 
             ON DELETE RESTRICT не хочу чтобы история удалялась при удалении пользователя
     , first_hero BIT NOT NULL
-    , fitems BIT[] NOT NULL
+    , first_items BIT[] NOT NULL
     , fgold SMALLINT NOT NULL DEFAULT 0
     , fexp SMALLINT NOT NULL DEFAULT 0
     , second_user BIGINT NOT NULL

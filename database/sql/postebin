@@ -1,0 +1,161 @@
+-- основная информация о пользователе, которая используется для рассчётов.
+CREATE TABLE IF NOT EXISTS users(
+    tg BIGINT NOT NULL PRIMARY KEY
+    , balance NUMERIC(14,2) NOT NULL DEFAULT 0 
+    , mmr SMALLINT NOT NULL DEFAULT 0  -- его рейтинг
+    , daily_bonus BOOLEAN NOT NULL DEFAULT false -- получил ли ежедневный бонус
+    , status BIT(3) NOT NULL DEFAULT b'000' -- привелегии есть/нет
+    CONSTRAINT users_money_must_be_more_then_zero CHECK (balance >= 0)
+    CONSTRAINT users_mmr_must_be_more_then_zero CHECK (mmr >= 0));
+-- часто меняется mmr balance. Остальное используется реже (раз в день обновление, сбор может быть 20 раз при активном пользовании, но всё ищется по tg.
+ 
+ 
+-- гильдии - сборища игроков, 
+CREATE TABLE IF NOT EXISTS guild (
+    , name varchar (25) NOT NULL PRIMARY KEY
+    , status BIT(3) NOT NULL DEFAULT b'000' -- привелегии
+    , owner BIGINT NOT NULL 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT -- чтобы при удалении аккаунта владельца гильдия не удалилась
+    , mmr SMALLINT NOT NULL DEFAULT 0
+    , balance NUMERIC(14,2) NOT NULL
+    , black_list BIGINT[] NULL DEFAULT NULL -- если игрока выгнали из гильдии, а не он вышел по своей поле, то пользователь заносится в чёрный список чтобы он не зашёл ещё раз
+     CONSTRAINT guild_mmr_must_be_more_then_zero CHECH(mmr >= 0));
+ 
+ 
+-- дополнительная, зачастую визуальная информация о пользователе
+CREATE TABLE IF NOT EXISTS info_users(
+    tg BIGINT NOT NULL PRIMARY KEY 
+        REFERENCES users(tg)
+            ON DELETE CASCADE -- эта таблица полностью зависима от users поэтому и меняется вместе с ней
+            ON UPDATE CASCADE 
+    , img VARCHAR NULL DEFAULT NULL
+    , nik VARCHAR(25) NOT NULL UNIQUE
+    , referal BIGINT NOT NULL
+        REFERENCES users(tg)
+            ON DELETE SET NULL -- если акк пригласившего будет удалён, то поле станет null (чтобы не пытаться начислять проценты и т.п.)
+            On UPDATE CASCADE -- поле не планирует меняться. на всякий случай пусть будет так
+    , status BIT(3) NOT NULL DEFAULT b'000' -- может ли пользователь ставить кастомную картинку, делать ник длинной 25 и т.д.
+    , guild VARCHAR NULL DEFAULT NULL -- клан, команда
+        REFERENCES guild(name)
+            ON DELETE SET NULL -- если гильдия удалена, то гильдия в которой состоит участник - null
+            ON UPDATE SET CASCADE);
+ 
+CREATE INDEX IF NOT EXISTS info_users_referal_index ON info_users(referal); -- хочу найти сколько рефералов у определённого tg, меняется никогда
+CREATE INDEX IF NOT EXISTS guild_info_users_index ON info_users(guild); -- хочу найти кто есть в гильдии, меняется редко
+ 
+-- в боте есть типо раздела знакомства, вот эта таблица отвечает за анкету в этом разделе
+CREATE TABLE IF NOT EXISTS die_vinchik(
+    tg BIGINT NOT NULL PRIMARY KEY 
+        REFERENCES users(tg)
+            ON DELETE CASCADE -- т.к. таблица полностью зависит от users (дополняет её)
+            ON UPDATE CASCADE
+    , name VARCHAR(25) NOT NULL
+    , image VARCHAR NOT NULL
+    , about_text TEXT(500) NOT NULL 
+    , status BIT(3) NOT NULL DEFAULT b'000' -- например есть ли возможность искать по тексту анкет
+    , last_profiles BIGINT[] -- последние люди, которых пользователь пролистал, чтобы не показывать по 10 раз одно и то же
+    , gender BOOLEAN NULL DEFAULT NULL -- мальчик девочка или NULL
+    , age SMALLINT NOT NULL
+    , wish_gender BOOLEAN NULL DEFAULT NULL -- кто интересует (мальчик девочка), нулл - все
+    , quality SMALLINT NOT NULL D  -- тут я попытаюсь оценить насколько человек хороший
+    CONSTRAINT die_age_must_be_normal CHECK(age > 10 AND age < 100)
+    CONSTRAINT die_quality_must_be_normal CHECK(quality >= -10 AND quality <= 10));
+ 
+CREATE INDEX IF NOT EXISTS gender_finder ON die_vinchik(gender, age); -- потому что поиск всех анкет будет происходить по этим 2 параметрам, потом сортироваться по quality, но он будет достаточно часто менятья
+CREATE INDEX IF NOT EXISTS name_finder ON die_vinchik(die_name, age) -- пропустили анкету, неприятно, нажали поиск по именам, ввели нужное имя, 
+-- возможно добавлю поиск по тексту (соответственно индекс)
+ 
+ 
+-- эта инфа есть на сервере, тут она обновляется каждый раз при запуске программы, чтобы можно было посмотреть информацию о героях не обращаясь на сервер
+CREATE TABLE IF NOT EXISTS hero_info(
+    , name VARCHAR NOT NULL PRIMARY KEY
+    , price NUMERIC(8,2) NOT NULL
+    , start_exp SMALLINT NOT NULL  -- сколько опыта у героя базово
+    , exp_by_lvl SMALLINT NOT NULL -- на сколько опыта больше за каждый уровень (для поднятия 2 лвл нужно +1000, для поднятия 3 +1100)
+    -- тут могут быть ещё параметры героя, к которым может быть нужно обратиться в самой базе данных. 
+    -- Например с помощью price можно посчитать сколько у пользователя капитала в героях
+    );
+ 
+-- тоже самое только с предметами
+CREATE TABLE IF NOT EXISTS item_info(
+    , name VARCHAR NOT NULL PRIMARY KEY
+    , price NUMERIC(7, 2) NOT NULL -- максимум 99,999.99
+    -- скорее всего будет что-то ещё
+    );
+ 
+ 
+-- это уже конкретные герои пользователей
+CREATE TABLE IF NOT EXISTS hero (
+    id SERIAL PRIMARY KEY
+    , tg BIGINT NOT NULL 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE -- если пользователь, например забанен, то и герои у него существовать не должны
+    , hero_name VARCHAR NOT NULL
+        REFERENCES hero_info(name)
+            ON UPDATE CASCADE -- если имя изменено то меняется у всех
+            ON DELETE CASCADE -- если герой удалён, то он не должен оставаться у кого-то, будут тригеры котороые компенсирую потерю в случае чего
+    , activity TIMESTAMPTZ NULL DEFAULT now()
+    , fight BOOLEAN NOT NULL DEFAULT NULL 
+    , lvl SMALLINT NOT NULL 
+    , exp SMALLINT NOT NULL 
+    CONSTRAINT hero_lvl_control CHECK (lvl > 0 AND lvl <= 30)
+    -- проверка чтобы exp не было больше чем базовый его героя + прибавка за уровннь*уровень
+    );
+ 
+-- это предметы, которые пренадлежат героям. Вариант буду использовать, если нечего не добавится
+CREATE TABLE IF NOT EXISTS hero_items_v1(
+    owner_hero INT NOT NULL
+        REFERENCES hero (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    , item_name VARCHAR NOT NULL
+        REFERENCES item_info(name)
+            ON UPDATE CASCADE -- при обновлении предметы тоже обновляются
+            OD DELETE CASCADE -- при удалении предмет тоже удалиться, но будет тригер на удаление предметов, который выдаст компенсацию
+    , item_quantity SMALLINT -- количество дубликатов
+    , CONSTRAINT quantity_is_ziro CHECK (item_quantity > 0)
+    PRIMARY KEY (owner_hero, item_id)
+    );
+ 
+-- есть второй вариант, буду использовать если захочу добавить к предметам что-то ещё
+CREATE TABLE IF NOT EXISTS hero_items_v2(
+    id SERIAL 
+    , owner_hero INT NOT NULL
+        REFERENCES hero (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    , item_name VARCHAR NOT NULL
+        REFERENCES item_info(name)
+            ON UPDATE CASCADE  
+            OD DELETE CASCADE 
+    -- вот тут что-то ещё.
+);
+ 
+-- это предметы которые пренадлежат пользователям (ещё не одет на героя) (сделаю аналогично героям при добавлении чего-либо)
+CREATE TABLE IF NOT EXISTS user_item(
+    tg BIGINT NOT NULL
+        REFERENCES users(tg)
+            ON DELETE CASCADE
+            ON UDPATE CASCADE
+    -- то он останется крутым навсегда, даже после выхода обновления т.к. обновление будет - новая версия предмета,
+    , item_name VARCHAR NOT NULL
+        REFERENCES item_info (name)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+    , item_quantity SMALLINT NOT NULL DEFAULT 1
+    CONSTRAINT counter CHECK (item_quantity > 0) -- должна удаляться если равна нулю
+    PRIMARY KEY (tg, name));
+ 
+-- это чаты пользователей, будет топ чатов, фильтры - например может ли бот отсылать в этот чат рекламу и т.д.
+CREATE TABLE IF NOT EXISTS chat(
+    id BIGINT NOT NULL PRIMARY KEY, -- берётся из реальности
+    , own BOOLEAN NOT NULL -- назначен ли бот админом
+    , name VARCHAR (25) NOT NULL, -- можно создать имя своего чата
+    , status BIT NOT NULL DEFAULT b'000' 
+    , img VARCHAR NULL DEFAULT NULL,);
+ 
+-- дальше идут "журналы". Они не доделаны, в итоге и так много вышло.
+ 
