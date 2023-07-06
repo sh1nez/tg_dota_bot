@@ -1,0 +1,148 @@
+-- основная таблица
+CREATE TABLE IF NOT EXISTS users (
+    tg BIGINT NOT NULL PRIMARY KEY
+    , balance NUMERIC(14,2) NOT NULL DEFAULT 0 
+    , mmr SMALLINT NOT NULL DEFAULT 0  -- его рейтинг
+    , daily_bonus BOOLEAN NOT NULL DEFAULT false -- получил ли ежедневный бонус
+    , status BIT(9) NOT NULL DEFAULT b'000000000' -- привелегии есть/нет
+    , img VARCHAR NULL DEFAULT NULL
+    , nik VARCHAR(25) NOT NULL UNIQUE
+    , referal BIGINT NOT NULL
+        REFERENCES users(tg)
+            ON DELETE SET NULL
+            ON UPDATE CASCADE
+    , die_name VARCHAR(25) NOT NULL
+	, die_img VARCHAR NOT NULL
+    , about TEXT NOT NULL 
+    , gender BOOLEAN NULL DEFAULT NULL -- мальчик девочка или NULL
+    , age SMALLINT NOT NULL
+    , find_gender BOOLEAN NULL DEFAULT NULL -- кто интересует (мальчик девочка), нулл - все
+    , quality SMALLINT NOT NULL  -- тут я попытаюсь оценить насколько человек хороший
+    CONSTRAINT die_age_not_normal CHECK(age > 10 AND age < 100)
+    CONSTRAINT die_quality_not_normal CHECK(quality >= -10 AND quality <= 10)
+    CONSTRAINT users_money_less_than_zero CHECK (balance >= 0)
+    CONSTRAINT users_mmr_less_than_zero CHECK (mmr >= 0));
+
+CREATE TABLE IF NOT EXISTS guild (
+    name varchar (25) NOT NULL PRIMARY KEY
+    , status BIT(3) NOT NULL DEFAULT b'000' -- привелегии
+    , guild_owner BIGINT NOT NULL 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT -- чтобы при удалении аккаунта владельца гильдия не удалилась
+    , mmr SMALLINT NOT NULL DEFAULT 0
+    , balance NUMERIC(14,2) NOT NULL
+	, CONSTRAINT guild_mmr_must_be_more_than_zero CHECK(mmr >= 0)
+    , CONSTRAINT guild_balance_must_be_more_than_zero CHECK(balance >= 0));
+
+ALTER TABLE users ADD COLUMN 
+    guild VARCHAR NULL DEFAULT NULL
+        REFERENCES guild(name)
+            ON DELETE SET DEFAULT
+            ON UPDATE CASCADE;
+
+        
+CREATE TABLE IF NOT EXISTS last_profile (
+    looker BIGINT 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT
+    , viewed BIGINT
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT
+    -- viewed_time TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+
+CREATE TABLE IF NOT EXISTS guild_black_list(
+    name VARCHAR NOT NULL 
+        REFERENCES guild(name)
+            ON UPDATE CASCADE 
+            ON DELETE CASCADE 
+    , tg BIGINT NOT NULL 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE 
+            ON DELETE CASCADE 
+    , PRIMARY KEY (name, tg)
+);
+
+-- drop table info_users;
+-- drop table die_vinchik;
+
+
+CREATE TABLE IF NOT EXISTS hero_info(
+    id SMALLINT NOT NULL PRIMARY KEY -- в моей программе это "табельный номер", возможно поменяю на bit или чёто такое - всёранво обращаться по ключу и автозаполнение почти бессмысленно
+    , name VARCHAR NOT NULL
+    , price INT NOT NULL
+    , start_exp SMALLINT NOT NULL  -- сколько опыта у героя базово
+    , exp_by_lvl SMALLINT NOT NULL -- на сколько опыта больше за каждый уровень (для поднятия 2 лвл нужно +1000, для поднятия 3 +1100)
+	, CONSTRAINT hero_already_exists UNIQUE (name)
+    -- тут могут быть ещё параметры героя, к которым может быть нужно обратиться в самой базе данных. 
+    -- Например с помощью price можно посчитать сколько у пользователя капитала в героях
+    );
+
+
+-- общая инфа о предметах, дубликат этого есть на сервере. Нужно и в бд и на сервере чтобы постоянно не обращаться с сервера к бд, или делать отдельные функции которые могут быть выполнены в бд
+CREATE TABLE IF NOT EXISTS item_info(
+    id SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY -- табельный номер, есть связь с прогой
+    , name VARCHAR NOT NULL
+    , price NUMERIC(7, 2) NOT NULL -- максимум 99,999.99
+    , CONSTRAINT item_already_exists UNIQUE (name));
+
+
+-- герои пользователей
+-- DROP TABLE hero
+CREATE TABLE IF NOT EXISTS users_hero (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+    , tg BIGINT NOT NULL 
+        REFERENCES users(tg)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE -- если пользователь, например забанен, то и герои у него существовать не должны
+    , hero_id SMALLINT NOT NULL 
+		REFERENCES hero_info(id)
+			ON UPDATE CASCADE 
+			ON DELETE CASCADE -- если герой удалён, то он не должен оставаться у кого-то, будут тригеры котороые компенсируюдт потерю в случае чего
+    , activity TIMESTAMPTZ NULL DEFAULT now()
+    , fight BOOLEAN NOT NULL DEFAULT false
+    , lvl SMALLINT NOT NULL 
+    , exp SMALLINT NOT NULL 
+    CONSTRAINT hero_lvl_control CHECK (lvl > 0 AND lvl <= 30));
+
+-- предметы героев сверху
+CREATE TABLE IF NOT EXISTS hero_items(
+    owner_hero INT NOT NULL 
+        REFERENCES hero (id)
+            ON DELETE CASCADE
+    , item_id SMALLINT NOT NULL 
+        REFERENCES item_info(id)
+            ON UPDATE CASCADE -- при обновлении предметы тоже обновляются
+            ON DELETE CASCADE -- при удалении предмет тоже удалиться, но будет тригер на удаление предметов, который выдаст компенсацию
+    , item_quantity SMALLINT -- количество дубликатов
+    , CONSTRAINT quantity_is_ziro CHECK (item_quantity > 0)
+    , PRIMARY KEY (owner_hero, item_id));
+
+-- предметы которые ещё не пренадлежат героям
+CREATE TABLE IF NOT EXISTS users_item(
+    tg BIGINT NOT NULL
+        REFERENCES users(tg)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    -- то он останется крутым навсегда, даже после выхода обновления т.к. обновление будет - новая версия предмета,
+    , name VARCHAR NOT NULL
+        REFERENCES item_info (name)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+    , quantity SMALLINT NOT NULL DEFAULT 1
+    , CONSTRAINT counter CHECK (quantity > 0) -- должна удаляться если равна нулю
+    , PRIMARY KEY (tg, name));
+
+
+CREATE TABLE IF NOT EXISTS chat(
+    id BIGINT NOT NULL PRIMARY KEY
+    , own BOOLEAN NOT NULL -- админ ли бот в беседе
+    , name VARCHAR (25) NOT NULL
+    , status BIT NOT NULL DEFAULT b'000'
+    , img VARCHAR NULL DEFAULT NULL);
+
+-- дальше идут журналы
